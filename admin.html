@@ -54,6 +54,10 @@
                     <p id="editor-description" class="panel-description">設定投票期間與每位玩家必選的角色數。</p>
                 </div>
                 <div class="editor-header-actions">
+                    <div class="pool-lifecycle-actions">
+                        <button id="start-pool-button" class="admin-action-button" type="button" hidden>啟動 Pool</button>
+                        <button id="delete-pool-button" class="danger-button admin-action-button" type="button" hidden>刪除 Pool</button>
+                    </div>
                     <button id="close-pool-button" class="danger-button admin-action-button" type="button" hidden>關閉 Pool</button>
                     <button id="close-editor-button" class="secondary-button compact-button" type="button">關閉</button>
                 </div>
@@ -75,24 +79,34 @@
                         <h2 class="panel-title">角色管理</h2>
                         <p class="panel-description">僅 draft Pool 可以新增或移除角色。</p>
                     </div>
-                    <div class="pool-lifecycle-actions">
-                        <button id="start-pool-button" class="admin-action-button" type="button">啟動 Pool</button>
-                        <button id="delete-pool-button" class="danger-button admin-action-button" type="button" hidden>刪除 Pool</button>
-                    </div>
                 </div>
                 <div id="character-edit-controls">
                     <form id="character-form" class="character-form">
-                        <label>角色 ID<input id="character-id" type="number" min="0" required></label>
-                        <label>角色名稱<input id="character-name" type="text" maxlength="100" required></label>
-                        <button id="add-character-button" class="admin-action-button" type="submit">新增角色</button>
+                        <label>精靈 ID<input id="seer-pet-id" type="number" min="1" placeholder="例如：1" required></label>
+                        <label>精靈名稱<input id="character-name" type="text" maxlength="100" placeholder="請先查詢精靈" required readonly></label>
+                        <div class="seer-form-actions">
+                            <button id="lookup-seer-pet-button" class="secondary-button compact-button" type="button">查詢精靈</button>
+                            <button id="add-character-button" class="admin-action-button" type="submit">新增角色</button>
+                        </div>
                     </form>
+                    <div id="seer-pet-preview" class="seer-pet-preview" hidden>
+                        <img id="seer-pet-icon" alt="精靈頭像" loading="lazy">
+                        <div class="seer-pet-preview-content">
+                            <span class="seer-preview-label">預覽</span>
+                            <strong id="seer-pet-name">-</strong>
+                            <div class="seer-pet-meta">
+                                <span id="seer-pet-id-preview">#-</span>
+                                <span class="seer-pet-type"><img id="seer-pet-type-icon" class="seer-pet-type-icon" alt="" aria-hidden="true"><span id="seer-pet-type-name">屬性：-</span></span>
+                            </div>
+                        </div>
+                    </div>
                     <p id="character-form-message" class="form-message" aria-live="polite"></p>
 
                     <form id="character-import-form" class="character-import-form">
                         <label for="character-import-text">批次匯入角色
-                            <span>每行一位：<code>1001,角色名稱</code> 或從 Excel 直接貼上兩欄資料。</span>
+                            <span>每批最多 100 位；每行可只填 Seer 精靈 ID，或使用 <code>ID,精靈名稱</code>；也支援從 Excel 貼上 ID 與名稱兩欄。</span>
                         </label>
-                        <textarea id="character-import-text" rows="7" placeholder="1001,測試角色 A&#10;1002,測試角色 B"></textarea>
+                        <textarea id="character-import-text" rows="7" placeholder="1001&#10;1002&#10;或：1003,精靈名稱"></textarea>
                         <div class="character-import-actions">
                             <span id="character-import-count">尚未輸入角色。</span>
                             <button id="import-characters-button" type="submit">匯入角色</button>
@@ -105,6 +119,11 @@
                     <input id="admin-character-search" type="search" placeholder="搜尋角色 ID 或名稱" autocomplete="off">
                 </div>
                 <div id="admin-character-list" class="admin-character-list"></div>
+                <div class="admin-character-pagination">
+                    <button id="admin-character-previous-page" class="secondary-button compact-button" type="button">上一頁</button>
+                    <span id="admin-character-page">第 1 / 1 頁</span>
+                    <button id="admin-character-next-page" class="secondary-button compact-button" type="button">下一頁</button>
+                </div>
 
                 <section id="vote-records" class="admin-vote-records">
                     <div class="editor-divider"></div>
@@ -138,6 +157,17 @@
             <a class="primary-button" href="./index.html">返回投票頁</a>
         </section>
     </main>
+
+    <div id="admin-confirm-modal" class="admin-confirm-modal" hidden>
+        <section class="admin-confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="admin-confirm-title" aria-describedby="admin-confirm-message">
+            <h2 id="admin-confirm-title">請確認操作</h2>
+            <p id="admin-confirm-message"></p>
+            <div class="admin-confirm-actions">
+                <button id="admin-confirm-cancel" class="secondary-button compact-button" type="button">取消</button>
+                <button id="admin-confirm-accept" class="admin-action-button" type="button">確定</button>
+            </div>
+        </section>
+    </div>
 
     <footer class="site-footer">SEERVOTE · Admin Console</footer>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

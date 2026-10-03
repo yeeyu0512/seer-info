@@ -1,3 +1,4 @@
+import { Converter } from "https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/esm/full.js";
 import { getSession, logout } from "./auth.js";
 import { getPoolCharacters } from "./pool.js";
 import {
@@ -25,6 +26,15 @@ const characterManager = document.getElementById("character-manager");
 const characterEditControls = document.getElementById("character-edit-controls");
 const characterForm = document.getElementById("character-form");
 const characterFormMessage = document.getElementById("character-form-message");
+const lookupSeerPetButton = document.getElementById("lookup-seer-pet-button");
+const seerPetIdInput = document.getElementById("seer-pet-id");
+const seerPetPreview = document.getElementById("seer-pet-preview");
+const seerPetIcon = document.getElementById("seer-pet-icon");
+const seerPetTypeIcon = document.getElementById("seer-pet-type-icon");
+const seerPetTypeName = document.getElementById("seer-pet-type-name");
+const seerPetName = document.getElementById("seer-pet-name");
+const seerPetIdPreview = document.getElementById("seer-pet-id-preview");
+let resolvedSeerPetId = null;
 const characterImportForm = document.getElementById("character-import-form");
 const characterImportText = document.getElementById("character-import-text");
 const characterImportCount = document.getElementById("character-import-count");
@@ -32,6 +42,17 @@ const characterImportMessage = document.getElementById("character-import-message
 const characterList = document.getElementById("admin-character-list");
 const characterCount = document.getElementById("admin-character-count");
 const characterSearch = document.getElementById("admin-character-search");
+const characterPreviousPageButton = document.getElementById("admin-character-previous-page");
+const characterNextPageButton = document.getElementById("admin-character-next-page");
+const characterPage = document.getElementById("admin-character-page");
+const adminConfirmModal = document.getElementById("admin-confirm-modal");
+const adminConfirmMessage = document.getElementById("admin-confirm-message");
+const adminConfirmCancelButton = document.getElementById("admin-confirm-cancel");
+const adminConfirmAcceptButton = document.getElementById("admin-confirm-accept");
+const characterTypeMetadataCache = new Map();
+const characterTypeMetadataQueue = [];
+const observedCharacterRows = new Set();
+let activeCharacterTypeMetadataRequests = 0;
 const startPoolButton = document.getElementById("start-pool-button");
 const closePoolButton = document.getElementById("close-pool-button");
 const deletePoolButton = document.getElementById("delete-pool-button");
@@ -49,9 +70,37 @@ let pools = [];
 let selectedPool = null;
 let poolCharacters = [];
 let loadedCharacterPoolId = null;
+let characterCurrentPage = 1;
 let voteRecords = [];
 let voteRecordCurrentPage = 1;
+const CHARACTERS_PER_PAGE = 5;
 const VOTE_RECORDS_PER_PAGE = 20;
+let confirmDialogResolve = null;
+let confirmDialogReturnFocus = null;
+
+adminConfirmCancelButton.addEventListener("click", () => finishConfirmDialog(false));
+adminConfirmAcceptButton.addEventListener("click", () => finishConfirmDialog(true));
+adminConfirmModal.addEventListener("click", (event) => {
+    if (event.target === adminConfirmModal && !adminConfirmModal.classList.contains("is-closing")) {
+        finishConfirmDialog(false);
+    }
+});
+adminConfirmModal.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+        event.preventDefault();
+        finishConfirmDialog(false);
+        return;
+    }
+    if (event.key !== "Tab") return;
+
+    const buttons = [adminConfirmCancelButton, adminConfirmAcceptButton];
+    const currentIndex = buttons.indexOf(document.activeElement);
+    const nextIndex = event.shiftKey
+        ? (currentIndex <= 0 ? buttons.length - 1 : currentIndex - 1)
+        : (currentIndex === buttons.length - 1 ? 0 : currentIndex + 1);
+    event.preventDefault();
+    buttons[nextIndex].focus();
+});
 
 function initializeDateTimePickers() {
     if (!window.flatpickr) {
@@ -153,12 +202,22 @@ poolForm.addEventListener("submit", async (event) => {
     }
 });
 
+lookupSeerPetButton.addEventListener("click", lookupSeerPet);
+seerPetIdInput.addEventListener("input", () => {
+    if (resolvedSeerPetId !== null && seerPetIdInput.value.trim() !== String(resolvedSeerPetId)) {
+        clearSeerPreview(false);
+    }
+});
+
 characterForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!selectedPool) return;
-    const characterId = Number(document.getElementById("character-id").value);
+    const characterId = Number(seerPetIdInput.value);
     const characterName = document.getElementById("character-name").value.trim();
-    if (!characterName || Number.isNaN(characterId)) return;
+    if (!characterName || !Number.isInteger(characterId) || characterId !== resolvedSeerPetId) {
+        characterFormMessage.textContent = "請先查詢有效的精靈 ID。";
+        return;
+    }
 
     const addButton = document.getElementById("add-character-button");
     addButton.disabled = true;
@@ -166,6 +225,7 @@ characterForm.addEventListener("submit", async (event) => {
     try {
         await addPoolCharacter(selectedPool.id, characterId, characterName);
         characterForm.reset();
+        clearSeerPreview();
         characterFormMessage.textContent = "角色已新增。";
         await loadCharacters();
     } catch (error) {
@@ -178,14 +238,40 @@ characterForm.addEventListener("submit", async (event) => {
 
 characterImportText.addEventListener("input", () => {
     const { characters, invalidLines } = parseImportedCharacters(characterImportText.value);
-    characterImportCount.textContent = invalidLines.length > 0
-        ? `辨識 ${characters.length} 位；${invalidLines.length} 行格式有誤。`
-        : characters.length > 0
-            ? `已辨識 ${characters.length} 位角色。`
-            : "尚未輸入角色。";
+    const lookupCount = characters.filter((character) => character.lookupName).length;
+    characterImportCount.textContent = characters.length > 100
+        ? `已辨識 ${characters.length} 位，超過每批 100 位上限。`
+        : invalidLines.length > 0
+            ? `辨識 ${characters.length} 位；${invalidLines.length} 行格式有誤。`
+            : characters.length > 0
+                ? `已辨識 ${characters.length} 位角色${lookupCount > 0 ? `，其中 ${lookupCount} 位將查詢 SeerAPI` : ""}。`
+                : "尚未輸入角色。";
 });
 
-characterSearch.addEventListener("input", renderCharacters);
+characterSearch.addEventListener("input", () => {
+    characterCurrentPage = 1;
+    renderCharacters();
+});
+characterPreviousPageButton.addEventListener("click", () => {
+    characterCurrentPage -= 1;
+    renderCharacters();
+});
+characterNextPageButton.addEventListener("click", () => {
+    characterCurrentPage += 1;
+    renderCharacters();
+});
+
+const characterTypeIconObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+        const row = entry.target;
+        const icon = row.querySelector(".admin-character-type-icon");
+        if (!icon) return;
+        icon.dataset.visible = String(entry.isIntersecting);
+        if (entry.isIntersecting) {
+            requestCharacterTypeIcon(Number(icon.dataset.characterId), icon);
+        }
+    });
+}, { root: characterList });
 
 characterImportForm.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -196,6 +282,10 @@ characterImportForm.addEventListener("submit", async (event) => {
         characterImportMessage.textContent = "請輸入至少一筆正確格式的角色資料。";
         return;
     }
+    if (characters.length > 100) {
+        characterImportMessage.textContent = `每批最多匯入 100 位精靈，目前有 ${characters.length} 位，請分批處理。`;
+        return;
+    }
     if (invalidLines.length > 0) {
         characterImportMessage.textContent = `第 ${invalidLines.join("、")} 行格式有誤，請修正後再匯入。`;
         return;
@@ -204,10 +294,44 @@ characterImportForm.addEventListener("submit", async (event) => {
     const importButton = document.getElementById("import-characters-button");
     importButton.disabled = true;
     characterImportText.disabled = true;
-    characterImportMessage.textContent = `正在匯入 ${characters.length} 位角色…`;
+    const lookupCharacters = characters.filter((character) => character.lookupName);
+    characterImportMessage.textContent = lookupCharacters.length > 0
+        ? `正在查詢 ${lookupCharacters.length} 位精靈資料…`
+        : `正在匯入 ${characters.length} 位角色…`;
 
     const results = [];
-    for (const character of characters) {
+    const lookupResults = await mapWithConcurrency(lookupCharacters, 5, async (character) => {
+        try {
+            const pet = await fetchJson(`https://api.seerapi.com/v1/pet/${character.characterId}`);
+            const characterName = toTraditionalChinese(pet && pet.name);
+            if (!characterName) {
+                throw new Error("SeerAPI 回傳未包含精靈名稱。");
+            }
+            return { character: { ...character, characterName }, ok: true };
+        } catch (error) {
+            return { character, ok: false, error };
+        }
+    });
+    const lookupResultsById = new Map();
+    const lookupFailures = [];
+    lookupCharacters.forEach((character, index) => {
+        const result = lookupResults[index];
+        lookupResultsById.set(character.characterId, result);
+        if (!result.ok) {
+            lookupFailures.push(result);
+            results.push(result);
+        }
+    });
+
+    const readyCharacters = characters.flatMap((character) => {
+        if (!character.lookupName) return [character];
+        const result = lookupResultsById.get(character.characterId);
+        return result && result.ok ? [result.character] : [];
+    });
+    if (lookupCharacters.length > 0) {
+        characterImportMessage.textContent = `查詢完成${lookupFailures.length > 0 ? `，${lookupFailures.length} 位查詢失敗` : ""}；正在逐筆新增 ${readyCharacters.length} 位角色…`;
+    }
+    for (const character of readyCharacters) {
         try {
             await addPoolCharacter(selectedPool.id, character.characterId, character.characterName);
             results.push({ character, ok: true });
@@ -223,8 +347,11 @@ characterImportForm.addEventListener("submit", async (event) => {
         characterImportText.value = "";
         characterImportCount.textContent = "尚未輸入角色。";
     } else {
-        const failedIds = failed.slice(0, 5).map((result) => result.character.characterId).join("、");
-        characterImportMessage.textContent = `成功 ${successCount} 位；失敗 ${failed.length} 位（${failedIds}${failed.length > 5 ? "…" : ""}）。`;
+        const failedIds = failed.slice(0, 5).map((result) => {
+            const reason = result.error && result.error.message ? `：${result.error.message}` : "";
+            return `第 ${result.character.lineNumber} 行（ID ${result.character.characterId}）${reason}`;
+        }).join("；");
+        characterImportMessage.textContent = `成功 ${successCount} 位；失敗 ${failed.length} 位（${failedIds}${failed.length > 5 ? "；…" : ""}）。`;
     }
     characterImportText.disabled = false;
     importButton.disabled = false;
@@ -252,7 +379,11 @@ voteRecordNextButton.addEventListener("click", () => {
 async function changePoolStatus(action) {
     if (!selectedPool) return;
     const label = action === "start" ? "啟動" : "關閉";
-    if (!window.confirm(`確定要${label}「${selectedPool.name}」嗎？此操作無法復原。`)) return;
+    const confirmed = await showConfirmDialog(
+        `確定要${label}「${selectedPool.name}」嗎？此操作無法復原。`,
+        { confirmLabel: label, danger: action === "close" }
+    );
+    if (!confirmed) return;
 
     const button = action === "start" ? startPoolButton : closePoolButton;
     button.disabled = true;
@@ -273,7 +404,11 @@ async function changePoolStatus(action) {
 
 async function deleteSelectedPool() {
     if (!selectedPool || selectedPool.status !== "draft") return;
-    if (!window.confirm(`確定要永久刪除 draft Pool「${selectedPool.name}」及其所有角色嗎？此操作無法復原。`)) return;
+    const confirmed = await showConfirmDialog(
+        `確定要永久刪除 draft Pool「${selectedPool.name}」及其所有角色嗎？此操作無法復原。`,
+        { confirmLabel: "永久刪除", danger: true }
+    );
+    if (!confirmed) return;
 
     deletePoolButton.disabled = true;
     poolFormMessage.textContent = "刪除中…";
@@ -287,6 +422,39 @@ async function deleteSelectedPool() {
         poolFormMessage.textContent = `刪除失敗：${error.message}`;
         deletePoolButton.disabled = false;
     }
+}
+
+function showConfirmDialog(message, { confirmLabel = "確定", danger = false } = {}) {
+    if (confirmDialogResolve) finishConfirmDialog(false);
+    confirmDialogReturnFocus = document.activeElement;
+    adminConfirmMessage.textContent = message;
+    adminConfirmAcceptButton.textContent = confirmLabel;
+    adminConfirmAcceptButton.classList.toggle("danger-button", danger);
+    adminConfirmModal.classList.remove("is-closing");
+    adminConfirmModal.hidden = false;
+    document.body.classList.add("has-admin-confirm-modal");
+    adminConfirmCancelButton.focus();
+
+    return new Promise((resolve) => {
+        confirmDialogResolve = resolve;
+    });
+}
+
+function finishConfirmDialog(confirmed) {
+    if (!confirmDialogResolve) return;
+    const resolve = confirmDialogResolve;
+    confirmDialogResolve = null;
+    adminConfirmModal.classList.add("is-closing");
+    window.setTimeout(() => {
+        adminConfirmModal.hidden = true;
+        adminConfirmModal.classList.remove("is-closing");
+        document.body.classList.remove("has-admin-confirm-modal");
+        if (confirmDialogReturnFocus instanceof HTMLElement && confirmDialogReturnFocus.isConnected) {
+            confirmDialogReturnFocus.focus();
+        }
+        confirmDialogReturnFocus = null;
+        resolve(confirmed);
+    }, 180);
 }
 
 async function loadAdminPage() {
@@ -354,6 +522,8 @@ async function selectPool(poolId) {
     editor.hidden = false;
     document.getElementById("editor-title").textContent = selectedPool.name;
     document.getElementById("editor-description").textContent = `Pool ID：${selectedPool.id}`;
+    characterForm.reset();
+    clearSeerPreview();
     document.getElementById("pool-form-name").value = selectedPool.name;
     setPoolDateValue("pool-form-start", toLocalDateTime(selectedPool.start_at));
     setPoolDateValue("pool-form-end", toLocalDateTime(selectedPool.end_at));
@@ -383,15 +553,136 @@ function showCreatePoolEditor() {
     document.getElementById("editor-title").textContent = "建立 Pool";
     document.getElementById("editor-description").textContent = "設定投票期間與每位玩家必選的角色數。";
     poolForm.reset();
+    characterForm.reset();
+    clearSeerPreview();
     setPoolDateValue("pool-form-start", "");
     setPoolDateValue("pool-form-end", "");
     poolForm.querySelectorAll("input, select").forEach((input) => { input.disabled = false; });
     setPoolDatePickersDisabled(false);
     document.getElementById("save-pool-button").hidden = false;
     document.getElementById("save-pool-button").textContent = "建立 Pool";
+    startPoolButton.hidden = true;
+    deletePoolButton.hidden = true;
+    closePoolButton.hidden = true;
     poolFormMessage.textContent = "";
     characterManager.hidden = true;
     editor.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+const s2tConverter = Converter({ from: "cn", to: "tw" });
+
+function toTraditionalChinese(value) {
+    if (value === null || value === undefined) return "";
+    const text = String(value).trim();
+    if (!text) return "";
+    try {
+        return s2tConverter(text);
+    } catch (error) {
+        console.warn("Simplified-to-traditional conversion failed:", error);
+        return text;
+    }
+}
+
+async function fetchJson(url) {
+    const response = await fetch(url, {
+        headers: {
+            Accept: "application/json"
+        }
+    });
+
+    if (!response.ok) {
+        let message = `SeerAPI 請求失敗（${response.status}）`;
+        try {
+            const payload = await response.json();
+            if (payload && payload.message) {
+                message = payload.message;
+            }
+        } catch (error) {
+            // ignore JSON parse errors and fall back to the status text
+        }
+        throw new Error(message);
+    }
+
+    return response.json();
+}
+
+function renderSeerPreview(preview) {
+    if (!preview) {
+        seerPetPreview.hidden = true;
+        return;
+    }
+
+    seerPetPreview.hidden = false;
+    seerPetIcon.src = preview.avatarUrl;
+    seerPetIcon.alt = `${preview.petName} 精靈頭像`;
+    seerPetTypeIcon.src = preview.typeIconUrl;
+    seerPetName.textContent = preview.petName;
+    seerPetIdPreview.textContent = `#${preview.petId}`;
+    seerPetTypeName.textContent = `屬性：${preview.typeName}`;
+
+    resolvedSeerPetId = preview.petId;
+    document.getElementById("character-name").value = preview.petName;
+}
+
+function clearSeerPreview(clearPetId = true) {
+    resolvedSeerPetId = null;
+    if (clearPetId && seerPetIdInput) seerPetIdInput.value = "";
+    if (seerPetPreview) seerPetPreview.hidden = true;
+    if (seerPetIcon) seerPetIcon.removeAttribute("src");
+    if (seerPetTypeIcon) seerPetTypeIcon.removeAttribute("src");
+    seerPetName.textContent = "-";
+    seerPetIdPreview.textContent = "#-";
+    seerPetTypeName.textContent = "屬性：-";
+}
+
+async function lookupSeerPet() {
+    const petId = seerPetIdInput.value.trim();
+    if (!petId || !/^\d+$/.test(petId)) {
+        characterFormMessage.textContent = "請輸入有效的 Seer 精靈 ID。";
+        clearSeerPreview();
+        return;
+    }
+
+    const button = lookupSeerPetButton;
+    button.disabled = true;
+    button.textContent = "查詢中…";
+    characterFormMessage.textContent = "正在查詢精靈資料…";
+
+    try {
+        const pet = await fetchJson(`https://api.seerapi.com/v1/pet/${petId}`);
+        const typeId = pet && pet.type && pet.type.id;
+        if (!typeId) {
+            throw new Error("SeerAPI 回傳未包含 type.id。");
+        }
+
+        const typeCombination = await fetchJson(`https://api.seerapi.com/v1/element_type_combination/${typeId}`);
+        const resolvedTypeId = Number(typeCombination && typeCombination.id ? typeCombination.id : typeId);
+        const petName = toTraditionalChinese(pet.name || "");
+        const typeName = toTraditionalChinese(typeCombination && typeCombination.name ? typeCombination.name : "");
+
+        if (!petName) {
+            throw new Error("SeerAPI 回傳未包含精靈名稱。");
+        }
+
+        const preview = {
+            petId: Number(petId),
+            petName,
+            typeId: resolvedTypeId,
+            typeName,
+            avatarUrl: `https://newseer.61.com/web/monster/head/${petId}.png`,
+            typeIconUrl: `https://img.yuyuqaq.cn/seer-pet/type/${resolvedTypeId}.png`
+        };
+
+        renderSeerPreview(preview);
+        characterFormMessage.textContent = `已取得精靈資料：${petName}（${preview.typeName}）`;
+    } catch (error) {
+        console.error("Lookup Seer pet error:", error);
+        clearSeerPreview();
+        characterFormMessage.textContent = `查詢失敗：${error.message}`;
+    } finally {
+        button.disabled = false;
+        button.textContent = "查詢精靈";
+    }
 }
 
 function parseImportedCharacters(value) {
@@ -402,19 +693,38 @@ function parseImportedCharacters(value) {
     value.split(/\r?\n/).forEach((line, index) => {
         const trimmed = line.trim();
         if (!trimmed) return;
-        const match = trimmed.match(/^\s*(\d+)\s*[,\t]\s*(.+?)\s*$/);
-        if (!match || seenIds.has(match[1])) {
+        const match = trimmed.match(/^(\d+)(?:\s*[,\t]\s*(.+?))?$/);
+        const characterId = match ? Number(match[1]) : NaN;
+        if (!match || !Number.isSafeInteger(characterId) || seenIds.has(characterId) || (match[2] !== undefined && !match[2].trim())) {
             invalidLines.push(index + 1);
             return;
         }
-        seenIds.add(match[1]);
+        seenIds.add(characterId);
         characters.push({
-            characterId: Number(match[1]),
-            characterName: match[2]
+            characterId,
+            characterName: match[2] ? match[2].trim() : "",
+            lookupName: match[2] === undefined,
+            lineNumber: index + 1
         });
     });
 
     return { characters, invalidLines };
+}
+
+async function mapWithConcurrency(items, concurrency, mapper) {
+    const results = new Array(items.length);
+    let nextIndex = 0;
+    const workerCount = Math.min(concurrency, items.length);
+
+    await Promise.all(Array.from({ length: workerCount }, async () => {
+        while (nextIndex < items.length) {
+            const index = nextIndex;
+            nextIndex += 1;
+            results[index] = await mapper(items[index]);
+        }
+    }));
+
+    return results;
 }
 
 async function loadCharacters() {
@@ -444,6 +754,20 @@ function renderCharacters() {
     characterCount.textContent = keyword
         ? `顯示 ${filteredCharacters.length} / ${poolCharacters.length} 位角色`
         : `共 ${poolCharacters.length} 位角色`;
+    const totalPages = Math.max(1, Math.ceil(filteredCharacters.length / CHARACTERS_PER_PAGE));
+    characterCurrentPage = Math.min(Math.max(characterCurrentPage, 1), totalPages);
+    const pageStart = (characterCurrentPage - 1) * CHARACTERS_PER_PAGE;
+    const pageCharacters = filteredCharacters.slice(pageStart, pageStart + CHARACTERS_PER_PAGE);
+    characterPage.textContent = `第 ${characterCurrentPage} / ${totalPages} 頁`;
+    characterPreviousPageButton.disabled = characterCurrentPage === 1;
+    characterNextPageButton.disabled = characterCurrentPage === totalPages;
+
+    observedCharacterRows.forEach((row) => {
+        const icon = row.querySelector(".admin-character-type-icon");
+        if (icon) icon.dataset.visible = "false";
+        characterTypeIconObserver.unobserve(row);
+    });
+    observedCharacterRows.clear();
     characterList.innerHTML = "";
 
     if (filteredCharacters.length === 0) {
@@ -451,7 +775,7 @@ function renderCharacters() {
         return;
     }
 
-    filteredCharacters.forEach((character) => renderCharacter(character));
+    pageCharacters.forEach((character) => renderCharacter(character));
 }
 
 async function loadVoteRecords() {
@@ -577,15 +901,34 @@ function renderVoteRecords() {
 function renderCharacter(character) {
     const item = document.createElement("div");
     const label = document.createElement("span");
+    const details = document.createElement("div");
+    const avatar = document.createElement("img");
+    const text = document.createElement("div");
+    const typeIcon = document.createElement("img");
     const deleteButton = document.createElement("button");
     item.className = "admin-character-item";
+    details.className = "admin-character-details";
+    avatar.className = "admin-character-avatar";
+    avatar.src = `https://newseer.61.com/web/monster/head/${character.character_id}.png`;
+    avatar.alt = "";
+    avatar.loading = "lazy";
+    avatar.addEventListener("error", () => { avatar.hidden = true; }, { once: true });
+    text.className = "admin-character-text";
     label.textContent = `#${character.character_id}　${character.character_name}`;
+    typeIcon.className = "admin-character-type-icon";
+    typeIcon.alt = "精靈屬性";
+    typeIcon.hidden = true;
+    typeIcon.dataset.characterId = String(character.character_id);
+    observedCharacterRows.add(item);
     deleteButton.type = "button";
     deleteButton.className = "text-button delete-character-button";
     deleteButton.textContent = "移除";
     deleteButton.hidden = selectedPool.status !== "draft";
     deleteButton.addEventListener("click", async () => {
-        if (!window.confirm(`確定要移除「${character.character_name}」嗎？`)) return;
+        if (!await showConfirmDialog(`確定要移除「${character.character_name}」嗎？`, {
+            confirmLabel: "移除",
+            danger: true
+        })) return;
         deleteButton.disabled = true;
         try {
             await deletePoolCharacter(character.id);
@@ -596,8 +939,78 @@ function renderCharacter(character) {
             deleteButton.disabled = false;
         }
     });
-    item.append(label, deleteButton);
+    text.append(label, typeIcon);
+    details.append(avatar, text);
+    item.append(details, deleteButton);
     characterList.append(item);
+    characterTypeIconObserver.observe(item);
+}
+
+function requestCharacterTypeIcon(characterId, icon) {
+    let metadata = characterTypeMetadataCache.get(characterId);
+    if (!metadata) {
+        let resolveMetadata;
+        const promise = new Promise((resolve) => {
+            resolveMetadata = resolve;
+        });
+        metadata = { promise, resolve: resolveMetadata, waiters: new Set() };
+        characterTypeMetadataCache.set(characterId, metadata);
+        characterTypeMetadataQueue.push({ characterId, metadata });
+    }
+
+    metadata.waiters.add(icon);
+    metadata.promise.then((iconUrl) => {
+        if (iconUrl && icon.isConnected && icon.dataset.visible === "true") {
+            icon.src = iconUrl;
+            icon.hidden = false;
+        }
+    });
+    processCharacterTypeMetadataQueue();
+}
+
+function processCharacterTypeMetadataQueue() {
+    while (activeCharacterTypeMetadataRequests < 4 && characterTypeMetadataQueue.length > 0) {
+        const { characterId, metadata } = characterTypeMetadataQueue.shift();
+        const hasVisibleWaiter = Array.from(metadata.waiters).some((icon) =>
+            icon.isConnected && icon.dataset.visible === "true"
+        );
+        if (!hasVisibleWaiter) {
+            if (characterTypeMetadataCache.get(characterId) === metadata) {
+                characterTypeMetadataCache.delete(characterId);
+            }
+            metadata.resolve(null);
+            continue;
+        }
+
+        activeCharacterTypeMetadataRequests += 1;
+        fetchCharacterTypeIconUrl(characterId)
+            .catch((error) => {
+                console.warn(`Failed to load Seer type for pet ${characterId}:`, error);
+                return null;
+            })
+            .then((iconUrl) => {
+                metadata.resolve(iconUrl);
+            })
+            .finally(() => {
+                activeCharacterTypeMetadataRequests -= 1;
+                processCharacterTypeMetadataQueue();
+            });
+    }
+}
+
+async function fetchCharacterTypeIconUrl(characterId) {
+    const pet = await fetchJson(`https://api.seerapi.com/v1/pet/${characterId}`);
+    const typeId = pet && pet.type && pet.type.id;
+    if (!typeId) {
+        throw new Error("SeerAPI 回傳未包含 type.id。");
+    }
+
+    const typeCombination = await fetchJson(`https://api.seerapi.com/v1/element_type_combination/${typeId}`);
+    const resolvedTypeId = Number(typeCombination && typeCombination.id ? typeCombination.id : typeId);
+    if (!Number.isSafeInteger(resolvedTypeId) || resolvedTypeId <= 0) {
+        throw new Error("SeerAPI 回傳的屬性 ID 無效。");
+    }
+    return `https://img.yuyuqaq.cn/seer-pet/type/${resolvedTypeId}.png`;
 }
 
 function toIsoDate(elementId) {

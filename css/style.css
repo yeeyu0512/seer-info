@@ -990,10 +990,84 @@ button:disabled {
     gap: 12px;
 }
 
+.seer-form-actions {
+    display: flex;
+    align-items: end;
+    gap: 10px;
+}
+
+.seer-pet-preview {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 14px;
+    padding: 12px 14px;
+    border: 1px solid rgba(147, 135, 255, 0.2);
+    border-radius: var(--radius-sm);
+    background: rgba(147, 135, 255, 0.06);
+}
+
+.seer-pet-preview img {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.seer-pet-preview-content {
+    display: grid;
+    gap: 3px;
+}
+
+.seer-preview-label {
+    color: var(--text-muted);
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.seer-pet-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.seer-pet-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.seer-pet-preview .seer-pet-type-icon {
+    width: 16px;
+    height: 16px;
+    border-radius: 0;
+    background: transparent;
+}
+
 .admin-character-list {
     display: grid;
     gap: 8px;
     margin-top: 14px;
+}
+
+.admin-character-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.admin-character-pagination span {
+    min-width: 72px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    text-align: center;
 }
 
 .admin-character-list-toolbar {
@@ -1037,6 +1111,36 @@ button:disabled {
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     background: rgba(255, 255, 255, .025);
+}
+
+.admin-character-details {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.admin-character-avatar {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    object-fit: contain;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, .04);
+}
+
+.admin-character-text {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 7px;
+    min-width: 0;
+}
+
+.admin-character-type-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
 }
 
 .delete-character-button {
@@ -2194,41 +2298,83 @@ body::after,
 }
 
 .admin-page #pool-editor > .panel-header {
-    align-items: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
     margin-bottom: 14px;
+}
+
+.admin-page #pool-editor > .panel-header > div:first-child,
+.admin-page #character-manager > .panel-header > div:first-child {
+    flex: 1 1 260px;
+    min-width: 0;
 }
 
 .editor-header-actions,
 .vote-record-header-actions {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
 }
 
+.admin-page #pool-editor > .panel-header .editor-header-actions {
+    flex: 0 1 auto;
+    justify-content: flex-end;
+    min-width: 0;
+}
+
 .admin-page .admin-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
+}
+
+.admin-page .admin-form > label {
+    min-width: 0;
+}
+
+.admin-page .pool-date-time-control,
+.admin-page .pool-date-time-control input,
+.admin-page .pool-date-time-control select {
+    min-width: 0;
 }
 
 .admin-page .form-actions {
     display: flex;
-    justify-content: flex-start;
+    justify-content: flex-end;
     margin-top: 2px;
+}
+
+.admin-page .form-actions .admin-action-button {
+    min-width: 150px;
 }
 
 .admin-page .pool-lifecycle-actions {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
 }
 
-.admin-page #character-manager > .panel-header {
-    align-items: center;
-    margin-bottom: 14px;
+.admin-page .editor-header-actions .pool-lifecycle-actions {
+    justify-content: flex-end;
 }
 
 .admin-page .character-form {
+    grid-template-columns: minmax(110px, 150px) minmax(0, 1fr) auto;
     align-items: end;
     gap: 10px;
+}
+
+.admin-page .character-form > label {
+    min-width: 0;
+}
+
+.admin-page .seer-form-actions {
+    flex-wrap: wrap;
+}
+
+.admin-page .seer-form-actions > button {
+    white-space: nowrap;
 }
 
 .admin-page .character-form .admin-action-button,
@@ -2247,6 +2393,88 @@ body::after,
 .admin-page .admin-character-list::-webkit-scrollbar-thumb {
     border-radius: 8px;
     background: rgba(147, 135, 255, .4);
+}
+
+.admin-confirm-modal {
+    position: fixed;
+    z-index: 1000;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgba(3, 5, 15, .72);
+    backdrop-filter: blur(5px);
+}
+
+.admin-confirm-modal:not([hidden]) {
+    animation: modal-backdrop-in .18s ease-out both;
+}
+
+.admin-confirm-modal:not([hidden]) .admin-confirm-dialog {
+    animation: modal-content-in .22s cubic-bezier(.2, .8, .2, 1) both;
+}
+
+.admin-confirm-modal.is-closing {
+    animation: modal-backdrop-out .18s ease-in both;
+}
+
+.admin-confirm-modal.is-closing .admin-confirm-dialog {
+    animation: modal-content-out .16s ease-in both;
+}
+
+body.has-admin-confirm-modal {
+    overflow: hidden;
+}
+
+.admin-confirm-modal[hidden] {
+    display: none;
+}
+
+.admin-confirm-dialog {
+    width: min(440px, 100%);
+    padding: 22px;
+    border: 1px solid rgba(196, 191, 255, .2);
+    border-radius: 16px;
+    background: linear-gradient(150deg, rgba(30, 35, 68, .98), rgba(10, 13, 29, .99));
+    box-shadow: 0 28px 70px rgba(0, 0, 0, .52), inset 0 1px rgba(255, 255, 255, .07);
+}
+
+.admin-confirm-dialog h2 {
+    margin: 0;
+    color: var(--text);
+    font-size: 18px;
+}
+
+.admin-confirm-dialog p {
+    margin: 10px 0 0;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.admin-confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+    margin-top: 22px;
+}
+
+.admin-confirm-actions button {
+    min-width: 84px;
+    margin: 0;
+}
+
+.admin-confirm-actions .danger-button {
+    background: linear-gradient(135deg, #ff7f8d, #d94f63);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .admin-confirm-modal:not([hidden]),
+    .admin-confirm-modal:not([hidden]) .admin-confirm-dialog,
+    .admin-confirm-modal.is-closing,
+    .admin-confirm-modal.is-closing .admin-confirm-dialog {
+        animation: none;
+    }
 }
 
 .admin-vote-record-list {
@@ -2338,17 +2566,107 @@ body::after,
     .admin-vote-pagination { justify-content: space-between; }
     .admin-character-list-toolbar { align-items: stretch; flex-direction: column; }
     .admin-character-list-toolbar > input { width: 100%; }
-}
+    .admin-character-pagination { justify-content: space-between; }
 
-@media (max-width: 680px) {
-    .admin-page .pool-lifecycle-actions {
+    .admin-page #pool-editor {
+        padding: 14px;
+    }
+
+    .admin-page #pool-editor > .panel-header,
+    .admin-page #character-manager > .panel-header {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .admin-page #pool-editor > .panel-header > div:first-child,
+    .admin-page #character-manager > .panel-header > div:first-child {
+        flex-basis: auto;
         width: 100%;
     }
 
-    .admin-page .pool-lifecycle-actions .admin-action-button {
-        flex: 1;
+    .admin-page #pool-editor > .panel-header .editor-header-actions {
+        width: 100%;
+        justify-content: flex-start;
     }
 
+    .admin-page .editor-header-actions .pool-lifecycle-actions {
+        flex: 1 1 100%;
+        justify-content: flex-start;
+    }
+
+    .admin-page .admin-form {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+    }
+
+    .admin-page .form-actions {
+        grid-column: 1;
+    }
+
+    .admin-page .form-actions .admin-action-button {
+        width: 100%;
+    }
+
+    .admin-page .character-form {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+    }
+
+    .admin-page .seer-form-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .admin-page .seer-form-actions > button {
+        width: 100%;
+        padding-inline: 8px;
+    }
+
+    .admin-page .editor-header-actions .pool-lifecycle-actions .admin-action-button {
+        flex: 1 1 140px;
+    }
+
+    .admin-page .character-import-form {
+        min-width: 0;
+        padding: 12px;
+    }
+
+    .admin-page .character-import-form label {
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+    }
+
+    .admin-page .character-import-form label span {
+        display: block;
+        margin: 5px 0 0;
+        overflow-wrap: anywhere;
+    }
+
+    .admin-page .character-import-form textarea {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .admin-page .character-import-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .admin-page .character-import-actions button {
+        width: 100%;
+    }
+
+    .admin-confirm-dialog {
+        padding: 18px;
+    }
+
+    .admin-confirm-actions button {
+        flex: 1;
+    }
+}
+
+@media (max-width: 680px) {
     .editor-header-actions,
     .vote-record-header-actions {
         width: 100%;
@@ -2357,6 +2675,10 @@ body::after,
     .editor-header-actions > button,
     .vote-record-header-actions > button {
         flex: 1;
+    }
+
+    .editor-header-actions > .pool-lifecycle-actions {
+        flex: 1 1 100%;
     }
 }
 
