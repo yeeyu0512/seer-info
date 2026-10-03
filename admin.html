@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEERVOTE Admin</title>
+    <link rel="icon" href="./favicon.ico" sizes="any">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="./index.html" class="logo" aria-label="返回 SEERVOTE 首頁">
+                <img class="logo-mark" src="./favicon.ico" alt="">
+                <span>SEERVOTE</span>
+            </a>
+            <div class="header-actions">
+                <a class="admin-home-link admin-header-control" href="./index.html">返回投票頁</a>
+                <button id="logout-button" class="admin-header-control" type="button">登出</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container admin-page">
+        <section class="admin-hero">
+            <div class="admin-page-title">
+                <div>
+                    <span class="admin-kicker">ADMIN CONSOLE</span>
+                    <h1>Pool 管理</h1>
+                </div>
+                <p>建立、設定與管理競技投票 Pool。</p>
+            </div>
+        </section>
+
+        <section id="admin-workspace" hidden>
+        <section id="admin-content" class="panel" aria-live="polite">
+            <div class="panel-header">
+                <div>
+                    <h2 class="panel-title">Pool 列表</h2>
+                    <p class="panel-description">依建立時間由新到舊排列。</p>
+                </div>
+                <button id="show-create-pool-button" class="admin-action-button" type="button">＋ 建立 Pool</button>
+            </div>
+            <div id="admin-pool-list" class="admin-pool-list">
+                <p class="empty-state">正在載入 Pool…</p>
+            </div>
+        </section>
+
+        <section id="pool-editor" class="panel" hidden>
+            <div class="panel-header">
+                <div>
+                    <h2 id="editor-title" class="panel-title">建立 Pool</h2>
+                    <p id="editor-description" class="panel-description">設定投票期間與每位玩家必選的角色數。</p>
+                </div>
+                <button id="close-editor-button" class="secondary-button compact-button" type="button">關閉</button>
+            </div>
+
+            <form id="pool-form" class="admin-form">
+                <label>Pool 名稱<input id="pool-form-name" type="text" maxlength="100" required></label>
+                <label class="pool-date-field"><span>開始時間</span><div class="pool-date-time-control"><input id="pool-form-start" class="pool-datetime" type="text" required><select id="pool-form-start-time" class="pool-time-select" aria-label="開始時間的時分"></select></div></label>
+                <label class="pool-date-field"><span>結束時間</span><div class="pool-date-time-control"><input id="pool-form-end" class="pool-datetime" type="text" required><select id="pool-form-end-time" class="pool-time-select" aria-label="結束時間的時分"></select></div></label>
+                <label>每人票數<input id="pool-form-max-votes" type="number" min="1" max="50" required></label>
+                <div class="form-actions"><button id="save-pool-button" class="admin-action-button" type="submit">建立 Pool</button></div>
+            </form>
+            <p id="pool-form-message" class="form-message" aria-live="polite"></p>
+
+            <section id="character-manager" hidden>
+                <div class="editor-divider"></div>
+                <div class="panel-header">
+                    <div>
+                        <h2 class="panel-title">角色管理</h2>
+                        <p class="panel-description">僅 draft Pool 可以新增或移除角色。</p>
+                    </div>
+                    <div class="pool-lifecycle-actions">
+                        <button id="start-pool-button" class="admin-action-button" type="button">啟動 Pool</button>
+                        <button id="close-pool-button" class="danger-button admin-action-button" type="button" hidden>關閉 Pool</button>
+                        <button id="delete-pool-button" class="danger-button admin-action-button" type="button" hidden>刪除 Pool</button>
+                    </div>
+                </div>
+                <form id="character-form" class="character-form">
+                    <label>角色 ID<input id="character-id" type="number" min="0" required></label>
+                    <label>角色名稱<input id="character-name" type="text" maxlength="100" required></label>
+                    <button id="add-character-button" class="admin-action-button" type="submit">新增角色</button>
+                </form>
+                <p id="character-form-message" class="form-message" aria-live="polite"></p>
+
+                <form id="character-import-form" class="character-import-form">
+                    <label for="character-import-text">批次匯入角色
+                        <span>每行一位：<code>1001,角色名稱</code> 或從 Excel 直接貼上兩欄資料。</span>
+                    </label>
+                    <textarea id="character-import-text" rows="7" placeholder="1001,測試角色 A&#10;1002,測試角色 B"></textarea>
+                    <div class="character-import-actions">
+                        <span id="character-import-count">尚未輸入角色。</span>
+                        <button id="import-characters-button" type="submit">匯入角色</button>
+                    </div>
+                </form>
+                <p id="character-import-message" class="form-message" aria-live="polite"></p>
+                <div id="admin-character-list" class="admin-character-list"></div>
+            </section>
+        </section>
+        </section>
+
+        <section id="access-denied" class="panel access-denied" hidden>
+            <h1>無管理權限</h1>
+            <p class="panel-description">此帳號無法存取管理面板。</p>
+            <a class="primary-button" href="./index.html">返回投票頁</a>
+        </section>
+    </main>
+
+    <footer class="site-footer">SEERVOTE · Admin Console</footer>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/l10n/zh-tw.js"></script>
+    <script type="module" src="./js/admin-page.js"></script>
+</body>
+</html>

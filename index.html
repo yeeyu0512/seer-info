@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+<title>SEERVOTE</title>
+
+<link rel="icon" href="./favicon.ico" sizes="any">
+<link rel="stylesheet" href="./css/style.css">
+
+
+</head>
+
+<body>
+
+
+<!-- ==================== -->
+<!-- Header -->
+<!-- ==================== -->
+
+<header class="site-header">
+
+    <div class="header-inner">
+
+        <a href="#" class="logo" aria-label="SEERVOTE 首頁">
+            <img class="logo-mark" src="./favicon.ico" alt="">
+            <span>賽爾號限制池投票系統</span>
+        </a>
+
+        <div class="header-actions">
+
+            <a id="admin-link" class="admin-home-link" href="./admin.html" hidden>管理面板</a>
+
+            <button id="login-trigger" class="compact-button" type="button">登入</button>
+
+            <button id="logout-button" type="button" hidden>
+                登出
+            </button>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<main class="container">
+
+
+    <!-- ==================== -->
+    <!-- Login -->
+    <!-- ==================== -->
+
+    <div id="login-modal" hidden>
+    <section id="login-section" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+
+        <div class="auth-modal-topbar">
+            <span class="auth-modal-brand">SEERVOTE</span>
+            <button id="login-close" class="modal-close" type="button" aria-label="關閉登入視窗">×</button>
+        </div>
+
+        <h1 id="auth-title">登入投票</h1>
+
+        <p id="auth-description" class="panel-description">
+            登入後即可參與本期競技限制投票。
+        </p>
+
+        <label class="field-label" for="email">Email</label>
+        <input id="email" type="email" placeholder="name@example.com" autocomplete="email">
+
+        <label class="field-label" for="password">Password</label>
+        <input id="password" type="password" placeholder="輸入密碼" autocomplete="current-password">
+
+        <div id="password-confirm-group" hidden>
+            <label class="field-label" for="password-confirm">確認 Password</label>
+            <input id="password-confirm" type="password" placeholder="再次輸入密碼" autocomplete="new-password">
+        </div>
+
+        <div id="mimi-id-group" hidden>
+            <label class="field-label" for="mimi-id">米米號</label>
+            <input id="mimi-id" type="text" inputmode="numeric" pattern="[0-9]+" placeholder="請輸入純數字米米號" autocomplete="off">
+        </div>
+
+        <button id="login-button" type="button">
+            登入
+        </button>
+
+        <button id="register-button" class="secondary-button" type="button" hidden>
+            建立帳號
+        </button>
+
+        <p id="login-message"></p>
+
+        <button id="auth-mode-toggle" class="text-button" type="button">
+            還沒有帳號？建立帳號
+        </button>
+
+    </section>
+    </div>
+
+
+    <!-- ==================== -->
+    <!-- Voting -->
+    <!-- ==================== -->
+
+    <section id="vote-section" hidden>
+
+
+        <!-- Pool Information -->
+
+        <div class="pool-info">
+
+            <div class="info-card">
+
+                <div class="info-label">
+                    Pool
+                </div>
+
+                <div id="pool-name" class="info-value">
+                    -
+                </div>
+
+            </div>
+
+
+            <div class="info-card">
+
+                <div class="info-label">
+                    Required Votes
+                </div>
+
+                <div id="vote-limit" class="info-value">
+                    -
+                </div>
+
+            </div>
+
+
+            <div class="info-card">
+
+                <div class="info-label">
+                    Status
+                </div>
+
+                <div class="info-value">
+
+                    <span id="pool-status" class="status-badge">
+                        Voting
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <nav class="main-tabs" aria-label="投票功能">
+            <button class="main-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="selection-panel" data-tab-target="selection-panel">投票</button>
+            <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="ranking-section" data-tab-target="ranking-section">即時排名</button>
+            <button id="account-tab" class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="account-section" data-tab-target="account-section" hidden>帳號</button>
+        </nav>
+
+
+        <!-- Character Selection -->
+
+        <section id="selection-panel" class="panel">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <h2 class="panel-title">
+                        選擇角色
+                    </h2>
+
+                    <p id="vote-rule" class="panel-description">請選擇指定數量的角色後提交。</p>
+
+                </div>
+
+            </div>
+
+
+            <div id="character-list">
+                <!-- main.js 會在這裡產生角色 -->
+            </div>
+
+            <div id="public-login-prompt" class="public-login-prompt" hidden>
+                <span>想參與本期投票？登入後即可選擇角色。</span>
+                <button id="public-login-button" class="compact-button" type="button">登入投票</button>
+            </div>
+
+            <div id="mimi-binding-prompt" class="public-login-prompt" hidden>
+                <span>綁定米米號後才能參與本期投票。</span>
+                <button id="mimi-binding-button" class="compact-button" type="button">前往綁定</button>
+            </div>
+
+
+            <!-- Selection / Submit -->
+
+            <div id="selection-bar" class="selection-bar">
+
+                <div>
+
+                    <div class="selection-count">
+
+                        已選擇
+
+                        <strong id="selection-count">
+                            0
+                        </strong>
+
+                        /
+
+                        <span id="selection-max">
+                            0
+                        </span>
+
+                    </div>
+
+                    <div
+                        id="vote-message"
+                        class="vote-message"
+                    ></div>
+
+                </div>
+
+
+                <button
+                    id="submit-button"
+                    type="button"
+                >
+                    提交投票
+                </button>
+
+            </div>
+
+            <!-- Already Voted -->
+            <section id="already-voted" hidden aria-live="polite">
+                <div class="already-voted">
+                    <strong>✓ 已完成投票</strong>
+                    <span id="already-voted-message">本期投票已成功提交。</span>
+                </div>
+            </section>
+
+        </section>
+
+        <!-- ==================== -->
+        <!-- Ranking -->
+        <!-- ==================== -->
+
+        <section id="ranking-section" class="panel" hidden>
+
+            <div class="panel-header">
+
+                <div>
+
+                    <h2 class="panel-title">
+                        目前排名
+                    </h2>
+
+                    <p class="panel-description">
+                        排名會即時更新。
+                    </p>
+
+                </div>
+
+                <span class="header-status">
+                    LIVE
+                </span>
+
+            </div>
+
+
+            <div id="ranking-list">
+                <!-- main.js 產生排名 -->
+            </div>
+
+        </section>
+
+        <section id="account-section" class="panel account-panel" hidden>
+
+            <div class="panel-header">
+                <div>
+                    <h2 class="panel-title">米米號綁定</h2>
+                    <p class="panel-description">每個帳號只能綁定一組米米號，綁定後無法修改或解除。</p>
+                </div>
+            </div>
+
+            <div id="game-account-unbound">
+                <form id="game-account-form" class="game-account-form">
+                    <label class="field-label" for="game-account-input">米米號</label>
+                    <div class="game-account-controls">
+                        <input id="game-account-input" type="text" inputmode="numeric" pattern="[0-9]+" autocomplete="off" placeholder="請輸入純數字米米號" required>
+                        <button id="bind-game-account-button" class="compact-button" type="submit">綁定</button>
+                    </div>
+                </form>
+                <p id="game-account-message" class="vote-message" aria-live="polite"></p>
+            </div>
+
+            <div id="game-account-bound" class="game-account-bound" hidden>
+                <span>已綁定米米號</span>
+                <strong id="bound-game-account"></strong>
+                <p>此綁定為永久設定，無法修改或解除；綁定後才能投票。</p>
+            </div>
+
+        </section>
+
+
+    </section>
+
+</main>
+
+
+<!-- ==================== -->
+<!-- Footer -->
+<!-- ==================== -->
+
+<footer class="site-footer">
+    本平台目前與官方沒有任何聯繫，僅為玩家自發性質的投票系統。
+</footer>
+
+
+<!-- Supabase -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Application -->
+
+<script
+    type="module"
+    src="./js/main.js"
+></script>
+
+</body>
+
+</html>
