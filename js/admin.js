@@ -97,3 +97,11 @@ export async function deletePool(poolId) {
     if (error) throw error;
     return data;
 }
+
+export async function getPoolVoteDetails(poolId) {
+    const { data, error } = await supabaseClient.rpc("get_pool_vote_details", {
+        p_pool_id: poolId
+    });
+    if (error) throw error;
+    return data ?? [];
+}
