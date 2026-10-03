@@ -1103,6 +1103,20 @@ button:disabled {
     margin: 0;
 }
 
+.seer-lookup-illustration-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.seer-lookup-illustration-category-icon {
+    flex: none;
+    width: 88px;
+    height: 56px;
+    object-fit: contain;
+}
+
 .seer-lookup-illustration-description {
     margin: 5px 0 0;
     color: var(--text-muted);
@@ -1168,7 +1182,8 @@ button:disabled {
 .seer-pet-preview-content:has(.seer-lookup-more-info:not([hidden])) {
     flex: 1;
     min-width: 0;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    column-gap: 20px;
     align-items: center;
 }
 
@@ -1178,8 +1193,18 @@ button:disabled {
     grid-column: 1;
 }
 
-.seer-pet-preview-content:has(.seer-lookup-more-info:not([hidden])) > .seer-lookup-more-info {
+.seer-lookup-skin-category-icon {
     grid-column: 2;
+    grid-row: 1 / span 3;
+    width: 88px !important;
+    height: 56px !important;
+    object-fit: contain;
+    border-radius: 0 !important;
+    background: transparent !important;
+}
+
+.seer-pet-preview-content:has(.seer-lookup-more-info:not([hidden])) > .seer-lookup-more-info {
+    grid-column: 3;
     grid-row: 1 / span 3;
 }
 

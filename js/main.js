@@ -63,7 +63,9 @@ const seerLookupIdResult = document.getElementById("seer-lookup-id-result");
 const seerLookupRelatedPet = document.getElementById("seer-lookup-related-pet");
 const seerLookupTypeIcon = document.getElementById("seer-lookup-type-icon");
 const seerLookupTypeName = document.getElementById("seer-lookup-type-name");
+const seerLookupSkinCategoryIcon = document.getElementById("seer-lookup-skin-category-icon");
 const seerLookupIllustrationImage = document.getElementById("seer-lookup-illustration-image");
+const seerLookupIllustrationCategoryIcon = document.getElementById("seer-lookup-illustration-category-icon");
 const seerLookupIllustrationTitle = document.getElementById("seer-lookup-illustration-title");
 const seerLookupIllustrationDescription = document.getElementById("seer-lookup-illustration-description");
 const seerLookupMoreInfoButton = document.getElementById("seer-lookup-more-info");
@@ -1153,6 +1155,10 @@ async function renderSeerPetPreview(pet, requestId) {
     seerLookupName.textContent = petName;
     seerLookupIdResult.textContent = `#${petId}`;
     seerLookupRelatedPet.hidden = true;
+    seerLookupSkinCategoryIcon.hidden = true;
+    seerLookupSkinCategoryIcon.removeAttribute("src");
+    seerLookupIllustrationCategoryIcon.hidden = true;
+    seerLookupIllustrationCategoryIcon.removeAttribute("src");
     seerLookupTypeIcon.src = `https://img.yuyuqaq.cn/seer-pet/type/${resolvedTypeId}.png`;
     seerLookupTypeName.textContent = typeName || "未知";
     seerLookupIllustrationImage.src = `https://newseer.61.com/web/monster//body/${encodeURIComponent(petId)}.png`;
@@ -1189,6 +1195,23 @@ async function renderSeerSkinPreview(entry, requestId) {
     seerLookupIdResult.textContent = `#${skinId}`;
     seerLookupRelatedPet.textContent = `綁定精靈：${petName} (#${petId})`;
     seerLookupRelatedPet.hidden = false;
+    const categoryId = skin && skin.category && Number(skin.category.id);
+    if (Number.isSafeInteger(categoryId) && categoryId >= 0) {
+        seerLookupSkinCategoryIcon.src = `https://img.yuyuqaq.cn/seer-common/common_pet_skin_icon_${categoryId}.png`;
+        seerLookupSkinCategoryIcon.hidden = false;
+        if (![0, 2, 3].includes(categoryId)) {
+            seerLookupIllustrationCategoryIcon.src = `https://img.yuyuqaq.cn/seer-common/common_pet_skin_icon_${categoryId}.png`;
+            seerLookupIllustrationCategoryIcon.hidden = false;
+        } else {
+            seerLookupIllustrationCategoryIcon.hidden = true;
+            seerLookupIllustrationCategoryIcon.removeAttribute("src");
+        }
+    } else {
+        seerLookupSkinCategoryIcon.hidden = true;
+        seerLookupSkinCategoryIcon.removeAttribute("src");
+        seerLookupIllustrationCategoryIcon.hidden = true;
+        seerLookupIllustrationCategoryIcon.removeAttribute("src");
+    }
     seerLookupTypeIcon.src = `https://img.yuyuqaq.cn/seer-pet/type/${typeDetails.id}.png`;
     seerLookupTypeName.textContent = typeDetails.name || "未知";
     seerLookupIllustrationImage.src = `https://newseer.61.com/web/monster//body/1400${encodeURIComponent(skinId)}.png`;
@@ -1266,6 +1289,10 @@ function clearSeerLookupResult() {
     seerLookupPreview.hidden = true;
     seerLookupAvatar.removeAttribute("src");
     seerLookupTypeIcon.removeAttribute("src");
+    seerLookupSkinCategoryIcon.hidden = true;
+    seerLookupSkinCategoryIcon.removeAttribute("src");
+    seerLookupIllustrationCategoryIcon.hidden = true;
+    seerLookupIllustrationCategoryIcon.removeAttribute("src");
     seerLookupIllustrationImage.hidden = true;
     seerLookupIllustrationImage.removeAttribute("src");
     currentSeerInfoUrl = null;
