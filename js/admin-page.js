@@ -487,18 +487,19 @@ async function loadVoteRecords() {
 function exportVoteRecords() {
     if (!selectedPool || voteRecords.length === 0) return;
 
-    const rows = [["米米號", "使用者 ID", "投票時間", "角色編號", "角色名稱"]];
+    const rows = [["米米號", "使用者 ID", "投票時間", "選擇數量", "所選角色"]];
     voteRecords.forEach((record) => {
-        const choices = record.selections?.length ? record.selections : [{}];
-        choices.forEach((choice) => {
-            rows.push([
-                record.mimi_id || "未綁定",
-                record.user_id || "",
-                record.voted_at ? formatDate(record.voted_at) : "",
-                choice.character_id ?? "",
-                choice.character_name ?? ""
-            ]);
-        });
+        const choices = record.selections || [];
+        const selectedCharacters = choices
+            .map((choice) => `#${choice.character_id} ${choice.character_name}`)
+            .join("｜");
+        rows.push([
+            record.mimi_id || "未綁定",
+            record.user_id || "",
+            record.voted_at ? formatDate(record.voted_at) : "",
+            choices.length,
+            selectedCharacters
+        ]);
     });
 
     const csv = `\ufeff${rows.map((row) => row.map(toCsvCell).join(",")).join("\r\n")}`;
@@ -513,7 +514,10 @@ function exportVoteRecords() {
 }
 
 function toCsvCell(value) {
-    return `"${String(value).replace(/"/g, '""')}"`;
+    const text = String(value ?? "");
+    // Prevent spreadsheet applications from treating imported text as formulas.
+    const safeText = /^[=+\-@]/.test(text) ? `'${text}` : text;
+    return `"${safeText.replace(/"/g, '""')}"`;
 }
 
 function renderVoteRecords() {
