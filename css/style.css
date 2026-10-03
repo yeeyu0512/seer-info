@@ -1156,6 +1156,33 @@ button:disabled {
     margin: 6px 0 0;
 }
 
+.seer-lookup-more-info {
+    align-self: center;
+    margin-left: auto;
+    white-space: nowrap;
+    min-height: 30px;
+    margin-top: 0;
+    padding: 6px 12px;
+}
+
+.seer-pet-preview-content:has(.seer-lookup-more-info:not([hidden])) {
+    flex: 1;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+}
+
+.seer-pet-preview-content:has(.seer-lookup-more-info:not([hidden])) > .seer-preview-label,
+.seer-pet-preview-content:has(.seer-lookup-more-info:not([hidden])) > strong,
+.seer-pet-preview-content:has(.seer-lookup-more-info:not([hidden])) > .seer-pet-meta {
+    grid-column: 1;
+}
+
+.seer-pet-preview-content:has(.seer-lookup-more-info:not([hidden])) > .seer-lookup-more-info {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+}
+
 .seer-lookup-results {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1189,6 +1216,18 @@ button:disabled {
     gap: 8px;
     flex: 1;
     min-width: 0;
+}
+
+.seer-lookup-result-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.seer-lookup-result-pet {
+    color: var(--text-muted);
+    font-size: 11px;
 }
 
 .seer-lookup-result-type {
@@ -2716,6 +2755,23 @@ body.has-admin-confirm-modal {
     background: linear-gradient(135deg, #ff7f8d, #d94f63);
 }
 
+#seer-external-link-modal .admin-confirm-actions > * {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 112px;
+    min-width: 112px;
+    height: 44px;
+    min-height: 44px;
+    margin: 0;
+    padding: 0 12px;
+    font-size: 14px;
+    line-height: 1;
+    text-align: center;
+    text-decoration: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
     .admin-confirm-modal:not([hidden]),
     .admin-confirm-modal:not([hidden]) .admin-confirm-dialog,
@@ -2911,6 +2967,12 @@ body.has-admin-confirm-modal {
 
     .admin-confirm-actions button {
         flex: 1;
+    }
+
+    #seer-external-link-modal .admin-confirm-actions > * {
+        flex: 1;
+        width: auto;
+        min-width: 0;
     }
 }
 
