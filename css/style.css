@@ -476,6 +476,25 @@ button {
     gap: 14px;
 }
 
+.character-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 9px;
+    margin-bottom: 12px;
+}
+
+.character-pagination[hidden] {
+    display: none;
+}
+
+.character-pagination span {
+    min-width: 72px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    text-align: center;
+}
+
 .character-card {
     position: relative;
 
@@ -2171,12 +2190,12 @@ body::after,
 
 /* Character cards: stable regions for long CJK names and the selection control. */
 .character-card {
-    min-height: 142px;
+    min-height: 132px;
     justify-content: initial;
 }
 
 .character-portrait {
-    top: 38px;
+    top: 31px;
     bottom: auto;
     left: 12px;
     width: 64px;
@@ -2198,13 +2217,9 @@ body::after,
 .character-card .character-name {
     position: absolute;
     right: 12px;
-    bottom: 11px;
+    bottom: 10px;
     left: 12px;
-    display: block;
     margin-left: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
     line-height: 1.35;
 }
 
@@ -2218,7 +2233,7 @@ body::after,
 }
 
 @media (max-width: 680px) {
-    .character-card { min-height: 132px; }
+    .character-card { min-height: 126px; }
     .character-portrait { top: 35px; bottom: auto; left: 10px; width: 57px; height: 57px; }
     .character-card .character-id { top: 10px; left: 10px; right: 40px; }
     .character-card .character-name { right: 10px; bottom: 10px; left: 10px; font-size: 14px; }
@@ -2259,12 +2274,90 @@ body::after,
     white-space: nowrap;
 }
 
+.ranking-name-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+.ranking-name-line .ranking-name {
+    min-width: 0;
+}
+
+.ranking-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    margin-top: 14px;
+}
+
+.ranking-pagination[hidden] {
+    display: none;
+}
+
+.ranking-pagination span {
+    min-width: 72px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    text-align: center;
+}
+
+.character-card .character-name {
+    display: flex;
+    align-items: flex-end;
+    min-width: 0;
+}
+
+.character-name-text {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.character-card .character-type-icon {
+    position: absolute;
+    z-index: 2;
+    top: 31px;
+    left: 56px;
+    box-sizing: border-box;
+    width: 20px;
+    height: 20px;
+    padding: 2px;
+    border: 1px solid rgba(196, 191, 255, .28);
+    border-radius: 50%;
+    background: rgba(15, 18, 37, .9);
+}
+
+.character-type-icon {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+    object-fit: contain;
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    transition: opacity .18s ease;
+}
+
+.character-type-icon.is-loaded {
+    opacity: 1;
+    visibility: visible;
+}
+
 @media (max-width: 680px) {
     .ranking-item {
         grid-template-columns: 30px 36px minmax(0, 1fr) auto;
         gap: 7px;
     }
     .ranking-portrait { width: 33px; height: 33px; }
+    .ranking-pagination { justify-content: space-between; }
+    .character-portrait { top: 30px; }
+    .character-card .character-type-icon { top: 30px; left: 47px; }
+    .character-pagination { justify-content: space-between; }
 }
 
 @media (max-width: 680px) {

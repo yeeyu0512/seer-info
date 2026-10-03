@@ -33,6 +33,10 @@ const voteMessage = document.getElementById("vote-message");
 const logoutButton = document.getElementById("logout-button");
 const adminLink = document.getElementById("admin-link");
 const characterList = document.getElementById("character-list");
+const characterPagination = document.getElementById("character-pagination");
+const characterPreviousPageButton = document.getElementById("character-previous-page");
+const characterNextPageButton = document.getElementById("character-next-page");
+const characterPageLabel = document.getElementById("character-page");
 const selectionCount = document.getElementById("selection-count");
 const selectionMax = document.getElementById("selection-max");
 const alreadyVoted = document.getElementById("already-voted");
@@ -40,6 +44,10 @@ const alreadyVotedMessage = document.getElementById("already-voted-message");
 const poolStatus = document.getElementById("pool-status");
 const accountTab = document.getElementById("account-tab");
 const accountSection = document.getElementById("account-section");
+const rankingPagination = document.getElementById("ranking-pagination");
+const rankingPreviousPageButton = document.getElementById("ranking-previous-page");
+const rankingNextPageButton = document.getElementById("ranking-next-page");
+const rankingPageLabel = document.getElementById("ranking-page");
 const gameAccountForm = document.getElementById("game-account-form");
 const gameAccountInput = document.getElementById("game-account-input");
 const bindGameAccountButton = document.getElementById("bind-game-account-button");
@@ -56,11 +64,34 @@ const tabPanels = new Map([
 
 let currentPool = null;
 let rankingTimer = null;
+let currentRanking = [];
+let currentRankingPage = 1;
 let isRegisterMode = false;
 let isAuthenticated = false;
 let currentCharacters = [];
+let currentCharacterPage = 1;
+let selectedPoolCharacterIds = new Set();
+let isVoteLocked = false;
 let hasMiMiBinding = false;
 let modalPointerStartedOnBackdrop = false;
+const characterTypeIconCache = new Map();
+const elementTypeIconCache = new Map();
+const characterTypeIconQueue = [];
+const observedTypeIconElements = new Set();
+let activeTypeIconRequests = 0;
+const TYPE_ICON_REQUEST_LIMIT = 4;
+const RANKINGS_PER_PAGE = 10;
+const CHARACTERS_PER_PAGE = 28;
+
+const typeIconObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+        const icon = entry.target;
+        icon.dataset.visible = String(entry.isIntersecting);
+        if (entry.isIntersecting) {
+            loadCharacterTypeIcon(icon.dataset.characterId, icon);
+        }
+    });
+});
 
 loginTrigger.addEventListener("click", openLoginModal);
 publicLoginButton.addEventListener("click", openLoginModal);
@@ -76,6 +107,23 @@ loginModal.addEventListener("click", (event) => {
 
 mainTabs.forEach((tab) => {
     tab.addEventListener("click", () => activateTab(tab.dataset.tabTarget));
+});
+
+rankingPreviousPageButton.addEventListener("click", () => {
+    currentRankingPage -= 1;
+    renderRanking(currentRanking);
+});
+rankingNextPageButton.addEventListener("click", () => {
+    currentRankingPage += 1;
+    renderRanking(currentRanking);
+});
+characterPreviousPageButton.addEventListener("click", () => {
+    currentCharacterPage -= 1;
+    renderCurrentCharacterPage();
+});
+characterNextPageButton.addEventListener("click", () => {
+    currentCharacterPage += 1;
+    renderCurrentCharacterPage();
 });
 
 gameAccountForm.addEventListener("submit", async (event) => {
@@ -314,6 +362,9 @@ async function loadPool() {
         document.getElementById("vote-rule").textContent = `請剛好選擇 ${pool.max_votes} 個角色後提交。`;
         const characters = await getPoolCharacters(pool.id);
         currentCharacters = characters;
+        currentCharacterPage = 1;
+        selectedPoolCharacterIds = new Set();
+        isVoteLocked = false;
         renderVoteCharacters(characters);
 
         const [voted, savedPoolCharacterIds] = await Promise.all([
@@ -350,15 +401,24 @@ async function loadPool() {
 }
 
 function renderVoteCharacters(characters) {
+    clearObservedTypeIcons(characterList);
     characterList.innerHTML = "";
-    for (const character of characters) {
+    updateCharacterPagination(characters.length);
+    const start = (currentCharacterPage - 1) * CHARACTERS_PER_PAGE;
+    for (const character of characters.slice(start, start + CHARACTERS_PER_PAGE)) {
         const label = document.createElement("label");
         const checkbox = document.createElement("input");
         label.className = "character-card";
         checkbox.type = "checkbox";
         checkbox.value = character.id;
         checkbox.dataset.characterId = character.character_id;
+        checkbox.checked = selectedPoolCharacterIds.has(String(character.id));
+        checkbox.disabled = isVoteLocked || !hasMiMiBinding;
+        label.classList.toggle("selected", checkbox.checked);
+        label.hidden = isVoteLocked && !checkbox.checked;
         checkbox.addEventListener("change", () => {
+            if (checkbox.checked) selectedPoolCharacterIds.add(String(character.id));
+            else selectedPoolCharacterIds.delete(String(character.id));
             label.classList.toggle("selected", checkbox.checked);
             updateSelectionCount();
         });
@@ -372,24 +432,17 @@ function renderVoteCharacters(characters) {
         characterId.textContent = `#${character.character_id}`;
         const characterName = document.createElement("span");
         characterName.className = "character-name";
-        characterName.textContent = character.character_name;
-        label.append(checkbox, portrait, checkmark, characterId, characterName);
+        const typeIcon = appendCharacterName(characterName, character.character_name, character.character_id);
+        label.append(checkbox, portrait, typeIcon, checkmark, characterId, characterName);
         characterList.appendChild(label);
     }
 }
 
 function restoreSavedVote(savedPoolCharacterIds) {
-    const selectedIds = new Set(savedPoolCharacterIds);
-    document.querySelectorAll("#character-list input[type='checkbox']").forEach((checkbox) => {
-        const selected = selectedIds.has(checkbox.value);
-        const card = checkbox.closest(".character-card");
-        checkbox.checked = selected;
-        checkbox.disabled = true;
-        card.classList.toggle("selected", selected);
-        card.hidden = !selected;
-    });
-    selectionCount.textContent = selectedIds.size;
-    selectionMax.textContent = currentPool?.max_votes ?? 0;
+    selectedPoolCharacterIds = new Set(savedPoolCharacterIds.map(String));
+    isVoteLocked = true;
+    renderVoteCharacters(currentCharacters);
+    updateSelectionCount();
 }
 
 async function initializePublicPage() {
@@ -420,28 +473,54 @@ async function initializePublicPage() {
         const characters = await getPoolCharacters(pool.id);
         if (isAuthenticated) return;
         currentCharacters = characters;
-        characterList.innerHTML = "";
-        for (const character of characters) {
-            const card = document.createElement("article");
-            const characterId = document.createElement("span");
-            const characterName = document.createElement("span");
-            card.className = "character-card public-character-card";
-            const portrait = createCharacterPortrait(character);
-            characterId.className = "character-id";
-            characterId.textContent = `#${character.character_id}`;
-            characterName.className = "character-name";
-            characterName.textContent = character.character_name;
-            card.append(portrait, characterId, characterName);
-            characterList.appendChild(card);
-        }
+        currentCharacterPage = 1;
+        selectedPoolCharacterIds = new Set();
+        clearObservedTypeIcons(characterList);
+        renderPublicCharacterPage();
         await loadRanking();
         if (isAuthenticated) return;
         startRankingRefresh();
     } catch (error) {
         console.error("Load public pool error:", error);
+        clearObservedTypeIcons(characterList);
         characterList.innerHTML = "<p class=\"empty-state\">目前無法載入公開投票資訊。</p>";
+        characterPagination.hidden = true;
         document.getElementById("vote-rule").textContent = "登入後即可查看投票資訊並參與投票。";
     }
+}
+
+function renderPublicCharacterPage() {
+    clearObservedTypeIcons(characterList);
+    characterList.innerHTML = "";
+    updateCharacterPagination(currentCharacters.length);
+    const start = (currentCharacterPage - 1) * CHARACTERS_PER_PAGE;
+    for (const character of currentCharacters.slice(start, start + CHARACTERS_PER_PAGE)) {
+        const card = document.createElement("article");
+        const characterId = document.createElement("span");
+        const characterName = document.createElement("span");
+        card.className = "character-card public-character-card";
+        const portrait = createCharacterPortrait(character);
+        characterId.className = "character-id";
+        characterId.textContent = `#${character.character_id}`;
+        characterName.className = "character-name";
+        const typeIcon = appendCharacterName(characterName, character.character_name, character.character_id);
+        card.append(portrait, typeIcon, characterId, characterName);
+        characterList.appendChild(card);
+    }
+}
+
+function updateCharacterPagination(totalCharacters) {
+    const totalPages = Math.max(1, Math.ceil(totalCharacters / CHARACTERS_PER_PAGE));
+    currentCharacterPage = Math.min(Math.max(currentCharacterPage, 1), totalPages);
+    characterPageLabel.textContent = `第 ${currentCharacterPage} / ${totalPages} 頁`;
+    characterPreviousPageButton.disabled = currentCharacterPage === 1;
+    characterNextPageButton.disabled = currentCharacterPage === totalPages;
+    characterPagination.hidden = totalPages <= 1;
+}
+
+function renderCurrentCharacterPage() {
+    if (isAuthenticated) renderVoteCharacters(currentCharacters);
+    else renderPublicCharacterPage();
 }
 
 function createCharacterPortrait(character) {
@@ -457,6 +536,121 @@ function createCharacterPortrait(character) {
     return portrait;
 }
 
+function appendCharacterName(container, name, characterId) {
+    const nameText = document.createElement("span");
+    const typeIcon = createCharacterTypeIcon(characterId);
+    nameText.className = "character-name-text";
+    nameText.textContent = name;
+    nameText.title = name;
+    container.append(nameText);
+    return typeIcon;
+}
+
+function createCharacterTypeIcon(characterId) {
+    const icon = document.createElement("img");
+    icon.className = "character-type-icon";
+    icon.alt = "";
+    icon.setAttribute("aria-hidden", "true");
+    icon.title = "精靈屬性";
+    icon.dataset.characterId = String(characterId);
+    icon.addEventListener("error", () => { icon.hidden = true; }, { once: true });
+    observedTypeIconElements.add(icon);
+    typeIconObserver.observe(icon);
+    return icon;
+}
+
+function clearObservedTypeIcons(container = document) {
+    Array.from(observedTypeIconElements)
+        .filter((icon) => container.contains(icon))
+        .forEach((icon) => {
+            icon.dataset.visible = "false";
+            typeIconObserver.unobserve(icon);
+            observedTypeIconElements.delete(icon);
+        });
+}
+
+function loadCharacterTypeIcon(characterId, icon) {
+    const cacheKey = String(characterId);
+    let iconPromise = characterTypeIconCache.get(cacheKey);
+    if (!iconPromise) {
+        iconPromise = new Promise((resolve) => {
+            characterTypeIconQueue.push({ characterId: cacheKey, resolve });
+        });
+        characterTypeIconCache.set(cacheKey, iconPromise);
+    }
+    iconPromise.then((url) => {
+        if (!url || !icon.isConnected) return;
+        icon.src = url;
+        icon.classList.add("is-loaded");
+    });
+    processCharacterTypeIconQueue();
+}
+
+function processCharacterTypeIconQueue() {
+    while (activeTypeIconRequests < TYPE_ICON_REQUEST_LIMIT && characterTypeIconQueue.length > 0) {
+        const job = characterTypeIconQueue.shift();
+        const hasVisibleIcon = Array.from(observedTypeIconElements).some((icon) =>
+            icon.dataset.characterId === job.characterId &&
+            icon.dataset.visible === "true" &&
+            icon.isConnected
+        );
+        if (!hasVisibleIcon) {
+            characterTypeIconCache.delete(job.characterId);
+            job.resolve(null);
+            continue;
+        }
+
+        activeTypeIconRequests += 1;
+        fetchCharacterTypeIconUrl(job.characterId)
+            .catch((error) => {
+                console.warn(`Failed to load Seer type for pet ${job.characterId}:`, error);
+                return null;
+            })
+            .then((url) => {
+                job.resolve(url);
+            })
+            .finally(() => {
+                activeTypeIconRequests -= 1;
+                processCharacterTypeIconQueue();
+            });
+    }
+}
+
+async function fetchCharacterTypeIconUrl(characterId) {
+    const pet = await fetchSeerJson(`https://api.seerapi.com/v1/pet/${encodeURIComponent(characterId)}`);
+    const typeId = pet && pet.type && pet.type.id;
+    if (!typeId) throw new Error("SeerAPI 回傳未包含 type.id。");
+
+    const typeKey = String(typeId);
+    let resolvedTypeIdPromise = elementTypeIconCache.get(typeKey);
+    if (!resolvedTypeIdPromise) {
+        resolvedTypeIdPromise = fetchSeerJson(
+            `https://api.seerapi.com/v1/element_type_combination/${encodeURIComponent(typeKey)}`
+        ).then((typeCombination) => {
+            const resolvedId = Number(typeCombination && typeCombination.id ? typeCombination.id : typeId);
+            if (!Number.isSafeInteger(resolvedId) || resolvedId <= 0) {
+                throw new Error("SeerAPI 回傳的屬性 ID 無效。");
+            }
+            return resolvedId;
+        }).catch((error) => {
+            elementTypeIconCache.delete(typeKey);
+            throw error;
+        });
+        elementTypeIconCache.set(typeKey, resolvedTypeIdPromise);
+    }
+    const resolvedTypeId = await resolvedTypeIdPromise;
+    if (!Number.isSafeInteger(resolvedTypeId) || resolvedTypeId <= 0) {
+        throw new Error("SeerAPI 回傳的屬性 ID 無效。");
+    }
+    return `https://img.yuyuqaq.cn/seer-pet/type/${resolvedTypeId}.png`;
+}
+
+async function fetchSeerJson(url) {
+    const response = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!response.ok) throw new Error(`SeerAPI 請求失敗（${response.status}）`);
+    return response.json();
+}
+
 function renderPoolMeta(pool) {
     document.getElementById("pool-name").textContent = pool.name;
     document.getElementById("vote-limit").textContent = `${pool.max_votes} 票`;
@@ -466,13 +660,24 @@ function renderPoolMeta(pool) {
 
 function renderNoActivePool() {
     currentPool = null;
+    currentCharacters = [];
+    currentCharacterPage = 1;
+    selectedPoolCharacterIds = new Set();
+    isVoteLocked = false;
     document.getElementById("pool-name").textContent = "目前沒有進行中的投票";
     document.getElementById("vote-limit").textContent = "—";
     poolStatus.textContent = "inactive";
     poolStatus.className = "status-badge status-closed";
     document.getElementById("vote-rule").textContent = "請稍後再回來查看下一期投票。";
+    clearObservedTypeIcons();
     characterList.innerHTML = "<p class=\"empty-state\">目前沒有 active Pool。</p>";
-    document.getElementById("ranking-list").innerHTML = "<p class=\"empty-state\">目前沒有可顯示的排名。</p>";
+    characterPagination.hidden = true;
+    const rankingList = document.getElementById("ranking-list");
+    clearObservedTypeIcons(rankingList);
+    rankingList.innerHTML = "<p class=\"empty-state\">目前沒有可顯示的排名。</p>";
+    currentRanking = [];
+    currentRankingPage = 1;
+    rankingPagination.hidden = true;
     selectionBar.hidden = true;
     publicLoginPrompt.hidden = true;
 }
@@ -480,37 +685,70 @@ function renderNoActivePool() {
 async function loadRanking() {
     const rankingList = document.getElementById("ranking-list");
     if (!currentPool) {
+        clearObservedTypeIcons(rankingList);
         rankingList.innerHTML = "<p class=\"empty-state\">目前沒有可顯示的排名。</p>";
+        currentRanking = [];
+        currentRankingPage = 1;
+        rankingPagination.hidden = true;
         return;
     }
     try {
-        const ranking = await getPoolRanking(currentPool.id);
-        rankingList.innerHTML = "";
-        if (ranking.length === 0) {
-            rankingList.innerHTML = "<p class=\"empty-state\">尚無投票資料，排名將在第一張票送出後顯示。</p>";
-            return;
-        }
-        for (const item of ranking) {
-            const row = document.createElement("div");
-            const character = findRankingCharacter(item);
-            const characterId = item.character_id ?? character?.character_id ?? "—";
-            row.className = "ranking-item";
-            row.innerHTML = `<span class="ranking-rank">${String(item.rank).padStart(2, "0")}</span><img class="ranking-portrait" alt="" loading="lazy"><span class="ranking-character"><span class="ranking-character-id"></span><span class="ranking-name"></span></span><span class="ranking-votes">${item.vote_count} 票</span>`;
-            const portrait = row.querySelector(".ranking-portrait");
-            if (characterId !== "—") {
-                portrait.src = `https://newseer.61.com/web/monster/head/${encodeURIComponent(characterId)}.png`;
-                portrait.alt = `${item.character_name} 縮圖`;
-                portrait.addEventListener("error", () => { portrait.hidden = true; }, { once: true });
-            } else {
-                portrait.hidden = true;
-            }
-            row.querySelector(".ranking-character-id").textContent = characterId === "—" ? "" : `#${characterId}`;
-            row.querySelector(".ranking-name").textContent = item.character_name;
-            rankingList.appendChild(row);
-        }
+        currentRanking = await getPoolRanking(currentPool.id);
+        renderRanking(currentRanking);
     } catch (error) {
         console.error("Ranking error:", error);
+        clearObservedTypeIcons(rankingList);
         rankingList.textContent = `讀取排名失敗：${error.message}`;
+        rankingPagination.hidden = true;
+    }
+}
+
+function renderRanking(ranking) {
+    const rankingList = document.getElementById("ranking-list");
+    clearObservedTypeIcons(rankingList);
+    rankingList.innerHTML = "";
+    if (ranking.length === 0) {
+        rankingList.innerHTML = "<p class=\"empty-state\">尚無投票資料，排名將在第一張票送出後顯示。</p>";
+        rankingPageLabel.textContent = "第 1 / 1 頁";
+        rankingPagination.hidden = true;
+        currentRankingPage = 1;
+        return;
+    }
+
+    const totalPages = Math.ceil(ranking.length / RANKINGS_PER_PAGE);
+    currentRankingPage = Math.min(Math.max(currentRankingPage, 1), totalPages);
+    const start = (currentRankingPage - 1) * RANKINGS_PER_PAGE;
+    const pageRanking = ranking.slice(start, start + RANKINGS_PER_PAGE);
+    rankingPageLabel.textContent = `第 ${currentRankingPage} / ${totalPages} 頁`;
+    rankingPreviousPageButton.disabled = currentRankingPage === 1;
+    rankingNextPageButton.disabled = currentRankingPage === totalPages;
+    rankingPagination.hidden = totalPages <= 1;
+
+    for (const item of pageRanking) {
+        const row = document.createElement("div");
+        const character = findRankingCharacter(item);
+        const characterId = item.character_id ?? character?.character_id ?? "—";
+        row.className = "ranking-item";
+        row.innerHTML = `<span class="ranking-rank">${String(item.rank).padStart(2, "0")}</span><img class="ranking-portrait" alt="" loading="lazy"><span class="ranking-character"><span class="ranking-character-id"></span><span class="ranking-name"></span></span><span class="ranking-votes">${item.vote_count} 票</span>`;
+        const portrait = row.querySelector(".ranking-portrait");
+        if (characterId !== "—") {
+            portrait.src = `https://newseer.61.com/web/monster/head/${encodeURIComponent(characterId)}.png`;
+            portrait.alt = `${item.character_name} 縮圖`;
+            portrait.addEventListener("error", () => { portrait.hidden = true; }, { once: true });
+        } else {
+            portrait.hidden = true;
+        }
+        row.querySelector(".ranking-character-id").textContent = characterId === "—" ? "" : `#${characterId}`;
+        const rankingName = row.querySelector(".ranking-name");
+        rankingName.textContent = item.character_name;
+        if (characterId !== "—") {
+            const typeIcon = createCharacterTypeIcon(characterId);
+            const nameLine = document.createElement("span");
+            nameLine.className = "ranking-name-line";
+            rankingName.replaceWith(nameLine);
+            nameLine.append(rankingName, typeIcon);
+        }
+        rankingList.appendChild(row);
     }
 }
 
@@ -534,7 +772,7 @@ function stopRankingRefresh() {
 }
 
 function updateSelectionCount() {
-    const count = document.querySelectorAll("#character-list input[type='checkbox']:checked").length;
+    const count = selectedPoolCharacterIds.size;
     selectionCount.textContent = count;
     selectionMax.textContent = currentPool?.max_votes ?? 0;
     if (!currentPool) return;
@@ -549,12 +787,11 @@ submitButton.addEventListener("click", async () => {
         mimiBindingPrompt.hidden = false;
         return;
     }
-    const selected = Array.from(document.querySelectorAll("#character-list input[type='checkbox']:checked"));
     if (!currentPool) {
         voteMessage.textContent = "目前沒有載入投票。";
         return;
     }
-    if (selected.length !== currentPool.max_votes) {
+    if (selectedPoolCharacterIds.size !== currentPool.max_votes) {
         voteMessage.textContent = `你必須剛好選擇 ${currentPool.max_votes} 個角色。`;
         return;
     }
@@ -564,14 +801,12 @@ submitButton.addEventListener("click", async () => {
     voteMessage.classList.remove("is-complete");
     voteMessage.textContent = "投票送出中…";
     try {
-        const data = await submitVote(currentPool.id, selected.map((checkbox) => checkbox.value));
+        const data = await submitVote(currentPool.id, Array.from(selectedPoolCharacterIds));
         console.log("Vote submitted:", data);
         voteMessage.textContent = "投票成功！你的選擇已鎖定。";
         voteMessage.classList.add("is-complete");
-        document.querySelectorAll("#character-list input[type='checkbox']").forEach((checkbox) => { checkbox.disabled = true; });
-        document.querySelectorAll("#character-list input[type='checkbox']").forEach((checkbox) => {
-            checkbox.closest(".character-card").hidden = !checkbox.checked;
-        });
+        isVoteLocked = true;
+        renderVoteCharacters(currentCharacters);
         submitButton.hidden = true;
         alreadyVoted.hidden = false;
         alreadyVotedMessage.textContent = "本期投票已成功提交；重新整理後仍可查看你的選擇。";
