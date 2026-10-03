@@ -1068,6 +1068,161 @@ button:disabled {
     background: transparent;
 }
 
+.seer-lookup-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 34%);
+    align-items: stretch;
+    gap: 24px;
+    width: 100%;
+    max-width: 100%;
+}
+
+.seer-lookup-panel {
+    min-width: 0;
+    margin-bottom: 0;
+}
+
+.seer-lookup-layout > .seer-lookup-illustration {
+    position: relative;
+    border-color: rgba(196, 191, 255, .13);
+    background: linear-gradient(145deg, rgba(26, 31, 58, .88), rgba(12, 15, 31, .83));
+    box-shadow: var(--shadow), inset 0 1px rgba(255,255,255,.045);
+}
+
+.seer-lookup-illustration {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    margin-bottom: 0;
+}
+
+.seer-lookup-illustration-title {
+    margin: 0;
+}
+
+.seer-lookup-illustration-description {
+    margin: 5px 0 0;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.seer-lookup-illustration-stage {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    min-height: 280px;
+    margin-top: 14px;
+    overflow: hidden;
+    border-radius: 14px;
+}
+
+.seer-lookup-illustration-stage img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-height: 520px;
+    object-fit: contain;
+    filter: drop-shadow(0 12px 20px rgba(0, 0, 0, .25));
+}
+
+@media (max-width: 900px) {
+    .seer-lookup-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .seer-lookup-illustration {
+        min-height: 360px;
+    }
+
+    .seer-lookup-illustration-stage {
+        min-height: 260px;
+    }
+}
+
+.seer-lookup-form {
+    max-width: none;
+}
+
+.seer-lookup-form .field-label {
+    margin: 16px 0 7px;
+}
+
+#seer-lookup-message {
+    min-height: 0;
+    margin: 6px 0 0;
+}
+
+.seer-lookup-results {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    margin-top: 4px;
+}
+
+@media (max-width: 560px) {
+    .seer-lookup-results {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.seer-lookup-result {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-width: 0;
+    padding: 8px 10px;
+    border: 1px solid rgba(196, 191, 255, .12);
+    border-radius: 10px;
+    color: var(--text);
+    background: rgba(4, 6, 18, .3);
+    text-align: left;
+}
+
+.seer-lookup-result-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+}
+
+.seer-lookup-result-type {
+    display: inline-flex;
+    align-items: center;
+    flex: none;
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.seer-lookup-result-type img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
+.seer-lookup-result-name {
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.seer-lookup-result-id {
+    flex: none;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.seer-lookup-result:hover,
+.seer-lookup-result.is-selected {
+    border-color: rgba(147, 135, 255, .5);
+    background: rgba(147, 135, 255, .12);
+}
+
 .admin-character-list {
     display: grid;
     gap: 8px;

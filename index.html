@@ -161,6 +161,7 @@
         <nav class="main-tabs" aria-label="投票功能">
             <button class="main-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="selection-panel" data-tab-target="selection-panel">投票</button>
             <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="ranking-section" data-tab-target="ranking-section">即時排名</button>
+            <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="seer-lookup-section" data-tab-target="seer-lookup-section">精靈查詢</button>
             <button id="account-tab" class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="account-section" data-tab-target="account-section" hidden>帳號</button>
         </nav>
 
@@ -290,6 +291,45 @@
             </div>
 
         </section>
+
+        <div id="seer-lookup-section" class="seer-lookup-layout" hidden>
+            <section class="panel seer-lookup-panel">
+                <div class="panel-header">
+                    <div>
+                        <h2 class="panel-title">精靈查詢</h2>
+                        <p class="panel-description">輸入精靈 ID 或中文名稱（支援部分名稱），停止輸入後會自動搜尋。</p>
+                    </div>
+                </div>
+                <form id="seer-lookup-form" class="seer-lookup-form">
+                    <label class="field-label" for="seer-lookup-id">精靈 ID／名稱</label>
+                    <div class="game-account-controls">
+                        <input id="seer-lookup-id" type="search" autocomplete="off" placeholder="例如：5000 或 譜尼" required>
+                    </div>
+                </form>
+                <p id="seer-lookup-message" class="vote-message" aria-live="polite"></p>
+                <div id="seer-lookup-results" class="seer-lookup-results" aria-label="精靈搜尋結果" hidden></div>
+                <div id="seer-lookup-preview" class="seer-pet-preview" hidden>
+                    <img id="seer-lookup-avatar" alt="精靈頭像" loading="lazy">
+                    <div class="seer-pet-preview-content">
+                        <span class="seer-preview-label">查詢結果</span>
+                        <strong id="seer-lookup-name">-</strong>
+                        <div class="seer-pet-meta">
+                            <span id="seer-lookup-id-result">#-</span>
+                            <span class="seer-pet-type"><img id="seer-lookup-type-icon" class="seer-pet-type-icon" alt="" aria-hidden="true"><span id="seer-lookup-type-name">-</span></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <aside id="seer-lookup-illustration" class="panel seer-lookup-illustration" aria-label="精靈立繪預覽">
+                <div class="seer-lookup-illustration-header">
+                    <h3 class="seer-lookup-illustration-title">立繪預覽</h3>
+                    <p class="seer-lookup-illustration-description">先搜尋並選擇精靈，即可在此查看立繪。</p>
+                </div>
+                <div class="seer-lookup-illustration-stage">
+                    <img id="seer-lookup-illustration-image" alt="精靈立繪" decoding="async" hidden>
+                </div>
+            </aside>
+        </div>
 
         <section id="account-section" class="panel account-panel" hidden>
 

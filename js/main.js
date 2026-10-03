@@ -1,3 +1,4 @@
+import { Converter } from "https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/esm/full.js";
 import { login, logout, getSession, register } from "./auth.js";
 import { supabaseClient } from "./supabase.js";
 import { getActivePool, getPoolCharacters } from "./pool.js";
@@ -48,6 +49,17 @@ const rankingPagination = document.getElementById("ranking-pagination");
 const rankingPreviousPageButton = document.getElementById("ranking-previous-page");
 const rankingNextPageButton = document.getElementById("ranking-next-page");
 const rankingPageLabel = document.getElementById("ranking-page");
+const seerLookupForm = document.getElementById("seer-lookup-form");
+const seerLookupIdInput = document.getElementById("seer-lookup-id");
+const seerLookupMessage = document.getElementById("seer-lookup-message");
+const seerLookupResults = document.getElementById("seer-lookup-results");
+const seerLookupPreview = document.getElementById("seer-lookup-preview");
+const seerLookupAvatar = document.getElementById("seer-lookup-avatar");
+const seerLookupName = document.getElementById("seer-lookup-name");
+const seerLookupIdResult = document.getElementById("seer-lookup-id-result");
+const seerLookupTypeIcon = document.getElementById("seer-lookup-type-icon");
+const seerLookupTypeName = document.getElementById("seer-lookup-type-name");
+const seerLookupIllustrationImage = document.getElementById("seer-lookup-illustration-image");
 const gameAccountForm = document.getElementById("game-account-form");
 const gameAccountInput = document.getElementById("game-account-input");
 const bindGameAccountButton = document.getElementById("bind-game-account-button");
@@ -59,6 +71,7 @@ const mainTabs = Array.from(document.querySelectorAll(".main-tab"));
 const tabPanels = new Map([
     ["selection-panel", selectionPanel],
     ["ranking-section", document.getElementById("ranking-section")],
+    ["seer-lookup-section", document.getElementById("seer-lookup-section")],
     ["account-section", accountSection]
 ]);
 
@@ -76,12 +89,18 @@ let hasMiMiBinding = false;
 let modalPointerStartedOnBackdrop = false;
 const characterTypeIconCache = new Map();
 const elementTypeIconCache = new Map();
+const elementTypeDetailsCache = new Map();
 const characterTypeIconQueue = [];
 const observedTypeIconElements = new Set();
 let activeTypeIconRequests = 0;
+let seerLookupDebounceTimer = null;
+let seerLookupRequestId = 0;
+let isSeerLookupComposing = false;
 const TYPE_ICON_REQUEST_LIMIT = 4;
 const RANKINGS_PER_PAGE = 10;
 const CHARACTERS_PER_PAGE = 28;
+const s2tConverter = Converter({ from: "cn", to: "tw" });
+const t2sConverter = Converter({ from: "tw", to: "cn" });
 
 const typeIconObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
@@ -124,6 +143,21 @@ characterPreviousPageButton.addEventListener("click", () => {
 characterNextPageButton.addEventListener("click", () => {
     currentCharacterPage += 1;
     renderCurrentCharacterPage();
+});
+seerLookupForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    startSeerPetLookup(seerLookupIdInput.value.trim());
+});
+seerLookupIdInput.addEventListener("input", () => {
+    if (!isSeerLookupComposing) scheduleSeerPetLookup();
+});
+seerLookupIdInput.addEventListener("compositionstart", () => {
+    isSeerLookupComposing = true;
+    invalidateSeerPetLookup();
+});
+seerLookupIdInput.addEventListener("compositionend", () => {
+    isSeerLookupComposing = false;
+    scheduleSeerPetLookup();
 });
 
 gameAccountForm.addEventListener("submit", async (event) => {
@@ -361,11 +395,11 @@ async function loadPool() {
 
         document.getElementById("vote-rule").textContent = `請剛好選擇 ${pool.max_votes} 個角色後提交。`;
         const characters = await getPoolCharacters(pool.id);
-        currentCharacters = characters;
+        currentCharacters = sortCharactersByIdDescending(characters);
         currentCharacterPage = 1;
         selectedPoolCharacterIds = new Set();
         isVoteLocked = false;
-        renderVoteCharacters(characters);
+        renderVoteCharacters(currentCharacters);
 
         const [voted, savedPoolCharacterIds] = await Promise.all([
             hasVoted(pool.id),
@@ -438,10 +472,18 @@ function renderVoteCharacters(characters) {
     }
 }
 
+function renderCurrentVoteCharacters() {
+    const visibleCharacters = isVoteLocked
+        ? currentCharacters.filter((character) => selectedPoolCharacterIds.has(String(character.id)))
+        : currentCharacters;
+    renderVoteCharacters(visibleCharacters);
+}
+
 function restoreSavedVote(savedPoolCharacterIds) {
     selectedPoolCharacterIds = new Set(savedPoolCharacterIds.map(String));
     isVoteLocked = true;
-    renderVoteCharacters(currentCharacters);
+    currentCharacterPage = 1;
+    renderCurrentVoteCharacters();
     updateSelectionCount();
 }
 
@@ -472,7 +514,7 @@ async function initializePublicPage() {
 
         const characters = await getPoolCharacters(pool.id);
         if (isAuthenticated) return;
-        currentCharacters = characters;
+        currentCharacters = sortCharactersByIdDescending(characters);
         currentCharacterPage = 1;
         selectedPoolCharacterIds = new Set();
         clearObservedTypeIcons(characterList);
@@ -509,6 +551,12 @@ function renderPublicCharacterPage() {
     }
 }
 
+function sortCharactersByIdDescending(characters) {
+    return [...characters].sort((left, right) =>
+        Number(right.character_id) - Number(left.character_id)
+    );
+}
+
 function updateCharacterPagination(totalCharacters) {
     const totalPages = Math.max(1, Math.ceil(totalCharacters / CHARACTERS_PER_PAGE));
     currentCharacterPage = Math.min(Math.max(currentCharacterPage, 1), totalPages);
@@ -519,7 +567,7 @@ function updateCharacterPagination(totalCharacters) {
 }
 
 function renderCurrentCharacterPage() {
-    if (isAuthenticated) renderVoteCharacters(currentCharacters);
+    if (isAuthenticated) renderCurrentVoteCharacters();
     else renderPublicCharacterPage();
 }
 
@@ -649,6 +697,267 @@ async function fetchSeerJson(url) {
     const response = await fetch(url, { headers: { Accept: "application/json" } });
     if (!response.ok) throw new Error(`SeerAPI 請求失敗（${response.status}）`);
     return response.json();
+}
+
+function scheduleSeerPetLookup() {
+    const query = seerLookupIdInput.value.trim();
+    invalidateSeerPetLookup();
+    if (!query) {
+        clearSeerLookupResult();
+        return;
+    }
+    seerLookupMessage.textContent = "輸入完成後自動搜尋…";
+    seerLookupDebounceTimer = window.setTimeout(() => {
+        seerLookupDebounceTimer = null;
+        startSeerPetLookup(query);
+    }, 400);
+}
+
+function invalidateSeerPetLookup() {
+    if (seerLookupDebounceTimer !== null) {
+        window.clearTimeout(seerLookupDebounceTimer);
+        seerLookupDebounceTimer = null;
+    }
+    seerLookupRequestId += 1;
+    clearSeerLookupResult();
+}
+
+function startSeerPetLookup(query) {
+    if (!query) return;
+    if (seerLookupDebounceTimer !== null) {
+        window.clearTimeout(seerLookupDebounceTimer);
+        seerLookupDebounceTimer = null;
+    }
+    const requestId = ++seerLookupRequestId;
+    void lookupSeerPet(query, requestId);
+}
+
+async function lookupSeerPet(query, requestId) {
+    if (requestId !== seerLookupRequestId) return;
+    seerLookupMessage.textContent = /^\d+$/.test(query)
+        ? "正在查詢精靈資料…"
+        : "正在搜尋精靈名稱…";
+    seerLookupPreview.hidden = true;
+    seerLookupResults.hidden = true;
+    try {
+        if (/^\d+$/.test(query)) {
+            const petId = Number(query);
+            if (!Number.isSafeInteger(petId) || petId < 1) {
+                throw new Error("請輸入有效的精靈 ID。");
+            }
+            const pet = await fetchSeerJson(`https://api.seerapi.com/v1/pet/${encodeURIComponent(query)}`);
+            if (requestId !== seerLookupRequestId) return;
+            await renderSeerPetPreview(pet, requestId);
+            if (requestId === seerLookupRequestId) seerLookupMessage.textContent = "";
+        } else {
+            await searchSeerPetsByName(query, requestId);
+        }
+    } catch (error) {
+        if (requestId !== seerLookupRequestId) return;
+        console.error("Seer pet lookup error:", error);
+        seerLookupMessage.textContent = `查詢失敗：${error.message}`;
+    }
+}
+
+async function searchSeerPetsByName(query, requestId) {
+    const searchTerms = [...new Set([query, convertToSimplifiedChinese(query)].filter(Boolean))];
+    const responses = await Promise.all(searchTerms.map((term) => {
+        const params = new URLSearchParams({ name: term, offset: "0", limit: "10", expand: "true" });
+        return fetchSeerJson(`https://api.seerapi.com/v1/pet?${params}`);
+    }));
+    if (requestId !== seerLookupRequestId) return;
+    const petsById = new Map();
+    responses.forEach((response) => {
+        (response.results || []).forEach((pet) => {
+            if (pet && pet.id !== undefined && !petsById.has(String(pet.id))) {
+                petsById.set(String(pet.id), pet);
+            }
+        });
+    });
+
+    const pets = Array.from(petsById.values());
+    if (pets.length === 0) {
+        seerLookupMessage.textContent = "找不到符合的精靈，請確認名稱或改用精靈 ID。";
+        return;
+    }
+    const typeDetailsById = await loadSeerPetSearchTypeDetails(pets);
+    if (requestId !== seerLookupRequestId) return;
+    renderSeerPetSearchResults(pets, typeDetailsById);
+    seerLookupResults.hidden = false;
+    const hasMoreMatches = responses.some((response) =>
+        Number(response.count) > (Array.isArray(response.results) ? response.results.length : 0)
+    );
+    const resultCountMessage = pets.length === 1 ? "找到 1 隻精靈，點選結果查看預覽。" : `找到 ${pets.length} 隻精靈，請選擇。`;
+    seerLookupMessage.textContent = hasMoreMatches
+        ? `${resultCountMessage} 結果較多，請輸入更完整的名稱以縮小範圍。`
+        : resultCountMessage;
+}
+
+async function loadSeerPetSearchTypeDetails(pets) {
+    const typeIds = [...new Set(pets
+        .map((pet) => pet && pet.type && pet.type.id)
+        .filter(Boolean)
+        .map(String))];
+    const pendingTypeIds = [...typeIds];
+    const typeDetailsById = new Map();
+    const workerCount = Math.min(4, pendingTypeIds.length);
+    const workers = Array.from({ length: workerCount }, async () => {
+        while (pendingTypeIds.length > 0) {
+            const typeId = pendingTypeIds.shift();
+            try {
+                typeDetailsById.set(typeId, await fetchSeerElementTypeDetails(typeId));
+            } catch (error) {
+                console.warn(`Load Seer element type ${typeId} error:`, error);
+            }
+        }
+    });
+    await Promise.all(workers);
+    return typeDetailsById;
+}
+
+function fetchSeerElementTypeDetails(typeId) {
+    const key = String(typeId);
+    let detailsPromise = elementTypeDetailsCache.get(key);
+    if (!detailsPromise) {
+        detailsPromise = fetchSeerJson(
+            `https://api.seerapi.com/v1/element_type_combination/${encodeURIComponent(key)}`
+        ).then((details) => {
+            const resolvedId = Number(details && details.id ? details.id : typeId);
+            if (!Number.isSafeInteger(resolvedId) || resolvedId <= 0) {
+                throw new Error("SeerAPI 回傳的屬性 ID 無效。");
+            }
+            return {
+                id: resolvedId,
+                name: convertToTraditionalChinese(details && details.name ? String(details.name).trim() : "")
+            };
+        }).catch((error) => {
+            elementTypeDetailsCache.delete(key);
+            throw error;
+        });
+        elementTypeDetailsCache.set(key, detailsPromise);
+    }
+    return detailsPromise;
+}
+
+function renderSeerPetSearchResults(pets, typeDetailsById) {
+    seerLookupResults.replaceChildren();
+    pets.forEach((pet) => {
+        const button = document.createElement("button");
+        button.className = "seer-lookup-result";
+        button.type = "button";
+        const content = document.createElement("span");
+        content.className = "seer-lookup-result-content";
+        const typeId = pet && pet.type && pet.type.id;
+        const typeDetails = typeId && typeDetailsById.get(String(typeId));
+        const type = document.createElement("span");
+        type.className = "seer-lookup-result-type";
+        if (typeDetails) {
+            const typeIcon = document.createElement("img");
+            typeIcon.src = `https://img.yuyuqaq.cn/seer-pet/type/${typeDetails.id}.png`;
+            typeIcon.alt = typeDetails.name || "屬性";
+            type.append(typeIcon);
+        } else {
+            type.textContent = "-";
+        }
+        const name = document.createElement("strong");
+        name.className = "seer-lookup-result-name";
+        name.textContent = convertToTraditionalChinese(pet.name || "未命名精靈");
+        content.append(type, name);
+        const id = document.createElement("span");
+        id.className = "seer-lookup-result-id";
+        id.textContent = `#${pet.id}`;
+        button.append(content, id);
+        button.addEventListener("click", async () => {
+            const requestId = ++seerLookupRequestId;
+            const resultButtons = seerLookupResults.querySelectorAll(".seer-lookup-result");
+            resultButtons.forEach((result) => {
+                result.disabled = true;
+                result.classList.toggle("is-selected", result === button);
+            });
+            seerLookupPreview.hidden = true;
+            seerLookupMessage.textContent = "正在載入精靈屬性…";
+            try {
+                await renderSeerPetPreview(pet, requestId);
+                if (requestId === seerLookupRequestId) seerLookupMessage.textContent = "";
+            } catch (error) {
+                if (requestId !== seerLookupRequestId) return;
+                console.error("Load searched Seer pet error:", error);
+                seerLookupMessage.textContent = `載入失敗：${error.message}`;
+            }
+            if (requestId === seerLookupRequestId) {
+                resultButtons.forEach((result) => {
+                    result.disabled = false;
+                });
+            }
+        });
+        seerLookupResults.append(button);
+    });
+}
+
+async function renderSeerPetPreview(pet, requestId) {
+    const petId = pet && pet.id;
+    const typeId = pet && pet.type && pet.type.id;
+    const petName = convertToTraditionalChinese(pet && pet.name ? String(pet.name).trim() : "");
+    if (!petId || !petName) throw new Error("SeerAPI 回傳未包含精靈 ID 或名稱。");
+    if (!typeId) throw new Error("SeerAPI 回傳未包含精靈屬性資料。");
+
+    const typeCombination = await fetchSeerJson(
+        `https://api.seerapi.com/v1/element_type_combination/${encodeURIComponent(typeId)}`
+    );
+    const resolvedTypeId = Number(typeCombination && typeCombination.id ? typeCombination.id : typeId);
+    if (!Number.isSafeInteger(resolvedTypeId) || resolvedTypeId <= 0) {
+        throw new Error("SeerAPI 回傳的屬性 ID 無效。");
+    }
+    const typeName = convertToTraditionalChinese(
+        typeCombination && typeCombination.name ? String(typeCombination.name).trim() : ""
+    );
+    if (requestId !== seerLookupRequestId) return;
+
+    seerLookupAvatar.src = `https://newseer.61.com/web/monster/head/${encodeURIComponent(petId)}.png`;
+    seerLookupName.textContent = petName;
+    seerLookupIdResult.textContent = `#${petId}`;
+    seerLookupTypeIcon.src = `https://img.yuyuqaq.cn/seer-pet/type/${resolvedTypeId}.png`;
+    seerLookupTypeName.textContent = typeName || "未知";
+    seerLookupIllustrationImage.src = `https://newseer.61.com/web/monster//body/${encodeURIComponent(petId)}.png`;
+    seerLookupIllustrationImage.hidden = false;
+    seerLookupPreview.hidden = false;
+}
+
+function clearSeerLookupResult() {
+    seerLookupMessage.textContent = "";
+    seerLookupResults.replaceChildren();
+    seerLookupResults.hidden = true;
+    seerLookupPreview.hidden = true;
+    seerLookupAvatar.removeAttribute("src");
+    seerLookupTypeIcon.removeAttribute("src");
+    seerLookupIllustrationImage.hidden = true;
+    seerLookupIllustrationImage.removeAttribute("src");
+    seerLookupName.textContent = "-";
+    seerLookupIdResult.textContent = "#-";
+    seerLookupTypeName.textContent = "-";
+}
+
+seerLookupIllustrationImage.addEventListener("error", () => {
+    seerLookupIllustrationImage.hidden = true;
+});
+
+function convertToTraditionalChinese(value) {
+    if (!value) return "";
+    try {
+        return value.split(/([岳杰托里])/).map((part) => "岳杰托里".includes(part) ? part : s2tConverter(part)).join("");
+    } catch (error) {
+        console.warn("Simplified-to-traditional conversion failed:", error);
+        return value;
+    }
+}
+
+function convertToSimplifiedChinese(value) {
+    try {
+        return value.split(/([岳杰托里])/).map((part) => "岳杰托里".includes(part) ? part : t2sConverter(part)).join("");
+    } catch (error) {
+        console.warn("Traditional-to-simplified conversion failed:", error);
+        return value;
+    }
 }
 
 function renderPoolMeta(pool) {
@@ -806,7 +1115,8 @@ submitButton.addEventListener("click", async () => {
         voteMessage.textContent = "投票成功！你的選擇已鎖定。";
         voteMessage.classList.add("is-complete");
         isVoteLocked = true;
-        renderVoteCharacters(currentCharacters);
+        currentCharacterPage = 1;
+        renderCurrentVoteCharacters();
         submitButton.hidden = true;
         alreadyVoted.hidden = false;
         alreadyVotedMessage.textContent = "本期投票已成功提交；重新整理後仍可查看你的選擇。";

@@ -576,7 +576,7 @@ function toTraditionalChinese(value) {
     const text = String(value).trim();
     if (!text) return "";
     try {
-        return s2tConverter(text);
+        return text.split(/([岳杰托里])/).map((part) => "岳杰托里".includes(part) ? part : s2tConverter(part)).join("");
     } catch (error) {
         console.warn("Simplified-to-traditional conversion failed:", error);
         return text;
@@ -618,7 +618,7 @@ function renderSeerPreview(preview) {
     seerPetTypeIcon.src = preview.typeIconUrl;
     seerPetName.textContent = preview.petName;
     seerPetIdPreview.textContent = `#${preview.petId}`;
-    seerPetTypeName.textContent = `屬性：${preview.typeName}`;
+    seerPetTypeName.textContent = preview.typeName;
 
     resolvedSeerPetId = preview.petId;
     document.getElementById("character-name").value = preview.petName;
@@ -632,7 +632,7 @@ function clearSeerPreview(clearPetId = true) {
     if (seerPetTypeIcon) seerPetTypeIcon.removeAttribute("src");
     seerPetName.textContent = "-";
     seerPetIdPreview.textContent = "#-";
-    seerPetTypeName.textContent = "屬性：-";
+    seerPetTypeName.textContent = "-";
 }
 
 async function lookupSeerPet() {
