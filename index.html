@@ -297,12 +297,11 @@
         <section id="competitive-pool-section" class="panel competitive-pool-view" hidden>
             <div class="panel-header">
                 <div>
-                    <h2 class="panel-title">遊戲內當前競技池</h2>
+                    <h2 id="competitive-pool-message" class="panel-title competitive-pool-name" aria-live="polite">正在載入競技池資料…</h2>
                     <p id="competitive-pool-period" class="panel-description"></p>
                 </div>
                 <button id="refresh-competitive-pool-button" class="secondary-button compact-button" type="button">重新整理</button>
             </div>
-            <p id="competitive-pool-message" class="vote-message" aria-live="polite">正在載入競技池資料…</p>
             <div id="competitive-pool-type-tabs" class="competitive-pool-type-tabs" role="tablist" aria-label="競技池種類" hidden>
                 <button id="competitive-pool-tab-banned" class="competitive-pool-type-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="competitive-pool-groups" data-pool-type="banned">
                     <span>禁止池</span><span class="competitive-pool-type-count" data-pool-type-count>0</span>

@@ -2372,6 +2372,11 @@ body::after,
     align-items: center;
 }
 
+.competitive-pool-view .competitive-pool-name {
+    color: var(--text);
+    font-size: 20px;
+}
+
 .competitive-pool-period-status {
     display: inline-flex;
     align-items: center;
@@ -4088,7 +4093,59 @@ span.flatpickr-weekday {
 
 @media (max-width: 680px) {
     .competitive-pool-view .competitive-pool-pet .competitive-pool-limit-indicator {
-        top: 70.5px;
-        left: 11px;
+        top: 72.5px;
+        left: 15px;
+    }
+}
+
+.competitive-pool-preview-dialog {
+    width: min(1120px, 100%);
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+}
+
+.competitive-pool-preview-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.competitive-pool-preview-header h2 {
+    margin: 0;
+    color: var(--text);
+    font-size: 20px;
+}
+
+.competitive-pool-preview-header p {
+    margin: 6px 0 0;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.competitive-pool-preview-view {
+    margin-top: 12px;
+}
+
+body.has-competitive-pool-preview {
+    overflow: hidden;
+}
+
+@media (max-width: 680px) {
+    .competitive-pool-preview-modal {
+        padding: 10px;
+    }
+
+    .competitive-pool-preview-dialog {
+        max-height: calc(100vh - 20px);
+        padding: 16px 12px;
+    }
+
+    .competitive-pool-preview-header {
+        align-items: flex-start;
+    }
+
+    .competitive-pool-preview-header h2 {
+        font-size: 17px;
     }
 }

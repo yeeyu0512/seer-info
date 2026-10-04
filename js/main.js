@@ -1708,7 +1708,7 @@ function renderNoActivePool() {
     poolStatus.className = "status-badge status-closed";
     document.getElementById("vote-rule").textContent = "請稍後再回來查看下一期投票。";
     clearObservedTypeIcons();
-    characterList.innerHTML = "<p class=\"empty-state\">目前沒有 active Pool。</p>";
+    characterList.innerHTML = "<p class=\"empty-state\">目前沒有進行中的投票。</p>";
     characterPagination.hidden = true;
     const rankingList = document.getElementById("ranking-list");
     clearObservedTypeIcons(rankingList);

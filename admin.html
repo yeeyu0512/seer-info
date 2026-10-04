@@ -190,6 +190,7 @@
                     </div>
                     <div class="editor-header-actions">
                         <button id="delete-competitive-pool-button" class="danger-button admin-action-button" type="button" hidden>刪除期間</button>
+                        <button id="preview-competitive-pool-button" class="secondary-button compact-button" type="button">預覽首頁</button>
                         <button id="cancel-competitive-pool-button" class="secondary-button compact-button" type="button">取消</button>
                     </div>
                 </div>
@@ -270,6 +271,26 @@
             <a class="primary-button" href="./index.html">返回投票頁</a>
         </section>
     </main>
+
+    <div id="competitive-pool-preview-modal" class="admin-confirm-modal competitive-pool-preview-modal" hidden>
+        <section class="admin-confirm-dialog competitive-pool-preview-dialog" role="dialog" aria-modal="true" aria-labelledby="competitive-pool-preview-title">
+            <div class="competitive-pool-preview-header">
+                <div>
+                    <h2 id="competitive-pool-preview-title">競技池首頁預覽</h2>
+                    <p id="competitive-pool-preview-period"></p>
+                </div>
+                <button id="close-competitive-pool-preview-button" class="secondary-button compact-button" type="button" aria-label="關閉競技池預覽">關閉</button>
+            </div>
+            <div class="competitive-pool-view competitive-pool-preview-view">
+                <div id="competitive-pool-preview-tabs" class="competitive-pool-type-tabs" role="tablist" aria-label="預覽競技池種類">
+                    <button id="competitive-pool-preview-tab-banned" class="competitive-pool-type-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="competitive-pool-preview-list" data-preview-pool-type="banned">禁止池<span class="competitive-pool-type-count" data-preview-pool-count="banned">0</span></button>
+                    <button id="competitive-pool-preview-tab-restricted" class="competitive-pool-type-tab" type="button" role="tab" aria-selected="false" aria-controls="competitive-pool-preview-list" data-preview-pool-type="restricted" tabindex="-1">限制池<span class="competitive-pool-type-count" data-preview-pool-count="restricted">0</span></button>
+                    <button id="competitive-pool-preview-tab-semi-restricted" class="competitive-pool-type-tab" type="button" role="tab" aria-selected="false" aria-controls="competitive-pool-preview-list" data-preview-pool-type="semi_restricted" tabindex="-1">準限制池<span class="competitive-pool-type-count" data-preview-pool-count="semi_restricted">0</span></button>
+                </div>
+                <div id="competitive-pool-preview-list" class="competitive-pool-pet-list" role="tabpanel" aria-labelledby="competitive-pool-preview-tab-banned"></div>
+            </div>
+        </section>
+    </div>
 
     <div id="admin-confirm-modal" class="admin-confirm-modal" hidden>
         <section class="admin-confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="admin-confirm-title" aria-describedby="admin-confirm-message">
