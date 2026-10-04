@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 
-<title>SEERVOTE</title>
+<title>賽爾號限制池投票系統</title>
 
 <link rel="icon" href="./favicon.ico" sizes="any">
 <link rel="stylesheet" href="./css/style.css">
@@ -26,7 +26,7 @@
 
     <div class="header-inner">
 
-        <a href="#" class="logo" aria-label="SEERVOTE 首頁">
+        <a href="#" class="logo" aria-label="首頁">
             <img class="logo-mark" src="./favicon.ico" alt="">
             <span>賽爾號限制池投票系統</span>
         </a>
@@ -72,11 +72,11 @@
         <label class="field-label" for="email">Email</label>
         <input id="email" type="email" placeholder="name@example.com" autocomplete="email">
 
-        <label class="field-label" for="password">Password</label>
+        <label class="field-label" for="password">密碼</label>
         <input id="password" type="password" placeholder="輸入密碼" autocomplete="current-password">
 
         <div id="password-confirm-group" hidden>
-            <label class="field-label" for="password-confirm">確認 Password</label>
+            <label class="field-label" for="password-confirm">確認密碼</label>
             <input id="password-confirm" type="password" placeholder="再次輸入密碼" autocomplete="new-password">
         </div>
 
@@ -298,10 +298,14 @@
                 <div class="panel-header">
                     <div>
                         <h2 id="seer-lookup-title" class="panel-title">精靈查詢</h2>
-                        <p id="seer-lookup-description" class="panel-description">輸入精靈 ID 或中文名稱（支援部分名稱），可能包含台服不存在的項目或顯示錯誤。</p>
+                        <p id="seer-lookup-description" class="panel-description">輸入精靈 ID 或中文名稱，可能包含僅陸服存在的項目或顯示錯誤。</p>
                     </div>
                 </div>
                 <form id="seer-lookup-form" class="seer-lookup-form">
+                    <div id="seer-skin-search-tabs" class="seer-skin-search-tabs" role="tablist" aria-label="皮膚查詢方式" hidden>
+                        <button class="seer-skin-search-tab is-active" type="button" role="tab" aria-selected="true" data-skin-search-mode="skin">搜尋皮膚</button>
+                        <button class="seer-skin-search-tab" type="button" role="tab" aria-selected="false" data-skin-search-mode="pet">依綁定精靈查詢</button>
+                    </div>
                     <label id="seer-lookup-input-label" class="field-label" for="seer-lookup-id">精靈 ID／名稱</label>
                     <div class="game-account-controls">
                         <input id="seer-lookup-id" type="search" autocomplete="off" placeholder="例如：5000 或 聖靈譜尼" required>
@@ -320,7 +324,10 @@
                             <span class="seer-pet-type"><img id="seer-lookup-type-icon" class="seer-pet-type-icon" alt="" aria-hidden="true"><span id="seer-lookup-type-name">-</span></span>
                         </div>
                         <img id="seer-lookup-skin-category-icon" class="seer-lookup-skin-category-icon" alt="皮膚種類" hidden>
-                        <button id="seer-lookup-more-info" class="secondary-button compact-button seer-lookup-more-info" type="button">更多資訊</button>
+                        <div class="seer-lookup-preview-actions">
+                            <button id="seer-lookup-more-info" class="secondary-button compact-button seer-lookup-more-info" type="button">更多資訊</button>
+                            <button id="seer-lookup-pet-skins" class="secondary-button compact-button seer-lookup-more-info" type="button" hidden>查詢此精靈皮膚</button>
+                        </div>
                     </div>
                 </div>
             </section>

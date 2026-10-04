@@ -1161,6 +1161,42 @@ button:disabled {
     max-width: none;
 }
 
+.seer-skin-search-tabs {
+    display: flex;
+    gap: 4px;
+    width: fit-content;
+    margin-top: 12px;
+    padding: 4px;
+    border: 1px solid rgba(196,191,255,.12);
+    border-radius: 12px;
+    background: rgba(4, 6, 18, .3);
+}
+
+.seer-skin-search-tab {
+    min-height: 32px;
+    padding: 6px 14px;
+    border: 0;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    background: transparent;
+    box-shadow: none;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.seer-skin-search-tab:hover {
+    color: var(--text);
+    background: rgba(196,191,255,.08);
+    box-shadow: none;
+    transform: none;
+}
+
+.seer-skin-search-tab.is-active {
+    color: var(--text);
+    background: rgba(130, 113, 244, .42);
+    box-shadow: inset 0 1px rgba(255,255,255,.13);
+}
+
 .seer-lookup-form .field-label {
     margin: 16px 0 7px;
 }
@@ -1204,8 +1240,20 @@ button:disabled {
 }
 
 .seer-pet-preview-content:has(.seer-lookup-more-info:not([hidden])) > .seer-lookup-more-info {
+    margin-left: 0;
+}
+
+.seer-pet-preview-content:has(.seer-lookup-more-info:not([hidden])) > .seer-lookup-preview-actions {
+    display: flex;
     grid-column: 3;
     grid-row: 1 / span 3;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+}
+
+.seer-lookup-preview-actions .seer-lookup-more-info {
+    width: 100%;
 }
 
 .seer-lookup-results {
@@ -1216,8 +1264,88 @@ button:disabled {
 }
 
 @media (max-width: 560px) {
+    .seer-skin-search-tabs {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+    }
+
+    .seer-skin-search-tab {
+        min-width: 0;
+        padding-right: 8px;
+        padding-left: 8px;
+        line-height: 1.25;
+    }
+
+    .seer-lookup-form .game-account-controls,
+    .seer-lookup-form input {
+        min-width: 0;
+        width: 100%;
+    }
+
     .seer-lookup-results {
         grid-template-columns: minmax(0, 1fr);
+        gap: 8px;
+    }
+
+    .seer-lookup-results .seer-lookup-result {
+        min-height: 54px;
+        padding: 9px 11px;
+    }
+
+    .seer-pet-preview {
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .seer-pet-preview > #seer-lookup-avatar {
+        flex: 0 0 48px;
+        width: 48px;
+        height: 48px;
+    }
+
+    .seer-pet-preview-content:has(.seer-lookup-more-info:not([hidden])) {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        column-gap: 10px;
+        row-gap: 4px;
+    }
+
+    .seer-pet-preview-content:has(.seer-lookup-more-info:not([hidden])) > .seer-preview-label,
+    .seer-pet-preview-content:has(.seer-lookup-more-info:not([hidden])) > strong,
+    .seer-pet-preview-content:has(.seer-lookup-more-info:not([hidden])) > .seer-pet-meta {
+        grid-column: 1 / -1;
+    }
+
+    .seer-lookup-skin-category-icon {
+        grid-column: 1;
+        grid-row: 4;
+        align-self: center;
+        width: 72px !important;
+        height: 46px !important;
+    }
+
+    .seer-pet-preview-content:has(.seer-lookup-more-info:not([hidden])) > .seer-lookup-preview-actions {
+        grid-column: 2;
+        grid-row: 4;
+        gap: 5px;
+        width: max-content;
+        max-width: 100%;
+    }
+
+    .seer-lookup-preview-actions .seer-lookup-more-info {
+        min-height: 34px;
+        padding: 6px 9px;
+        font-size: 12px;
+    }
+
+    .seer-lookup-illustration {
+        min-height: 300px;
+    }
+
+    .seer-lookup-illustration-stage {
+        min-height: 210px;
     }
 }
 
@@ -1316,14 +1444,22 @@ button:disabled {
     margin-top: 15px;
 }
 
+.admin-character-list-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
 .admin-character-list-toolbar > span {
     color: var(--text-secondary);
     font-size: 12px;
     white-space: nowrap;
 }
 
-.admin-character-list-toolbar > input {
+.admin-character-list-actions > input {
     width: min(300px, 100%);
+    min-width: 180px;
     height: 34px;
     padding: 0 11px;
     border: 1px solid rgba(196, 191, 255, .16);
@@ -1335,9 +1471,20 @@ button:disabled {
     font-size: 13px;
 }
 
-.admin-character-list-toolbar > input:focus {
+.admin-character-list-actions > input:focus {
     border-color: var(--primary-light);
     box-shadow: 0 0 0 3px rgba(147, 135, 255, .13);
+}
+
+.admin-character-list-actions > #export-characters-button {
+    width: auto;
+    min-width: 0;
+    min-height: 34px;
+    padding: 6px 10px;
+    font-size: 12px;
+    line-height: 1.2;
+    white-space: nowrap;
+    flex: 0 0 auto;
 }
 
 .admin-character-item {
@@ -1439,6 +1586,41 @@ button:disabled {
     gap: 12px;
     color: var(--text-muted);
     font-size: 12px;
+}
+
+.character-import-progress {
+    display: grid;
+    gap: 7px;
+}
+
+.character-import-progress[hidden] {
+    display: none;
+}
+
+.character-import-progress-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.character-import-progress-bar {
+    height: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(196, 191, 255, .16);
+    border-radius: 999px;
+    background: rgba(4, 6, 18, .48);
+}
+
+.character-import-progress-bar > span {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #79dbbd, #9788ff);
+    transition: width .18s ease;
 }
 
 @media (max-width: 680px) {
@@ -2894,7 +3076,9 @@ body.has-admin-confirm-modal {
     .admin-vote-record-controls > input { width: 100%; }
     .admin-vote-pagination { justify-content: space-between; }
     .admin-character-list-toolbar { align-items: stretch; flex-direction: column; }
-    .admin-character-list-toolbar > input { width: 100%; }
+    .admin-character-list-actions { width: 100%; margin-left: 0; }
+    .admin-character-list-actions > input { flex: 1; width: auto; min-width: 0; }
+    .admin-character-list-actions > button { flex: 0 0 auto; }
     .admin-character-pagination { justify-content: space-between; }
 
     .admin-page #pool-editor {

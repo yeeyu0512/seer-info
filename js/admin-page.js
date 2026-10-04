@@ -10,6 +10,7 @@ import {
     deletePoolCharacter,
     startPool,
     closePool,
+    returnPoolToDraft,
     deletePool,
     getPoolVoteDetails
 } from "./admin.js";
@@ -39,9 +40,15 @@ const characterImportForm = document.getElementById("character-import-form");
 const characterImportText = document.getElementById("character-import-text");
 const characterImportCount = document.getElementById("character-import-count");
 const characterImportMessage = document.getElementById("character-import-message");
+const characterImportProgress = document.getElementById("character-import-progress");
+const characterImportProgressText = document.getElementById("character-import-progress-text");
+const characterImportProgressPercent = document.getElementById("character-import-progress-percent");
+const characterImportProgressBar = document.getElementById("character-import-progress-bar");
+const characterImportProgressFill = document.getElementById("character-import-progress-fill");
 const characterList = document.getElementById("admin-character-list");
 const characterCount = document.getElementById("admin-character-count");
 const characterSearch = document.getElementById("admin-character-search");
+const exportCharactersButton = document.getElementById("export-characters-button");
 const characterPreviousPageButton = document.getElementById("admin-character-previous-page");
 const characterNextPageButton = document.getElementById("admin-character-next-page");
 const characterPage = document.getElementById("admin-character-page");
@@ -54,6 +61,7 @@ const characterTypeMetadataQueue = [];
 const observedCharacterRows = new Set();
 let activeCharacterTypeMetadataRequests = 0;
 const startPoolButton = document.getElementById("start-pool-button");
+const draftPoolButton = document.getElementById("draft-pool-button");
 const closePoolButton = document.getElementById("close-pool-button");
 const deletePoolButton = document.getElementById("delete-pool-button");
 const voteRecordList = document.getElementById("admin-vote-record-list");
@@ -65,6 +73,7 @@ const voteRecordPreviousButton = document.getElementById("vote-record-previous-b
 const voteRecordNextButton = document.getElementById("vote-record-next-button");
 const voteRecordPage = document.getElementById("vote-record-page");
 const poolDatePickers = new Map();
+const adminConfirmTitle = document.getElementById("admin-confirm-title");
 
 let pools = [];
 let selectedPool = null;
@@ -77,6 +86,8 @@ const CHARACTERS_PER_PAGE = 5;
 const VOTE_RECORDS_PER_PAGE = 20;
 let confirmDialogResolve = null;
 let confirmDialogReturnFocus = null;
+const adminNotificationQueue = [];
+let showingAdminNotification = false;
 
 adminConfirmCancelButton.addEventListener("click", () => finishConfirmDialog(false));
 adminConfirmAcceptButton.addEventListener("click", () => finishConfirmDialog(true));
@@ -93,7 +104,7 @@ adminConfirmModal.addEventListener("keydown", (event) => {
     }
     if (event.key !== "Tab") return;
 
-    const buttons = [adminConfirmCancelButton, adminConfirmAcceptButton];
+    const buttons = [adminConfirmCancelButton, adminConfirmAcceptButton].filter((button) => !button.hidden);
     const currentIndex = buttons.indexOf(document.activeElement);
     const nextIndex = event.shiftKey
         ? (currentIndex <= 0 ? buttons.length - 1 : currentIndex - 1)
@@ -162,6 +173,7 @@ logoutButton.addEventListener("click", async () => {
     const { error } = await logout();
     if (error) {
         console.error("Logout error:", error);
+        showAdminNotification(`登出失敗：${getAdminErrorMessage(error)}`, "error");
         return;
     }
     window.location.href = "./index.html";
@@ -179,6 +191,7 @@ poolForm.addEventListener("submit", async (event) => {
     if (!name || !startAt || !endAt || !maxVotes) return;
     if (new Date(endAt) <= new Date(startAt)) {
         poolFormMessage.textContent = "結束時間必須晚於開始時間。";
+        showAdminNotification("結束時間必須晚於開始時間，請調整後再儲存。", "error");
         return;
     }
 
@@ -188,15 +201,18 @@ poolForm.addEventListener("submit", async (event) => {
     try {
         if (selectedPool) {
             await updatePoolDraft(selectedPool.id, name, startAt, endAt, maxVotes);
-            poolFormMessage.textContent = "Pool 設定已更新。";
+            poolFormMessage.textContent = "票選活動設定已更新。";
+            showAdminNotification("票選活動設定已成功更新。", "success");
         } else {
             await createPool(name, startAt, endAt, maxVotes);
-            poolFormMessage.textContent = "Pool 已建立。";
+            poolFormMessage.textContent = "票選活動已建立。";
+            showAdminNotification("票選活動已建立。", "success");
         }
         await loadPools();
     } catch (error) {
         console.error("Save pool error:", error);
-        poolFormMessage.textContent = `儲存失敗：${error.message}`;
+        poolFormMessage.textContent = `儲存失敗：${getAdminErrorMessage(error)}`;
+        showAdminNotification(`儲存票選活動失敗：${getAdminErrorMessage(error)}`, "error");
     } finally {
         saveButton.disabled = false;
     }
@@ -216,6 +232,7 @@ characterForm.addEventListener("submit", async (event) => {
     const characterName = document.getElementById("character-name").value.trim();
     if (!characterName || !Number.isInteger(characterId) || characterId !== resolvedSeerPetId) {
         characterFormMessage.textContent = "請先查詢有效的精靈 ID。";
+        showAdminNotification("請先查詢有效的精靈 ID，再新增角色。", "error");
         return;
     }
 
@@ -227,16 +244,19 @@ characterForm.addEventListener("submit", async (event) => {
         characterForm.reset();
         clearSeerPreview();
         characterFormMessage.textContent = "角色已新增。";
+        showAdminNotification(`已新增角色「${characterName}」。`, "success");
         await loadCharacters();
     } catch (error) {
         console.error("Add character error:", error);
-        characterFormMessage.textContent = `新增失敗：${error.message}`;
+        characterFormMessage.textContent = `新增失敗：${getAdminErrorMessage(error)}`;
+        showAdminNotification(`新增角色失敗：${getAdminErrorMessage(error)}`, "error");
     } finally {
         addButton.disabled = false;
     }
 });
 
 characterImportText.addEventListener("input", () => {
+    characterImportProgress.hidden = true;
     const { characters, invalidLines } = parseImportedCharacters(characterImportText.value);
     const lookupCount = characters.filter((character) => character.lookupName).length;
     characterImportCount.textContent = characters.length > 100
@@ -280,14 +300,17 @@ characterImportForm.addEventListener("submit", async (event) => {
     const { characters, invalidLines } = parseImportedCharacters(characterImportText.value);
     if (characters.length === 0) {
         characterImportMessage.textContent = "請輸入至少一筆正確格式的角色資料。";
+        showAdminNotification("請輸入至少一筆正確格式的角色資料。", "error");
         return;
     }
     if (characters.length > 100) {
         characterImportMessage.textContent = `每批最多匯入 100 位精靈，目前有 ${characters.length} 位，請分批處理。`;
+        showAdminNotification(`本批有 ${characters.length} 位，超過每批 100 位上限；請分批匯入。`, "error");
         return;
     }
     if (invalidLines.length > 0) {
         characterImportMessage.textContent = `第 ${invalidLines.join("、")} 行格式有誤，請修正後再匯入。`;
+        showAdminNotification(`匯入資料第 ${invalidLines.join("、")} 行格式有誤，請修正後再試。`, "error");
         return;
     }
 
@@ -295,11 +318,24 @@ characterImportForm.addEventListener("submit", async (event) => {
     importButton.disabled = true;
     characterImportText.disabled = true;
     const lookupCharacters = characters.filter((character) => character.lookupName);
+    const updateImportProgress = (label, completed, total) => {
+        const percent = total > 0 ? Math.floor((completed / total) * 100) : 100;
+        characterImportProgress.hidden = false;
+        characterImportProgressText.textContent = `${label}（${completed}/${total}）`;
+        characterImportProgressPercent.textContent = `${percent}%`;
+        characterImportProgressBar.setAttribute("aria-valuenow", String(percent));
+        characterImportProgressBar.setAttribute("aria-valuetext", `${label}，${completed}/${total}，${percent}%`);
+        characterImportProgressFill.style.width = `${percent}%`;
+    };
     characterImportMessage.textContent = lookupCharacters.length > 0
         ? `正在查詢 ${lookupCharacters.length} 位精靈資料…`
         : `正在匯入 ${characters.length} 位角色…`;
 
     const results = [];
+    let lookedUpCount = 0;
+    if (lookupCharacters.length > 0) {
+        updateImportProgress("正在查詢精靈資料", 0, lookupCharacters.length);
+    }
     const lookupResults = await mapWithConcurrency(lookupCharacters, 5, async (character) => {
         try {
             const pet = await fetchJson(`https://api.seerapi.com/v1/pet/${character.characterId}`);
@@ -310,6 +346,9 @@ characterImportForm.addEventListener("submit", async (event) => {
             return { character: { ...character, characterName }, ok: true };
         } catch (error) {
             return { character, ok: false, error };
+        } finally {
+            lookedUpCount += 1;
+            updateImportProgress("正在查詢精靈資料", lookedUpCount, lookupCharacters.length);
         }
     });
     const lookupResultsById = new Map();
@@ -331,27 +370,35 @@ characterImportForm.addEventListener("submit", async (event) => {
     if (lookupCharacters.length > 0) {
         characterImportMessage.textContent = `查詢完成${lookupFailures.length > 0 ? `，${lookupFailures.length} 位查詢失敗` : ""}；正在逐筆新增 ${readyCharacters.length} 位角色…`;
     }
+    let addedCount = 0;
+    updateImportProgress("正在新增角色", 0, readyCharacters.length);
     for (const character of readyCharacters) {
         try {
             await addPoolCharacter(selectedPool.id, character.characterId, character.characterName);
             results.push({ character, ok: true });
         } catch (error) {
             results.push({ character, ok: false, error });
+        } finally {
+            addedCount += 1;
+            updateImportProgress("正在新增角色", addedCount, readyCharacters.length);
         }
     }
 
     const failed = results.filter((result) => !result.ok);
     const successCount = results.length - failed.length;
+    updateImportProgress("匯入處理完成", readyCharacters.length, readyCharacters.length);
     if (failed.length === 0) {
         characterImportMessage.textContent = `已成功匯入 ${successCount} 位角色。`;
+        showAdminNotification(`已成功匯入 ${successCount} 位角色。`, "success");
         characterImportText.value = "";
         characterImportCount.textContent = "尚未輸入角色。";
     } else {
         const failedIds = failed.slice(0, 5).map((result) => {
-            const reason = result.error && result.error.message ? `：${result.error.message}` : "";
+            const reason = result.error ? `：${getAdminErrorMessage(result.error)}` : "";
             return `第 ${result.character.lineNumber} 行（ID ${result.character.characterId}）${reason}`;
         }).join("；");
         characterImportMessage.textContent = `成功 ${successCount} 位；失敗 ${failed.length} 位（${failedIds}${failed.length > 5 ? "；…" : ""}）。`;
+        showAdminNotification(`批次匯入完成：成功 ${successCount} 位，失敗 ${failed.length} 位。詳細原因請查看匯入欄位下方的訊息。`, "error");
     }
     characterImportText.disabled = false;
     importButton.disabled = false;
@@ -359,10 +406,12 @@ characterImportForm.addEventListener("submit", async (event) => {
 });
 
 startPoolButton.addEventListener("click", () => changePoolStatus("start"));
+draftPoolButton.addEventListener("click", () => changePoolStatus("draft"));
 closePoolButton.addEventListener("click", () => changePoolStatus("close"));
 deletePoolButton.addEventListener("click", deleteSelectedPool);
 refreshVoteRecordsButton.addEventListener("click", loadVoteRecords);
 exportVoteRecordsButton.addEventListener("click", exportVoteRecords);
+exportCharactersButton.addEventListener("click", exportCharacters);
 voteRecordSearch.addEventListener("input", () => {
     voteRecordCurrentPage = 1;
     renderVoteRecords();
@@ -378,34 +427,43 @@ voteRecordNextButton.addEventListener("click", () => {
 
 async function changePoolStatus(action) {
     if (!selectedPool) return;
-    const label = action === "start" ? "啟動" : "關閉";
+    const label = action === "start" ? "啟動" : action === "close" ? "關閉" : "退回草稿";
+    const confirmationMessage = action === "draft"
+        ? `確定將「${selectedPool.name}」退回草稿嗎？只有尚無投票紀錄且狀態為 closed 的票選活動才能退回，退回後即可重新編輯。`
+        : action === "start"
+            ? `確定要啟動「${selectedPool.name}」嗎？啟動後將依設定的起訖時間開放票選；如需停止，可再手動關閉活動。`
+            : `確定要關閉「${selectedPool.name}」嗎？關閉後使用者將無法繼續投票。`;
     const confirmed = await showConfirmDialog(
-        `確定要${label}「${selectedPool.name}」嗎？此操作無法復原。`,
+        confirmationMessage,
         { confirmLabel: label, danger: action === "close" }
     );
     if (!confirmed) return;
 
-    const button = action === "start" ? startPoolButton : closePoolButton;
+    const button = action === "start" ? startPoolButton : action === "close" ? closePoolButton : draftPoolButton;
     button.disabled = true;
     poolFormMessage.textContent = `${label}中…`;
     try {
         if (action === "start") await startPool(selectedPool.id);
-        else await closePool(selectedPool.id);
-        poolFormMessage.textContent = `Pool 已${label}。`;
+        else if (action === "close") await closePool(selectedPool.id);
+        else await returnPoolToDraft(selectedPool.id);
+        poolFormMessage.textContent = `票選活動已${label}。`;
+        showAdminNotification(`票選活動已${label}。`, "success");
         await loadPools();
         await selectPool(selectedPool.id);
     } catch (error) {
         console.error(`${label} pool error:`, error);
-        poolFormMessage.textContent = `${label}失敗：${error.message}`;
+        poolFormMessage.textContent = `${label}失敗：${getAdminErrorMessage(error)}`;
+        showAdminNotification(`${label}票選活動失敗：${getAdminErrorMessage(error)}`, "error");
     } finally {
         button.disabled = false;
     }
 }
 
 async function deleteSelectedPool() {
-    if (!selectedPool || selectedPool.status !== "draft") return;
+    if (!selectedPool || !["draft", "closed"].includes(selectedPool.status)) return;
+    const statusLabel = selectedPool.status === "draft" ? "draft（草稿）" : "closed（已關閉）";
     const confirmed = await showConfirmDialog(
-        `確定要永久刪除 draft Pool「${selectedPool.name}」及其所有角色嗎？此操作無法復原。`,
+        `確定要永久刪除 ${statusLabel} 狀態的票選活動「${selectedPool.name}」及其所有角色嗎？此操作無法復原。`,
         { confirmLabel: "永久刪除", danger: true }
     );
     if (!confirmed) return;
@@ -417,27 +475,112 @@ async function deleteSelectedPool() {
         selectedPool = null;
         editor.hidden = true;
         await loadPools();
+        showAdminNotification("票選活動已刪除。", "success");
     } catch (error) {
         console.error("Delete pool error:", error);
-        poolFormMessage.textContent = `刪除失敗：${error.message}`;
+        const errorMessage = selectedPool.status === "closed" && error?.code === "P0001"
+            ? "資料庫目前尚未允許刪除已關閉的票選活動，需更新後端刪除規則才能完成。"
+            : getAdminErrorMessage(error);
+        poolFormMessage.textContent = `刪除失敗：${errorMessage}`;
+        showAdminNotification(`刪除票選活動失敗：${errorMessage}`, "error");
         deletePoolButton.disabled = false;
     }
 }
 
-function showConfirmDialog(message, { confirmLabel = "確定", danger = false } = {}) {
+function showConfirmDialog(message, {
+    title = "請確認操作",
+    confirmLabel = "確定",
+    cancelLabel = "取消",
+    showCancel = true,
+    danger = false,
+    focusConfirm = false
+} = {}) {
     if (confirmDialogResolve) finishConfirmDialog(false);
     confirmDialogReturnFocus = document.activeElement;
+    adminConfirmTitle.textContent = title;
     adminConfirmMessage.textContent = message;
+    adminConfirmCancelButton.hidden = !showCancel;
+    adminConfirmCancelButton.textContent = cancelLabel;
     adminConfirmAcceptButton.textContent = confirmLabel;
     adminConfirmAcceptButton.classList.toggle("danger-button", danger);
     adminConfirmModal.classList.remove("is-closing");
     adminConfirmModal.hidden = false;
     document.body.classList.add("has-admin-confirm-modal");
-    adminConfirmCancelButton.focus();
+    (focusConfirm ? adminConfirmAcceptButton : adminConfirmCancelButton).focus();
 
     return new Promise((resolve) => {
         confirmDialogResolve = resolve;
     });
+}
+
+function showAdminNotification(message, type = "info") {
+    adminNotificationQueue.push({ message, type });
+    if (!showingAdminNotification) void showNextAdminNotification();
+}
+
+async function showNextAdminNotification() {
+    showingAdminNotification = true;
+    while (adminNotificationQueue.length > 0) {
+        const { message, type } = adminNotificationQueue.shift();
+        await showConfirmDialog(message, {
+            title: type === "error" ? "操作未完成" : type === "success" ? "操作完成" : "通知",
+            confirmLabel: "關閉",
+            showCancel: false,
+            focusConfirm: true
+        });
+    }
+    showingAdminNotification = false;
+}
+
+function getAdminErrorMessage(error) {
+    const message = String(error?.message || "");
+    const lowerMessage = message.toLowerCase();
+    const status = Number(error?.status || message.match(/\bHTTP\s+(\d{3})\b/i)?.[1]);
+    const code = String(error?.code || "").toUpperCase();
+
+    if (status === 404) {
+        if (/\/pet\/\d+\/?$/.test(error?.resource || "")) {
+            return "查無這個精靈 ID 的資料，請確認編號是否正確，或稍後再試。";
+        }
+        if (/\/element_type_combination\/\d+\/?$/.test(error?.resource || "")) {
+            return "已找到精靈，但查不到牠的屬性資料，請稍後再試或聯絡管理員。";
+        }
+        return "找不到這筆資料，可能已被刪除或編號有誤；請重新整理後再試。";
+    }
+    if (/pool not found/i.test(message)) return "找不到這個票選活動，請重新整理管理頁面後再試。";
+    if (/only a closed pool can be returned to draft/i.test(message)) {
+        return "只有狀態為 closed 的票選活動才能退回草稿，請重新整理並確認活動狀態。";
+    }
+    if (/a pool with vote records cannot be returned to draft/i.test(message)) {
+        return "這個票選活動已有投票紀錄，為保護既有資料，不能退回草稿。";
+    }
+    if (/admin access required|authentication required/i.test(message)) {
+        return "登入狀態或管理員權限已失效，請重新登入後再試。";
+    }
+    if (code === "P0001") {
+        return "目前資料狀態不符合此操作條件，請重新整理頁面並確認操作是否仍適用。";
+    }
+    if (/[\u4e00-\u9fff]/.test(message)) return message;
+    if (/failed to fetch|networkerror|load failed|fetch failed/.test(lowerMessage)) {
+        return "網路連線失敗，請檢查網路後再試。";
+    }
+    if (/jwt expired|refresh token|session.*expired/.test(lowerMessage)) {
+        return "登入狀態已過期，請重新登入後再試。";
+    }
+    if (/row.level security|permission denied|not authorized|unauthorized/.test(lowerMessage)) {
+        return "權限不足，無法執行此操作。";
+    }
+    if (/duplicate key|unique constraint|already exists/.test(lowerMessage)) {
+        return "資料已存在，請確認是否重複新增。";
+    }
+    if (/foreign key constraint|still referenced/.test(lowerMessage)) {
+        return "資料仍被其他內容使用，無法刪除。";
+    }
+    if (status === 429) return "目前請求過於頻繁，請稍候再試。";
+    if (status >= 500) return "伺服器暫時無法處理請求，請稍後再試。";
+    if (status >= 400) return "請求未能完成，請確認輸入資料與操作條件後再試。";
+    if (message) return "系統暫時無法完成操作，請稍後再試。";
+    return "系統暫時無法完成操作，請稍後再試。";
 }
 
 function finishConfirmDialog(confirmed) {
@@ -474,6 +617,7 @@ async function loadAdminPage() {
         console.error("Load admin page error:", error);
         adminWorkspace.hidden = false;
         poolList.innerHTML = "<p class=\"empty-state\">載入管理資料失敗，請重新整理後再試。</p>";
+        showAdminNotification(`載入管理資料失敗：${getAdminErrorMessage(error)}`, "error");
     }
 }
 
@@ -485,7 +629,7 @@ async function loadPools() {
 function renderPools() {
     poolList.innerHTML = "";
     if (pools.length === 0) {
-        poolList.innerHTML = "<p class=\"empty-state\">目前沒有任何 Pool。</p>";
+        poolList.innerHTML = "<p class=\"empty-state\">目前沒有任何票選活動。</p>";
         return;
     }
     pools.forEach((pool) => {
@@ -521,14 +665,14 @@ async function selectPool(poolId) {
     if (!selectedPool) return;
     editor.hidden = false;
     document.getElementById("editor-title").textContent = selectedPool.name;
-    document.getElementById("editor-description").textContent = `Pool ID：${selectedPool.id}`;
+    document.getElementById("editor-description").textContent = `票選活動編號：${selectedPool.id}`;
     characterForm.reset();
     clearSeerPreview();
     document.getElementById("pool-form-name").value = selectedPool.name;
     setPoolDateValue("pool-form-start", toLocalDateTime(selectedPool.start_at));
     setPoolDateValue("pool-form-end", toLocalDateTime(selectedPool.end_at));
     document.getElementById("pool-form-max-votes").value = selectedPool.max_votes;
-    document.getElementById("save-pool-button").textContent = "儲存 draft 設定";
+    document.getElementById("save-pool-button").textContent = "儲存草稿設定";
     poolFormMessage.textContent = "";
 
     const isDraft = selectedPool.status === "draft";
@@ -541,7 +685,9 @@ async function selectPool(poolId) {
     characterImportForm.querySelectorAll("textarea, button").forEach((input) => { input.disabled = !isDraft; });
     startPoolButton.hidden = !isDraft;
     closePoolButton.hidden = selectedPool.status !== "active";
-    deletePoolButton.hidden = !isDraft;
+    draftPoolButton.hidden = selectedPool.status !== "closed";
+    deletePoolButton.hidden = !isDraft && selectedPool.status !== "closed";
+    deletePoolButton.disabled = false;
     await loadCharacters();
     await loadVoteRecords();
     editor.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -550,7 +696,7 @@ async function selectPool(poolId) {
 function showCreatePoolEditor() {
     selectedPool = null;
     editor.hidden = false;
-    document.getElementById("editor-title").textContent = "建立 Pool";
+    document.getElementById("editor-title").textContent = "建立票選活動";
     document.getElementById("editor-description").textContent = "設定投票期間與每位玩家必選的角色數。";
     poolForm.reset();
     characterForm.reset();
@@ -560,8 +706,9 @@ function showCreatePoolEditor() {
     poolForm.querySelectorAll("input, select").forEach((input) => { input.disabled = false; });
     setPoolDatePickersDisabled(false);
     document.getElementById("save-pool-button").hidden = false;
-    document.getElementById("save-pool-button").textContent = "建立 Pool";
+    document.getElementById("save-pool-button").textContent = "建立票選活動";
     startPoolButton.hidden = true;
+    draftPoolButton.hidden = true;
     deletePoolButton.hidden = true;
     closePoolButton.hidden = true;
     poolFormMessage.textContent = "";
@@ -600,7 +747,10 @@ async function fetchJson(url) {
         } catch (error) {
             // ignore JSON parse errors and fall back to the status text
         }
-        throw new Error(message);
+        const error = new Error(message);
+        error.status = response.status;
+        error.resource = new URL(url).pathname;
+        throw error;
     }
 
     return response.json();
@@ -639,6 +789,7 @@ async function lookupSeerPet() {
     const petId = seerPetIdInput.value.trim();
     if (!petId || !/^\d+$/.test(petId)) {
         characterFormMessage.textContent = "請輸入有效的 Seer 精靈 ID。";
+        showAdminNotification("請輸入有效的 Seer 精靈 ID。", "error");
         clearSeerPreview();
         return;
     }
@@ -675,10 +826,12 @@ async function lookupSeerPet() {
 
         renderSeerPreview(preview);
         characterFormMessage.textContent = `已取得精靈資料：${petName}（${preview.typeName}）`;
+        showAdminNotification(`已取得精靈資料：${petName}。`, "success");
     } catch (error) {
         console.error("Lookup Seer pet error:", error);
         clearSeerPreview();
-        characterFormMessage.textContent = `查詢失敗：${error.message}`;
+        characterFormMessage.textContent = `查詢失敗：${getAdminErrorMessage(error)}`;
+        showAdminNotification(`查詢精靈失敗：${getAdminErrorMessage(error)}`, "error");
     } finally {
         button.disabled = false;
         button.textContent = "查詢精靈";
@@ -731,6 +884,7 @@ async function loadCharacters() {
     if (!selectedPool) return;
     characterList.innerHTML = "<p class=\"empty-state\">正在載入角色…</p>";
     characterCount.textContent = "正在載入角色…";
+    exportCharactersButton.disabled = true;
     if (loadedCharacterPoolId !== selectedPool.id) characterSearch.value = "";
     try {
         poolCharacters = await getPoolCharacters(selectedPool.id);
@@ -741,10 +895,13 @@ async function loadCharacters() {
         poolCharacters = [];
         characterCount.textContent = "角色載入失敗。";
         characterList.innerHTML = "<p class=\"empty-state\">角色載入失敗。</p>";
+        exportCharactersButton.disabled = true;
+        showAdminNotification(`載入角色失敗：${getAdminErrorMessage(error)}`, "error");
     }
 }
 
 function renderCharacters() {
+    exportCharactersButton.disabled = poolCharacters.length === 0;
     const keyword = characterSearch.value.trim().toLowerCase();
     const filteredCharacters = poolCharacters.filter((character) => {
         const searchable = `${character.character_id} ${character.character_name}`.toLowerCase();
@@ -771,7 +928,7 @@ function renderCharacters() {
     characterList.innerHTML = "";
 
     if (filteredCharacters.length === 0) {
-        characterList.innerHTML = `<p class="empty-state">${poolCharacters.length === 0 ? "此 Pool 尚未加入角色。" : "找不到符合的角色。"}</p>`;
+        characterList.innerHTML = `<p class="empty-state">${poolCharacters.length === 0 ? "此票選活動尚未加入角色。" : "找不到符合的角色。"}</p>`;
         return;
     }
 
@@ -802,6 +959,7 @@ async function loadVoteRecords() {
         });
         voteRecordSummary.textContent = "投票紀錄載入失敗。";
         voteRecordList.innerHTML = "<p class=\"empty-state\">無法載入投票紀錄，請稍後再試。</p>";
+        showAdminNotification(`載入投票紀錄失敗：${getAdminErrorMessage(error)}`, "error");
     } finally {
         refreshVoteRecordsButton.disabled = false;
         exportVoteRecordsButton.disabled = voteRecords.length === 0;
@@ -835,6 +993,27 @@ function exportVoteRecords() {
     link.download = `${safePoolName}_投票紀錄.csv`;
     link.click();
     URL.revokeObjectURL(url);
+    showAdminNotification("投票紀錄 CSV 已下載。", "success");
+}
+
+function exportCharacters() {
+    if (!selectedPool || poolCharacters.length === 0) return;
+
+    const rows = [["精靈 ID", "精靈名稱"]];
+    poolCharacters.forEach((character) => {
+        rows.push([character.character_id, character.character_name]);
+    });
+
+    const csv = `\ufeff${rows.map((row) => row.map(toCsvCell).join(",")).join("\r\n")}`;
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const safePoolName = selectedPool.name.replace(/[\\/:*?"<>|]/g, "_");
+    link.href = url;
+    link.download = `${safePoolName}_角色清單.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    showAdminNotification(`已匯出「${selectedPool.name}」的 ${poolCharacters.length} 位角色。`, "success");
 }
 
 function toCsvCell(value) {
@@ -933,9 +1112,11 @@ function renderCharacter(character) {
         try {
             await deletePoolCharacter(character.id);
             await loadCharacters();
+            showAdminNotification(`已移除角色「${character.character_name}」。`, "success");
         } catch (error) {
             console.error("Delete character error:", error);
-            characterFormMessage.textContent = `移除失敗：${error.message}`;
+            characterFormMessage.textContent = `移除失敗：${getAdminErrorMessage(error)}`;
+            showAdminNotification(`移除角色失敗：${getAdminErrorMessage(error)}`, "error");
             deleteButton.disabled = false;
         }
     });

@@ -90,6 +90,14 @@ export async function closePool(poolId) {
     return data;
 }
 
+export async function returnPoolToDraft(poolId) {
+    const { data, error } = await supabaseClient.rpc("return_pool_to_draft", {
+        p_pool_id: poolId
+    });
+    if (error) throw error;
+    return data;
+}
+
 export async function deletePool(poolId) {
     const { data, error } = await supabaseClient.rpc("delete_pool", {
         p_pool_id: poolId
