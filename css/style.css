@@ -2871,6 +2871,7 @@ body::after,
         grid-template-columns: minmax(0, 1fr);
     }
     .competitive-pool-view .competitive-pool-pet-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .competitive-pool-view .competitive-pool-pet .character-type-icon { top: 31px; left: 56px; }
     .competitive-pool-type-tabs { gap: 5px; }
     .competitive-pool-type-tab { gap: 5px; min-height: 44px; padding: 7px 5px; font-size: 12px; }
     .competitive-pool-admin-item { align-items: flex-start; flex-direction: column; }
