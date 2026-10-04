@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://yeeyu0512.github.io/seervote/sitemap.xml
