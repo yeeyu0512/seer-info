@@ -1618,9 +1618,14 @@ function renderSeerPetSearchResults(pets, typeDetailsById, append = false) {
         id.textContent = `#${pet.id}`;
         button.append(content, id);
         button.addEventListener("click", async () => {
-            seerBrowseState = null;
-            clearSeerBrowseSentinel();
-            const requestId = ++seerLookupRequestId;
+            const isBrowsing = seerBrowseState
+                && seerBrowseState.requestId === seerLookupRequestId
+                && !seerLookupIdInput.value.trim();
+            if (!isBrowsing) {
+                seerBrowseState = null;
+                clearSeerBrowseSentinel();
+            }
+            const requestId = isBrowsing ? seerLookupRequestId : ++seerLookupRequestId;
             const resultButtons = seerLookupResults.querySelectorAll(".seer-lookup-result");
             resultButtons.forEach((result) => {
                 result.disabled = true;
@@ -1685,9 +1690,14 @@ function renderSeerSkinSearchResults(entries, append = false) {
         id.textContent = `#${skin.id}`;
         button.append(content, id);
         button.addEventListener("click", async () => {
-            seerBrowseState = null;
-            clearSeerBrowseSentinel();
-            const requestId = ++seerLookupRequestId;
+            const isBrowsing = seerBrowseState
+                && seerBrowseState.requestId === seerLookupRequestId
+                && !seerLookupIdInput.value.trim();
+            if (!isBrowsing) {
+                seerBrowseState = null;
+                clearSeerBrowseSentinel();
+            }
+            const requestId = isBrowsing ? seerLookupRequestId : ++seerLookupRequestId;
             const resultButtons = seerLookupResults.querySelectorAll(".seer-lookup-result");
             resultButtons.forEach((result) => {
                 result.disabled = true;
