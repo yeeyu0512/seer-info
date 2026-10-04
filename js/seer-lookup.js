@@ -2081,10 +2081,10 @@ function closeSeerRelatedSkinsModal(restoreFocus = true) {
     }, 180);
 }
 
-function openSeerExternalLinkModal() {
-    if (!currentSeerInfoUrl) return;
+function openSeerExternalLinkModal(url = currentSeerInfoUrl) {
+    if (!url) return;
     externalLinkOpener = document.activeElement;
-    seerExternalLinkOpen.href = currentSeerInfoUrl;
+    seerExternalLinkOpen.href = url;
     seerExternalLinkModal.classList.remove("is-closing");
     seerExternalLinkModal.hidden = false;
     updateSeerModalScrollLock();
@@ -2127,6 +2127,12 @@ export function initSeerLookup(dependencies) {
             return;
         }
         startSeerPetLookup(seerLookupIdInput.value.trim());
+    });
+    document.querySelectorAll("[data-external-link]").forEach((link) => {
+        link.addEventListener("click", (event) => {
+            event.preventDefault();
+            openSeerExternalLinkModal(link.href);
+        });
     });
     seerSkinSearchModeTabs.forEach((tab) => {
         tab.addEventListener("click", () => {
@@ -2279,6 +2285,7 @@ export function initSeerLookup(dependencies) {
             renderSeerPetInfoIdentity(currentSeerPetData, null);
             openSeerPetInfoModal(opener);
         },
+        openExternalLink: (url) => openSeerExternalLinkModal(url),
         browseLatestIfEmpty: () => {
             if (!seerLookupIdInput.value.trim()) {
                 void startLatestSeerBrowse(++seerLookupRequestId);

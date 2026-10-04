@@ -48,12 +48,14 @@ const alreadyVotedMessage = document.getElementById("already-voted-message");
 const poolStatus = document.getElementById("pool-status");
 const accountTab = document.getElementById("account-tab");
 const accountSection = document.getElementById("account-section");
+const aboutSection = document.getElementById("about-section");
 const votingSubTabs = document.getElementById("voting-sub-tabs");
 const encyclopediaSubTabs = document.getElementById("encyclopedia-sub-tabs");
 const primaryMainTabs = Array.from(document.querySelectorAll("[data-main-target]"));
 const voteSubTabs = Array.from(votingSubTabs.querySelectorAll("[data-tab-target]"));
 const encyclopediaModeTabs = Array.from(encyclopediaSubTabs.querySelectorAll("[data-lookup-mode]"));
 const seerLookupSection = document.getElementById("seer-lookup-section");
+const sealEncyclopediaSection = document.getElementById("seal-encyclopedia-section");
 const competitivePoolSection = document.getElementById("competitive-pool-section");
 const competitivePoolPeriod = document.getElementById("competitive-pool-period");
 const competitivePoolMessage = document.getElementById("competitive-pool-message");
@@ -143,7 +145,9 @@ primaryMainTabs.forEach((tab) => {
             ? currentVotePanelId
             : target === "encyclopedia"
                 ? "seer-lookup-section"
-                : "account-section");
+                : target === "account"
+                    ? "account-section"
+                    : "about-section");
     });
 });
 voteSubTabs.forEach((tab) => {
@@ -153,6 +157,10 @@ voteSubTabs.forEach((tab) => {
 });
 encyclopediaModeTabs.forEach((tab) => {
     tab.addEventListener("click", () => {
+        if (tab.dataset.lookupMode === "seal") {
+            activateTab("seal-encyclopedia-section");
+            return;
+        }
         seerLookup.setMode(tab.dataset.lookupMode);
         activateTab("seer-lookup-section");
     });
@@ -224,13 +232,17 @@ gameAccountForm.addEventListener("submit", async (event) => {
 
 function activateTab(targetId) {
     const isLookup = targetId === "seer-lookup-section";
+    const isSealEncyclopedia = targetId === "seal-encyclopedia-section";
     const isAccount = targetId === "account-section";
-    const mainTarget = isAccount ? "account" : isLookup ? "encyclopedia" : "voting";
+    const isAbout = targetId === "about-section";
+    const mainTarget = isAbout ? "about" : isAccount ? "account" : isLookup || isSealEncyclopedia ? "encyclopedia" : "voting";
     if (!isLookup && !isAccount && votePanels.has(targetId)) currentVotePanelId = targetId;
 
     voteSection.hidden = mainTarget !== "voting";
     seerLookupSection.hidden = !isLookup;
+    sealEncyclopediaSection.hidden = !isSealEncyclopedia;
     accountSection.hidden = !isAccount;
+    aboutSection.hidden = !isAbout;
     votingSubTabs.hidden = mainTarget !== "voting";
     encyclopediaSubTabs.hidden = mainTarget !== "encyclopedia";
     votePanels.forEach((panel, panelId) => {
@@ -247,7 +259,11 @@ function activateTab(targetId) {
         tab.setAttribute("aria-selected", String(isActive));
     });
     encyclopediaModeTabs.forEach((tab) => {
-        const isActive = mainTarget === "encyclopedia" && tab.dataset.lookupMode === seerLookup.getMode();
+        const isActive = mainTarget === "encyclopedia" && (
+            isSealEncyclopedia
+                ? tab.dataset.lookupMode === "seal"
+                : tab.dataset.lookupMode === seerLookup.getMode()
+        );
         tab.classList.toggle("is-active", isActive);
         tab.setAttribute("aria-selected", String(isActive));
     });

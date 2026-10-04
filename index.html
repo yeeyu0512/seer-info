@@ -125,6 +125,7 @@
         <button class="main-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="vote-section" data-main-target="voting">投票</button>
         <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="seer-lookup-section" data-main-target="encyclopedia">圖鑑</button>
         <button id="account-tab" class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="account-section" data-main-target="account" hidden>帳號</button>
+        <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="about-section" data-main-target="about">關於本站</button>
     </nav>
 
     <section id="vote-section" hidden>
@@ -337,6 +338,7 @@
         <nav id="encyclopedia-sub-tabs" class="main-tabs view-sub-tabs encyclopedia-sub-tabs" aria-label="圖鑑種類" role="tablist" hidden>
             <button class="main-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="seer-lookup-section" data-lookup-mode="pet">精靈查詢</button>
             <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="seer-lookup-section" data-lookup-mode="skin">皮膚查詢</button>
+            <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="seal-encyclopedia-section" data-lookup-mode="seal">刻印圖鑑</button>
         </nav>
 
         <div id="seer-lookup-section" class="seer-lookup-layout" hidden>
@@ -403,6 +405,50 @@
             </aside>
         </div>
 
+        <section id="seal-encyclopedia-section" class="panel seal-encyclopedia-panel" role="tabpanel" aria-labelledby="seal-encyclopedia-title" hidden>
+            <div class="seal-coming-soon">
+                <img class="seal-coming-soon-icon" src="./42578.png" alt="" width="128" height="128" decoding="async">
+                <span class="about-detail-kicker">Under Construction</span>
+                <h2 id="seal-encyclopedia-title">施工中</h2>
+                <p>敬請期待</p>
+            </div>
+        </section>
+
+        <section id="about-section" class="panel about-panel" role="tabpanel" hidden>
+            <div class="about-hero">
+                <span class="about-eyebrow">SEER PLAYER COMMUNITY</span>
+                <h1>賽爾號資訊站</h1>
+                <p>有人吃飽太閒的作品。</p>
+            </div>
+
+            <div class="about-detail-grid">
+                <section class="about-detail-card about-author-card" aria-labelledby="about-author-title">
+                    <div class="about-author-heading">
+                        <img class="about-author-avatar" src="./1400523.png" alt="作者選用的精靈頭像" width="54" height="54" loading="lazy" decoding="async">
+                        <div>
+                            <span class="about-detail-kicker">ABOUT THE AUTHOR</span>
+                            <h2 id="about-author-title">澪伍</h2>
+                        </div>
+                    </div>
+                    <ul class="about-author-tags" aria-label="作者簡介">
+                        <li>陸服：949847689</li>
+                        <li>台服：40332732</li>
+                    </ul>
+                    <p>雲玩，累計四次陸服競技聖皇。<br>由於作者代碼水平低落，<br>本站開發過程經過多次AI染指。</p>
+                </section>
+                <section class="about-detail-card">
+                    <span class="about-detail-kicker">DATA &amp; REFERENCES</span>
+                    <h2>資料來源</h2>
+                    <p>精靈與皮膚資料由 <a href="https://github.com/SeerAPI/" data-external-link target="_blank" rel="noopener noreferrer">SeerAPI</a> 提供；部分補充資料參考 <a href="https://wiki.biligame.com/seer/" data-external-link target="_blank" rel="noopener noreferrer">bilibili 遊戲百科</a>。資料可能有延遲或缺漏，請以遊戲內資訊為準。</p>
+                </section>
+                <section class="about-detail-card about-disclaimer-card">
+                    <span class="about-detail-kicker">DISCLAIMER</span>
+                    <h2>免責聲明</h2>
+                    <p>本站由玩家自發維護，與賽爾號官方及遊戲營運方沒有隸屬或合作關係。遊戲名稱、角色與相關素材的權利歸其各自權利人所有。<br><br><a href="https://www.61.com.tw/seer_df/" data-external-link target="_blank" rel="noopener noreferrer">賽爾號巔峰之戰官網</a></p>
+                </section>
+            </div>
+        </section>
+
         <section id="account-section" class="panel account-panel" hidden>
 
             <div class="panel-header">
@@ -436,7 +482,7 @@
 <div id="seer-external-link-modal" class="admin-confirm-modal" role="presentation" hidden>
     <section class="admin-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="seer-external-link-title" aria-describedby="seer-external-link-description">
         <h2 id="seer-external-link-title">即將前往站外連結</h2>
-        <p id="seer-external-link-description">你即將前往 bilibili 遊戲百科，這是外部網站，請留意網站內容與個人資料安全。</p>
+        <p id="seer-external-link-description">你即將前往外部網站，請留意網站內容與個人資料安全。</p>
         <div class="admin-confirm-actions">
             <button id="seer-external-link-cancel" class="secondary-button" type="button">取消</button>
             <a id="seer-external-link-open" class="primary-button compact-button" target="_blank" rel="noopener noreferrer">繼續</a>
