@@ -28,6 +28,8 @@ import {
 const adminWorkspace = document.getElementById("admin-workspace");
 const adminContent = document.getElementById("admin-content");
 const accessDenied = document.getElementById("access-denied");
+const adminToolTabs = Array.from(document.querySelectorAll("[data-admin-tab]"));
+const adminToolPanels = adminToolTabs.map((tab) => document.getElementById(tab.dataset.adminTab));
 const poolList = document.getElementById("admin-pool-list");
 const logoutButton = document.getElementById("logout-button");
 const editor = document.getElementById("pool-editor");
@@ -106,6 +108,7 @@ const competitivePetName = document.getElementById("competitive-pet-name");
 const competitivePetIdPreview = document.getElementById("competitive-pet-id-preview");
 const competitivePetMessage = document.getElementById("competitive-pet-message");
 const competitivePoolCharacterList = document.getElementById("competitive-pool-character-list");
+const exportCompetitivePoolCsvButton = document.getElementById("export-competitive-pool-csv-button");
 const competitivePoolImportForm = document.getElementById("competitive-pool-import-form");
 const competitivePoolImportType = document.getElementById("competitive-pool-import-type");
 const competitivePoolImportIds = document.getElementById("competitive-pool-import-ids");
@@ -136,6 +139,22 @@ let confirmDialogResolve = null;
 let confirmDialogReturnFocus = null;
 const adminNotificationQueue = [];
 let showingAdminNotification = false;
+
+adminToolTabs.forEach((tab) => {
+    tab.addEventListener("click", () => activateAdminTool(tab.dataset.adminTab));
+    tab.addEventListener("keydown", (event) => {
+        const index = adminToolTabs.indexOf(tab);
+        let nextIndex = null;
+        if (event.key === "ArrowRight") nextIndex = (index + 1) % adminToolTabs.length;
+        if (event.key === "ArrowLeft") nextIndex = (index - 1 + adminToolTabs.length) % adminToolTabs.length;
+        if (event.key === "Home") nextIndex = 0;
+        if (event.key === "End") nextIndex = adminToolTabs.length - 1;
+        if (nextIndex === null) return;
+        event.preventDefault();
+        adminToolTabs[nextIndex].focus();
+        adminToolTabs[nextIndex].click();
+    });
+});
 
 adminConfirmCancelButton.addEventListener("click", () => finishConfirmDialog(false));
 adminConfirmAcceptButton.addEventListener("click", () => finishConfirmDialog(true));
@@ -176,6 +195,18 @@ function initializeDateTimePickers() {
             locale: window.flatpickr.l10ns?.zh_tw ?? "default"
         });
         poolDatePickers.set(input.id, picker);
+    });
+}
+
+function activateAdminTool(panelId) {
+    adminToolPanels.forEach((panel) => {
+        panel.hidden = panel.id !== panelId;
+    });
+    adminToolTabs.forEach((tab) => {
+        const isSelected = tab.dataset.adminTab === panelId;
+        tab.classList.toggle("is-active", isSelected);
+        tab.setAttribute("aria-selected", String(isSelected));
+        tab.tabIndex = isSelected ? 0 : -1;
     });
 }
 
@@ -236,6 +267,7 @@ deleteCompetitivePoolButton.addEventListener("click", deleteSelectedCompetitiveP
 competitivePetIdInput.addEventListener("input", clearCompetitivePetPreview);
 lookupCompetitivePetButton.addEventListener("click", lookupCompetitivePet);
 competitivePoolCharacterForm.addEventListener("submit", addSelectedCompetitivePet);
+exportCompetitivePoolCsvButton.addEventListener("click", exportCompetitivePoolCsv);
 competitivePoolImportIds.addEventListener("input", updateCompetitivePoolImportCount);
 competitivePoolImportForm.addEventListener("submit", importCompetitivePoolCharacters);
 
@@ -772,6 +804,7 @@ function renderAdminCompetitivePools() {
 
 function showNewCompetitivePoolEditor() {
     selectedCompetitivePool = null;
+    exportCompetitivePoolCsvButton.disabled = true;
     competitivePoolEditor.hidden = false;
     competitivePoolEditorTitle.textContent = "新增競技池期間";
     competitivePoolForm.reset();
@@ -791,6 +824,7 @@ function closeCompetitivePoolEditor() {
     competitivePoolEditor.hidden = true;
     selectedCompetitivePool = null;
     competitivePoolCharacters = [];
+    exportCompetitivePoolCsvButton.disabled = true;
     clearCompetitivePetPreview();
 }
 
@@ -880,18 +914,58 @@ async function loadCompetitivePoolCharacters() {
     if (!selectedCompetitivePool) return;
     const poolId = selectedCompetitivePool.id;
     const requestId = ++competitivePoolCharacterLoadRequestId;
+    exportCompetitivePoolCsvButton.disabled = true;
     competitivePoolCharacterList.innerHTML = "<p class=\"empty-state\">正在載入精靈名單…</p>";
     try {
         const characters = await getCompetitivePoolCharacters(poolId);
         if (requestId !== competitivePoolCharacterLoadRequestId || selectedCompetitivePool?.id !== poolId) return;
         competitivePoolCharacters = characters;
+        exportCompetitivePoolCsvButton.disabled = characters.length === 0;
         renderCompetitivePoolCharacters();
     } catch (error) {
         if (requestId !== competitivePoolCharacterLoadRequestId || selectedCompetitivePool?.id !== poolId) return;
         console.error("Load competitive pool characters error:", error);
+        competitivePoolCharacters = [];
+        exportCompetitivePoolCsvButton.disabled = true;
         competitivePoolCharacterList.innerHTML = "<p class=\"empty-state\">精靈名單載入失敗。</p>";
         showAdminNotification(`載入精靈名單失敗：${getAdminErrorMessage(error)}`, "error");
     }
+}
+
+function exportCompetitivePoolCsv() {
+    if (!selectedCompetitivePool || competitivePoolCharacters.length === 0) return;
+
+    const typeLabels = {
+        banned: ["禁止池", "禁止攜帶"],
+        restricted: ["限制池", "最多攜帶 2 隻"],
+        semi_restricted: ["準限制池", "最多攜帶 3 隻"]
+    };
+    const rows = [["競技池期間", "開始時間", "結束時間", "池種", "攜帶規則", "精靈 ID", "精靈名稱"]];
+    competitivePoolCharacters.forEach((character) => {
+        const [typeName, rule] = Object.prototype.hasOwnProperty.call(typeLabels, character.pool_type)
+            ? typeLabels[character.pool_type]
+            : ["未知", ""];
+        rows.push([
+            selectedCompetitivePool.name,
+            formatDate(selectedCompetitivePool.start_at),
+            formatDate(selectedCompetitivePool.end_at),
+            typeName,
+            rule,
+            character.seer_pet_id,
+            character.pet_name
+        ]);
+    });
+
+    const csv = `\ufeff${rows.map((row) => row.map(toCsvCell).join(",")).join("\r\n")}`;
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const safePoolName = selectedCompetitivePool.name.replace(/[\\/:*?"<>|]/g, "_");
+    link.href = url;
+    link.download = `${safePoolName}_競技池名單.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    showAdminNotification(`已匯出「${selectedCompetitivePool.name}」的 ${competitivePoolCharacters.length} 隻競技池精靈。`, "success");
 }
 
 function renderCompetitivePoolCharacters() {

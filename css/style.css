@@ -1666,6 +1666,10 @@ button:disabled {
     #character-list {
         grid-template-columns: repeat(3, 1fr);
     }
+
+    .competitive-pool-view .competitive-pool-pet-list {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 680px) {
@@ -2357,6 +2361,13 @@ body::after,
     box-shadow: inset 0 1px rgba(255,255,255,.13);
 }
 
+.admin-tool-tabs {
+    width: fit-content;
+    margin-top: 4px;
+}
+
+.admin-tool-panel[hidden] { display: none; }
+
 .competitive-pool-view > .panel-header {
     align-items: center;
 }
@@ -2548,7 +2559,7 @@ body::after,
 }
 
 .competitive-pool-view .competitive-pool-pet-list {
-    grid-template-columns: repeat(auto-fill, minmax(178px, 1fr));
+    grid-template-columns: repeat(9, minmax(0, 1fr));
     gap: 12px;
 }
 
@@ -2598,8 +2609,12 @@ body::after,
 }
 
 .competitive-pool-view .competitive-pool-pet .character-name {
+    display: block;
     color: var(--text);
     font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .competitive-pool-view .competitive-pool-pet .competitive-pool-limit-indicator.is-banned {
@@ -2878,6 +2893,8 @@ body::after,
     .competitive-pool-admin-actions { width: 100%; justify-content: space-between; }
     .competitive-pool-character-form { grid-template-columns: minmax(0, 1fr); }
     .competitive-pet-actions > button { flex: 1; }
+    .admin-tool-tabs { width: 100%; }
+    .admin-tool-tabs .main-tab { flex: 1 1 0; }
 }
 
 @media (max-width: 380px) {
@@ -4024,5 +4041,54 @@ span.flatpickr-weekday {
 
     .admin-form .pool-date-field::after {
         right: 99px;
+    }
+}
+
+.competitive-pool-view .competitive-pool-pet > img.character-portrait {
+    border-radius: 10px;
+}
+
+.competitive-pool-view .competitive-pool-pet .competitive-pool-limit-indicator {
+    top: 73.5px;
+    right: auto;
+    bottom: auto;
+    left: 13px;
+    z-index: 3;
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    width: 19px;
+    height: 19px;
+    padding: 0;
+    border: 2px solid #d9364f;
+    border-radius: 50%;
+    color: #ffe56b;
+    background: rgba(0, 0, 0, .94);
+    font-size: 11px;
+    line-height: 1;
+    text-align: center;
+    font-weight: 800;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .45);
+}
+
+.competitive-pool-view .competitive-pool-pet .competitive-pool-limit-indicator.is-banned {
+    border-color: #d9364f;
+    color: #ff596f;
+    background: rgba(0, 0, 0, .94);
+    padding-bottom: 1px;
+}
+
+.competitive-pool-view .competitive-pool-pet .competitive-pool-limit-indicator.is-restricted,
+.competitive-pool-view .competitive-pool-pet .competitive-pool-limit-indicator.is-semi-restricted {
+    border-color: #d9364f;
+    color: #ffe56b;
+    background: rgba(0, 0, 0, .94);
+    padding-bottom: 1px;
+}
+
+@media (max-width: 680px) {
+    .competitive-pool-view .competitive-pool-pet .competitive-pool-limit-indicator {
+        top: 70.5px;
+        left: 11px;
     }
 }

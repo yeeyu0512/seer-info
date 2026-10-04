@@ -27,13 +27,18 @@
             <div class="admin-page-title">
                 <div>
                     <span class="admin-kicker">ADMIN CONSOLE</span>
-                    <h1>票選活動管理</h1>
+                    <h1>管理後台</h1>
                 </div>
-                <p>建立、設定與管理競技票選活動。</p>
+                <p>管理票選活動與遊戲內競技池資料。</p>
             </div>
         </section>
 
         <section id="admin-workspace" hidden>
+        <nav class="main-tabs admin-tool-tabs" aria-label="後台管理功能" role="tablist">
+            <button id="admin-voting-tab" class="main-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="admin-voting-tools" data-admin-tab="admin-voting-tools">票選活動管理</button>
+            <button id="admin-competitive-pool-tab" class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="admin-competitive-tools" data-admin-tab="admin-competitive-tools">遊戲內競技池</button>
+        </nav>
+        <div id="admin-voting-tools" class="admin-tool-panel" role="tabpanel" aria-labelledby="admin-voting-tab">
         <section id="admin-content" class="panel" aria-live="polite">
             <div class="panel-header">
                 <div>
@@ -163,6 +168,8 @@
             </section>
         </section>
 
+        </div>
+        <div id="admin-competitive-tools" class="admin-tool-panel" role="tabpanel" aria-labelledby="admin-competitive-pool-tab" hidden>
         <section id="competitive-pool-admin" class="panel competitive-pool-admin">
             <div class="panel-header">
                 <div>
@@ -195,7 +202,13 @@
                 <p id="competitive-pool-form-message" class="form-message" aria-live="polite"></p>
                 <section id="competitive-pool-character-manager" hidden>
                     <div class="editor-divider"></div>
-                    <h3 class="panel-title">設定精靈名單</h3>
+                    <div class="panel-header competitive-pool-character-manager-header">
+                        <div>
+                            <h3 class="panel-title">設定精靈名單</h3>
+                            <p class="panel-description">名單可匯出為 CSV，包含池種、精靈 ID 與名稱。</p>
+                        </div>
+                        <button id="export-competitive-pool-csv-button" class="secondary-button compact-button" type="button" disabled>匯出競技池 CSV</button>
+                    </div>
                     <form id="competitive-pool-character-form" class="competitive-pool-character-form">
                         <label>精靈 ID<input id="competitive-pet-id" type="number" min="1" placeholder="例如：5000" required></label>
                         <label>池種
@@ -247,7 +260,8 @@
                     <div id="competitive-pool-character-list" class="competitive-pool-character-list"></div>
                 </section>
             </section>
-        </section>
+            </section>
+            </div>
         </section>
 
         <section id="access-denied" class="panel access-denied" hidden>
