@@ -2357,6 +2357,384 @@ body::after,
     box-shadow: inset 0 1px rgba(255,255,255,.13);
 }
 
+.competitive-pool-view > .panel-header {
+    align-items: center;
+}
+
+.competitive-pool-period-status {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    min-height: 24px;
+    padding: 3px 9px;
+    border: 1px solid rgba(93, 214, 160, .28);
+    border-radius: 999px;
+    color: var(--success);
+    background: rgba(93, 214, 160, .08);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.competitive-pool-groups,
+.competitive-pool-character-list {
+    display: grid;
+    gap: 14px;
+    margin-top: 14px;
+}
+
+.competitive-pool-type-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(196,191,255,.1);
+}
+
+.competitive-pool-type-tabs[hidden] { display: none; }
+
+.competitive-pool-type-tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 0;
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 1px solid rgba(196,191,255,.16);
+    border-radius: 11px;
+    color: var(--text-secondary);
+    background: rgba(4, 6, 18, .25);
+    box-shadow: none;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.competitive-pool-type-tab:hover {
+    color: var(--text);
+    background: rgba(147,135,255,.1);
+    box-shadow: none;
+    transform: none;
+}
+
+.competitive-pool-type-tab.is-active {
+    border-color: rgba(167,160,255,.55);
+    color: var(--text);
+    background: rgba(130,113,244,.22);
+    box-shadow: inset 0 1px rgba(255,255,255,.08);
+}
+
+.competitive-pool-type-count {
+    display: inline-grid;
+    min-width: 22px;
+    height: 22px;
+    place-items: center;
+    padding: 0 5px;
+    border-radius: 999px;
+    color: var(--text-secondary);
+    background: rgba(255,255,255,.07);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.competitive-pool-type-tab.is-active .competitive-pool-type-count {
+    color: white;
+    background: rgba(147,135,255,.35);
+}
+
+.competitive-pool-group {
+    min-width: 0;
+    padding: 14px;
+    border: 1px solid rgba(196, 191, 255, .15);
+    border-radius: 14px;
+    background: rgba(4, 6, 18, .2);
+}
+
+.competitive-pool-group.is-banned { border-color: rgba(255, 119, 139, .35); }
+.competitive-pool-group.is-restricted { border-color: rgba(255, 194, 92, .35); }
+.competitive-pool-group.is-semi-restricted { border-color: rgba(130, 182, 255, .35); }
+
+.competitive-pool-group-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.competitive-pool-group-header h3,
+.competitive-pool-group-header h4 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.competitive-pool-group.is-banned .competitive-pool-group-header h3,
+.competitive-pool-group.is-banned .competitive-pool-group-header h4 { color: #ff9aa8; }
+.competitive-pool-group.is-restricted .competitive-pool-group-header h3,
+.competitive-pool-group.is-restricted .competitive-pool-group-header h4 { color: #ffd17b; }
+.competitive-pool-group.is-semi-restricted .competitive-pool-group-header h3,
+.competitive-pool-group.is-semi-restricted .competitive-pool-group-header h4 { color: #a9cbff; }
+
+.competitive-pool-group-header > span {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.competitive-pool-pet-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(178px, 1fr));
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.competitive-pool-pet {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    gap: 9px;
+    padding: 8px 10px;
+    border: 1px solid rgba(196, 191, 255, .1);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, .025);
+}
+
+.competitive-pool-pet > img {
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    border-radius: 9px;
+    object-fit: contain;
+    background: rgba(255, 255, 255, .04);
+}
+
+.competitive-pool-pet > strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: var(--text);
+    font-size: 13px;
+}
+
+.competitive-pool-pet > span {
+    flex: 0 0 auto;
+    margin-left: auto;
+    color: var(--text-muted);
+    font-size: 11px;
+}
+
+.competitive-pool-empty {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding: 10px 2px;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.competitive-pool-limit-indicator.is-banned {
+    border-color: rgba(255, 119, 139, .55);
+    color: #ff9aa8;
+    background: rgba(87, 27, 44, .72);
+}
+
+.competitive-pool-limit-indicator.is-restricted {
+    border-color: rgba(255, 194, 92, .55);
+    color: #ffd17b;
+    background: rgba(87, 62, 27, .72);
+}
+
+.competitive-pool-limit-indicator.is-semi-restricted {
+    border-color: rgba(130, 182, 255, .55);
+    color: #a9cbff;
+    background: rgba(30, 52, 87, .72);
+}
+
+.competitive-pool-view .competitive-pool-pet-list {
+    grid-template-columns: repeat(auto-fill, minmax(178px, 1fr));
+    gap: 12px;
+}
+
+.competitive-pool-view .competitive-pool-pet-list[hidden] { display: none; }
+
+.competitive-pool-view .competitive-pool-pet {
+    min-height: 132px;
+    padding: 14px;
+    border-color: rgba(196, 191, 255, .12);
+    border-radius: 18px;
+    background: linear-gradient(145deg, rgba(40, 46, 82, .72), rgba(15, 18, 37, .68));
+}
+
+.competitive-pool-view .competitive-pool-pet.is-banned { border-color: rgba(255, 119, 139, .35); }
+.competitive-pool-view .competitive-pool-pet.is-restricted { border-color: rgba(255, 194, 92, .35); }
+.competitive-pool-view .competitive-pool-pet.is-semi-restricted { border-color: rgba(130, 182, 255, .35); }
+
+.competitive-pool-view .competitive-pool-pet > img.character-portrait {
+    top: 31px;
+    left: 12px;
+    width: 64px;
+    height: 64px;
+    border-radius: 0;
+    background: transparent;
+}
+
+.competitive-pool-view .competitive-pool-pet .character-id,
+.competitive-pool-view .competitive-pool-pet .character-name {
+    margin-left: 0;
+}
+
+.competitive-pool-view .competitive-pool-pet .character-name {
+    z-index: 1;
+    max-width: 100%;
+}
+
+.competitive-pool-view .competitive-pool-pet .competitive-pool-limit-indicator {
+    flex: none;
+    margin: 0;
+    color: #fff;
+    font-size: 12px;
+}
+
+.competitive-pool-view .competitive-pool-pet .character-id {
+    color: #97a2ca;
+    letter-spacing: .09em;
+}
+
+.competitive-pool-view .competitive-pool-pet .character-name {
+    color: var(--text);
+    font-size: 14px;
+}
+
+.competitive-pool-view .competitive-pool-pet .competitive-pool-limit-indicator.is-banned {
+    border-color: rgba(255, 119, 139, .65);
+    color: #ff9aa8;
+    background: rgba(87, 27, 44, .82);
+}
+
+.competitive-pool-view .competitive-pool-pet .competitive-pool-limit-indicator.is-restricted {
+    border-color: rgba(255, 194, 92, .65);
+    color: #ffd17b;
+    background: rgba(87, 62, 27, .82);
+}
+
+.competitive-pool-view .competitive-pool-pet .competitive-pool-limit-indicator.is-semi-restricted {
+    border-color: rgba(130, 182, 255, .65);
+    color: #a9cbff;
+    background: rgba(30, 52, 87, .82);
+}
+
+.competitive-pool-admin {
+    margin-top: 14px;
+}
+
+.competitive-pool-admin-list {
+    display: grid;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.competitive-pool-admin-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 12px 14px;
+    border: 1px solid rgba(196, 191, 255, .13);
+    border-radius: 12px;
+    background: rgba(4, 6, 18, .2);
+}
+
+.competitive-pool-admin-details {
+    display: grid;
+    min-width: 0;
+    gap: 4px;
+}
+
+.competitive-pool-admin-details strong {
+    overflow-wrap: anywhere;
+    color: var(--text);
+}
+
+.competitive-pool-admin-details > span {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.competitive-pool-admin-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.competitive-pool-editor {
+    margin-top: 12px;
+}
+
+.competitive-pool-character-form {
+    display: grid;
+    grid-template-columns: minmax(120px, 180px) minmax(220px, 1fr) auto;
+    align-items: end;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.competitive-pool-character-form label {
+    display: grid;
+    gap: 6px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.competitive-pool-character-form input,
+.competitive-pool-character-form select {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid rgba(196, 191, 255, .16);
+    border-radius: 9px;
+    outline: none;
+    color: var(--text);
+    background: rgba(4, 6, 18, .3);
+    font: inherit;
+}
+
+.competitive-pet-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.competitive-pet-actions button {
+    min-height: 36px;
+    padding: 7px 11px;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.competitive-pool-import-form select {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 38px;
+    padding: 7px 10px;
+    border: 1px solid rgba(196,191,255,.14);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    background: rgba(4, 6, 18, .3);
+    font: inherit;
+}
+
+.competitive-pool-character-list .competitive-pool-group {
+    padding: 12px;
+}
+
+.competitive-pool-character-list .competitive-pool-pet-list {
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+}
+
+.competitive-pool-character-list .competitive-pool-pet > .delete-character-button {
+    flex: 0 0 auto;
+    margin-left: auto !important;
+}
+
 .info-card {
     display: flex;
     align-items: baseline;
@@ -2486,8 +2864,27 @@ body::after,
     .character-card .character-id,
     .character-card .character-name { margin-left: 67px; }
     .selection-bar { padding: 11px; }
-    .main-tabs { width: 100%; }
-    .main-tab { flex: 1; }
+    .main-tabs { width: 100%; overflow-x: auto; }
+    .main-tab { flex: 1 0 auto; padding-right: 9px; padding-left: 9px; white-space: nowrap; }
+    .competitive-pool-pet-list,
+    .competitive-pool-character-list .competitive-pool-pet-list {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .competitive-pool-view .competitive-pool-pet-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .competitive-pool-type-tabs { gap: 5px; }
+    .competitive-pool-type-tab { gap: 5px; min-height: 44px; padding: 7px 5px; font-size: 12px; }
+    .competitive-pool-admin-item { align-items: flex-start; flex-direction: column; }
+    .competitive-pool-admin-actions { width: 100%; justify-content: space-between; }
+    .competitive-pool-character-form { grid-template-columns: minmax(0, 1fr); }
+    .competitive-pet-actions > button { flex: 1; }
+}
+
+@media (max-width: 380px) {
+    .competitive-pool-type-tabs { gap: 4px; }
+    .competitive-pool-type-tab { flex-direction: column; gap: 2px; min-height: 52px; padding: 5px 2px; font-size: 11px; }
+    .competitive-pool-type-count { min-width: 18px; height: 18px; padding: 0 4px; font-size: 10px; }
+    .competitive-pool-view .competitive-pool-pet-list { grid-template-columns: minmax(0, 1fr); }
+    .competitive-pool-view .competitive-pool-pet { min-height: 126px; }
 }
 
 /* Login modal and visitor call-to-action */

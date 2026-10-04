@@ -161,6 +161,7 @@
         <nav class="main-tabs" aria-label="投票功能">
             <button class="main-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="selection-panel" data-tab-target="selection-panel">投票</button>
             <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="ranking-section" data-tab-target="ranking-section">即時排名</button>
+            <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="competitive-pool-section" data-tab-target="competitive-pool-section">競技池</button>
             <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="seer-lookup-section" data-tab-target="seer-lookup-section" data-lookup-mode="pet">精靈查詢</button>
             <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="seer-lookup-section" data-tab-target="seer-lookup-section" data-lookup-mode="skin">皮膚查詢</button>
             <button id="account-tab" class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="account-section" data-tab-target="account-section" hidden>帳號</button>
@@ -291,6 +292,29 @@
                 <button id="ranking-next-page" class="secondary-button compact-button" type="button">下一頁</button>
             </div>
 
+        </section>
+
+        <section id="competitive-pool-section" class="panel competitive-pool-view" hidden>
+            <div class="panel-header">
+                <div>
+                    <h2 class="panel-title">遊戲內當前競技池</h2>
+                    <p id="competitive-pool-period" class="panel-description"></p>
+                </div>
+                <button id="refresh-competitive-pool-button" class="secondary-button compact-button" type="button">重新整理</button>
+            </div>
+            <p id="competitive-pool-message" class="vote-message" aria-live="polite">正在載入競技池資料…</p>
+            <div id="competitive-pool-type-tabs" class="competitive-pool-type-tabs" role="tablist" aria-label="競技池種類" hidden>
+                <button id="competitive-pool-tab-banned" class="competitive-pool-type-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="competitive-pool-groups" data-pool-type="banned">
+                    <span>禁止池</span><span class="competitive-pool-type-count" data-pool-type-count>0</span>
+                </button>
+                <button id="competitive-pool-tab-restricted" class="competitive-pool-type-tab" type="button" role="tab" aria-selected="false" aria-controls="competitive-pool-groups" data-pool-type="restricted">
+                    <span>限制池</span><span class="competitive-pool-type-count" data-pool-type-count>0</span>
+                </button>
+                <button id="competitive-pool-tab-semi-restricted" class="competitive-pool-type-tab" type="button" role="tab" aria-selected="false" aria-controls="competitive-pool-groups" data-pool-type="semi_restricted">
+                    <span>準限制池</span><span class="competitive-pool-type-count" data-pool-type-count>0</span>
+                </button>
+            </div>
+            <div id="competitive-pool-groups" class="competitive-pool-pet-list" role="tabpanel" aria-labelledby="competitive-pool-tab-banned" hidden></div>
         </section>
 
         <div id="seer-lookup-section" class="seer-lookup-layout" hidden>
