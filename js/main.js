@@ -117,6 +117,7 @@ const characterTypeIconCache = new Map();
 const elementTypeIconCache = new Map();
 const elementTypeDetailsCache = new Map();
 const seerPetDetailsCache = new Map();
+const seerSkinThumbnailFallbackCache = new Map();
 let seerSkinCatalogPromise = null;
 let seerSkinCategoriesPromise = null;
 const characterTypeIconQueue = [];
@@ -511,7 +512,7 @@ function updateSeerSkinSearchModeUi() {
     seerLookupDescription.textContent = isPetMode
         ? "輸入綁定精靈 ID 或名稱，列出遊戲中綁定該精靈的皮膚，可能包含僅陸服存在的項目或顯示錯誤。"
         : isCategoryMode
-            ? "選擇皮膚種類圖示，即可瀏覽該種類的皮膚。"
+            ? "選擇皮膚種類圖示，即可瀏覽該種類的皮膚，可能包含僅陸服存在的項目或顯示錯誤。"
             : "輸入皮膚 ID 或名稱，可能包含僅陸服存在的項目或顯示錯誤。";
 }
 
@@ -1506,6 +1507,17 @@ function matchesSelectedSkinCategory(skin, categoryId) {
         || Number(skin && skin.category && skin.category.id) === categoryId;
 }
 
+function getSeerSkinResourceId(skin) {
+    const resourceId = Number(skin && skin.resource_id);
+    if (Number.isSafeInteger(resourceId) && resourceId > 0) return String(resourceId);
+    const skinId = Number(skin && skin.id);
+    return Number.isSafeInteger(skinId) && skinId > 0 ? `1400${skinId}` : "";
+}
+
+function getSeerSkinImageResourceId(skin) {
+    return Number(skin && skin.id) === 840 ? "1400812" : getSeerSkinResourceId(skin);
+}
+
 async function loadSeerSkinEntry(skin) {
     const skinId = skin && skin.id;
     const petId = skin && skin.pet && skin.pet.id;
@@ -1687,21 +1699,34 @@ function renderSeerSkinSearchResults(entries, append = false) {
         button.type = "button";
         const content = document.createElement("span");
         content.className = "seer-lookup-result-content";
-        const category = document.createElement("span");
-        category.className = "seer-lookup-result-category";
-        const categoryId = skin && skin.category && Number(skin.category.id);
-        if (Number.isSafeInteger(categoryId) && categoryId >= 0) {
-            const categoryIcon = document.createElement("img");
-            categoryIcon.src = `https://img.yuyuqaq.cn/seer-common/common_pet_skin_icon_${categoryId}.png`;
-            categoryIcon.alt = `皮膚種類 ${categoryId}`;
-            categoryIcon.loading = "lazy";
-            categoryIcon.addEventListener("error", () => {
-                categoryIcon.hidden = true;
-            }, { once: true });
-            category.append(categoryIcon);
-        } else {
-            category.textContent = "-";
-        }
+        const visual = document.createElement("span");
+        visual.className = "seer-lookup-result-category seer-lookup-result-skin-thumbnail";
+        const thumbnail = document.createElement("img");
+        const resourceId = getSeerSkinImageResourceId(skin);
+        thumbnail.src = `https://newseer.61.com/web/monster/head/${encodeURIComponent(resourceId)}.png`;
+        thumbnail.alt = `${convertToTraditionalChinese(skin.name || "皮膚")}縮圖`;
+        thumbnail.loading = "lazy";
+        thumbnail.addEventListener("error", async () => {
+            if (thumbnail.dataset.fallbackAttempted === "true") {
+                thumbnail.hidden = true;
+                return;
+            }
+            thumbnail.dataset.fallbackAttempted = "true";
+            try {
+                const fallbackPet = await findSeerPetForSkinThumbnailFallback(skin, pet);
+                if (!thumbnail.isConnected) return;
+                if (!fallbackPet) {
+                    thumbnail.hidden = true;
+                    return;
+                }
+                thumbnail.src = `https://newseer.61.com/web/monster/head/${encodeURIComponent(fallbackPet.id)}.png`;
+                thumbnail.alt = `${convertToTraditionalChinese(fallbackPet.name || "精靈")}頭像`;
+            } catch (error) {
+                console.error(`Load fallback thumbnail for Seer skin ${skin.id} error:`, error);
+                thumbnail.hidden = true;
+            }
+        });
+        visual.append(thumbnail);
         const details = document.createElement("span");
         details.className = "seer-lookup-result-details";
         const name = document.createElement("strong");
@@ -1711,7 +1736,7 @@ function renderSeerSkinSearchResults(entries, append = false) {
         petName.className = "seer-lookup-result-pet";
         petName.textContent = `綁定精靈：${convertToTraditionalChinese(pet.name || "未命名精靈")}`;
         details.append(name, petName);
-        content.append(category, details);
+        content.append(visual, details);
         const id = document.createElement("span");
         id.className = "seer-lookup-result-id";
         id.textContent = `#${skin.id}`;
@@ -1811,7 +1836,8 @@ async function renderSeerSkinPreview(entry, requestId) {
         linkedPetId: String(petId),
         attempted: false
     };
-    seerLookupAvatar.src = `https://newseer.61.com/web/monster/head/1400${encodeURIComponent(skinId)}.png`;
+    const imageResourceId = getSeerSkinImageResourceId(skin);
+    seerLookupAvatar.src = `https://newseer.61.com/web/monster/head/${encodeURIComponent(imageResourceId)}.png`;
     seerLookupName.textContent = skinName;
     seerLookupIdResult.textContent = `#${skinId}`;
     seerLookupRelatedPet.textContent = `綁定精靈：${petName} (#${petId})`;
@@ -1830,13 +1856,13 @@ async function renderSeerSkinPreview(entry, requestId) {
     }
     seerLookupTypeIcon.src = `https://img.yuyuqaq.cn/seer-pet/type/${typeDetails.id}.png`;
     seerLookupTypeName.textContent = typeDetails.name || "未知";
-    seerLookupIllustrationImage.src = `https://newseer.61.com/web/monster//body/1400${encodeURIComponent(skinId)}.png`;
+    seerLookupIllustrationImage.src = `https://newseer.61.com/web/monster//body/${encodeURIComponent(imageResourceId)}.png`;
     seerLookupIllustrationImage.alt = `${skinName}立繪`;
     seerLookupMoreInfoButton.hidden = false;
     seerLookupPetSkinsButton.hidden = true;
     seerLookupIllustrationTitle.textContent = "皮膚立繪預覽";
     seerLookupIllustrationDescription.textContent = `綁定精靈：${petName}`;
-    currentSeerInfoUrl = `https://wiki.biligame.com/seer/${encodeURI(`皮肤:${1400}${skinId}`)}`;
+    currentSeerInfoUrl = `https://wiki.biligame.com/seer/${encodeURI(`皮肤:${getSeerSkinResourceId(skin)}`)}`;
     currentSeerPetId = null;
     seerLookupIllustrationImage.hidden = false;
     seerLookupPreview.hidden = false;
@@ -1861,6 +1887,23 @@ async function findSeerPetForSkinFallback(skinName, linkedPetId) {
     return exactNameMatches.find((pet) => String(pet.id) === linkedPetId)
         || exactNameMatches[0]
         || null;
+}
+
+function findSeerPetForSkinThumbnailFallback(skin, linkedPet) {
+    const skinName = String(skin && skin.name || "").trim();
+    if (!skinName) return Promise.resolve(null);
+    let fallbackPromise = seerSkinThumbnailFallbackCache.get(skinName);
+    if (!fallbackPromise) {
+        fallbackPromise = findSeerPetForSkinFallback(
+            skinName,
+            linkedPet && linkedPet.id ? String(linkedPet.id) : ""
+        ).catch((error) => {
+            seerSkinThumbnailFallbackCache.delete(skinName);
+            throw error;
+        });
+        seerSkinThumbnailFallbackCache.set(skinName, fallbackPromise);
+    }
+    return fallbackPromise;
 }
 
 async function handleSeerLookupImageError(image) {
