@@ -1133,6 +1133,7 @@ async function startLatestSeerBrowse(requestId) {
         hasMore: false,
         loading: true,
         seenIds: new Set(),
+        browseStartOffset: 0,
         categoryId: isSkinResource && seerSkinSearchMode === "category"
             ? selectedSeerSkinCategoryId
             : null
@@ -1156,10 +1157,12 @@ async function startLatestSeerBrowse(requestId) {
         }
 
         const offset = Math.max(0, count - SEER_BROWSE_PAGE_SIZE);
-        await loadSeerBrowsePage(seerBrowseState, offset);
+        const state = seerBrowseState;
+        state.browseStartOffset = offset;
+        await loadSeerBrowsePage(state, offset);
         if (requestId !== seerLookupRequestId) return;
-        const loadedCount = seerBrowseState.seenIds.size;
-        seerLookupMessage.textContent = `顯示最新 ${loadedCount} 筆${seerBrowseState.hasMore ? "；繼續向下捲動載入更早編號" : ""}。`;
+        const loadedCount = state.seenIds.size;
+        seerLookupMessage.textContent = `顯示最新 ${loadedCount} 筆${state.hasMore ? "；繼續向下捲動載入更早編號" : ""}。`;
     } catch (error) {
         if (requestId !== seerLookupRequestId) return;
         console.error("Load latest Seer browse results error:", error);
@@ -1173,9 +1176,9 @@ async function loadMoreSeerBrowseResults(requestId) {
     const state = seerBrowseState;
     if (!state || state.requestId !== requestId || state.loading || !state.hasMore) return;
     state.loading = true;
-    if (seerBrowseSentinel) seerBrowseSentinel.textContent = "正在載入更早編號…";
+    const offset = state.nextOffset;
+    updateSeerBrowseLoadingProgress(state, offset);
     try {
-        const offset = state.nextOffset;
         await loadSeerBrowsePage(state, offset);
         if (seerBrowseState !== state || requestId !== seerLookupRequestId) return;
         seerLookupMessage.textContent = `已載入 ${state.seenIds.size} 筆${state.hasMore ? "；繼續向下捲動載入更早編號" : "，已到最早編號"}。`;
@@ -1193,6 +1196,29 @@ async function loadMoreSeerBrowseResults(requestId) {
             updateSeerBrowseSentinel(state);
         }
     }
+}
+
+function updateSeerBrowseLoadingProgress(state, offset) {
+    if (!seerBrowseSentinel) return;
+    const progress = state.browseStartOffset > 0
+        ? Math.min(100, Math.max(1, Math.ceil(
+            ((state.browseStartOffset - offset) / state.browseStartOffset) * 100
+        )))
+        : 100;
+    const label = document.createElement("span");
+    label.textContent = "正在載入更早編號";
+    const progressBar = document.createElement("progress");
+    progressBar.className = "seer-lookup-browse-progress";
+    progressBar.max = 100;
+    progressBar.value = progress;
+    progressBar.setAttribute("aria-label", "已搜尋較早編號範圍");
+    progressBar.setAttribute("aria-valuetext", `${progress}%`);
+    const percentage = document.createElement("span");
+    percentage.className = "seer-lookup-browse-progress-value";
+    percentage.textContent = `${progress}%`;
+    seerBrowseSentinel.classList.add("is-loading");
+    seerBrowseSentinel.replaceChildren(label, progressBar, percentage);
+    seerBrowseSentinel.disabled = true;
 }
 
 async function loadSeerBrowsePage(state, offset) {
@@ -1242,6 +1268,7 @@ function updateSeerBrowseSentinel(state) {
     sentinel.className = "seer-lookup-browse-sentinel";
     sentinel.textContent = state.loading ? "正在載入更早編號…" : "向下捲動或點此載入更早編號";
     sentinel.disabled = state.loading;
+    sentinel.classList.toggle("is-loading", state.loading);
     sentinel.addEventListener("click", () => void loadMoreSeerBrowseResults(state.requestId));
     seerBrowseSentinel = sentinel;
     seerLookupResults.append(sentinel);
