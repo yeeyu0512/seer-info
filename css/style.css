@@ -476,6 +476,10 @@ button {
     gap: 14px;
 }
 
+#character-list > .empty-state {
+    grid-column: 1 / -1;
+}
+
 .character-pagination {
     display: flex;
     align-items: center;
