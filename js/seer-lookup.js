@@ -197,7 +197,7 @@ function renderSeerSkinCategoryOptions(categoryIds) {
             button.textContent = option.label;
         } else {
             const icon = document.createElement("img");
-            icon.src = `https://img.yuyuqaq.cn/seer-common/common_pet_skin_icon_${option.id}.png`;
+            icon.src = `./seer_icons/common_pet_skin_icon_${option.id}.png`;
             icon.alt = "";
             icon.loading = "lazy";
             icon.addEventListener("error", () => {
@@ -901,7 +901,7 @@ function renderSeerPetSearchResults(pets, typeDetailsById, append = false) {
         type.className = "seer-lookup-result-type";
         if (typeDetails) {
             const typeIcon = document.createElement("img");
-            typeIcon.src = `https://img.yuyuqaq.cn/seer-pet/type/${typeDetails.id}.png`;
+            typeIcon.src = `./seer_icons/${typeDetails.id}.png`;
             typeIcon.alt = typeDetails.name || "屬性";
             type.append(typeIcon);
         } else {
@@ -1064,7 +1064,7 @@ async function renderSeerPetPreview(pet, requestId) {
     seerLookupSkinCategoryIcon.removeAttribute("src");
     seerLookupIllustrationCategoryIcon.hidden = true;
     seerLookupIllustrationCategoryIcon.removeAttribute("src");
-    seerLookupTypeIcon.src = `https://img.yuyuqaq.cn/seer-pet/type/${resolvedTypeId}.png`;
+    seerLookupTypeIcon.src = `./seer_icons/${resolvedTypeId}.png`;
     seerLookupTypeName.textContent = typeName || "未知";
     seerLookupIllustrationImage.src = `https://newseer.61.com/web/monster//body/${encodeURIComponent(petId)}.png`;
     seerLookupIllustrationImage.alt = `${petName}立繪`;
@@ -1373,8 +1373,8 @@ function renderSeerPetInfo(pet, skills, soulmarks, advanceStats, advanceLoadErro
                     const typeIcon = document.createElement("img");
                     typeIcon.className = "seer-pet-skill-type-icon";
                     typeIcon.src = Number(record && record.category && record.category.id) === 4
-                        ? "https://img.yuyuqaq.cn/seer-pet/type/prop.png"
-                        : `https://img.yuyuqaq.cn/seer-pet/type/${typeId}.png`;
+                        ? "./seer_icons/prop.png"
+                        : `./seer_icons/${typeId}.png`;
                     typeIcon.alt = "";
                     typeIcon.setAttribute("aria-hidden", "true");
                     typeIcon.loading = "lazy";
@@ -1676,9 +1676,9 @@ function renderSeerPetInfoIdentity(pet, typeDetails) {
     addMeta("編號", `#${petId}`);
     const genderId = Number(pet.gender && pet.gender.id);
     const gender = {
-        0: ["無性", "https://img.yuyuqaq.cn/seer-common/sex_sexless.png"],
-        1: ["雄性", "https://img.yuyuqaq.cn/seer-common/sex_male.png"],
-        2: ["雌性", "https://img.yuyuqaq.cn/seer-common/sex_female.png"]
+        0: ["無性", "./seer_icons/sex_sexless.png"],
+        1: ["雄性", "./seer_icons/sex_male.png"],
+        2: ["雌性", "./seer_icons/sex_female.png"]
     }[genderId];
     addMeta("性別", gender ? gender[0] : "未知", gender && gender[1]);
     const typeId = typeDetails && typeDetails.id || pet.type && pet.type.id;
@@ -1686,7 +1686,7 @@ function renderSeerPetInfoIdentity(pet, typeDetails) {
     addMeta(
         "屬性",
         typeName || "",
-        typeId ? `https://img.yuyuqaq.cn/seer-pet/type/${encodeURIComponent(typeId)}.png` : ""
+        typeId ? `./seer_icons/${encodeURIComponent(typeId)}.png` : ""
     );
 }
 
@@ -1766,9 +1766,9 @@ async function renderSeerSkinPreview(entry, requestId) {
     seerLookupRelatedPet.hidden = false;
     const categoryId = skin && skin.category && Number(skin.category.id);
     if (Number.isSafeInteger(categoryId) && categoryId >= 0) {
-        seerLookupSkinCategoryIcon.src = `https://img.yuyuqaq.cn/seer-common/common_pet_skin_icon_${categoryId}.png`;
+        seerLookupSkinCategoryIcon.src = `./seer_icons/common_pet_skin_icon_${categoryId}.png`;
         seerLookupSkinCategoryIcon.hidden = false;
-        seerLookupIllustrationCategoryIcon.src = `https://img.yuyuqaq.cn/seer-common/common_pet_skin_icon_${categoryId}.png`;
+        seerLookupIllustrationCategoryIcon.src = `./seer_icons/common_pet_skin_icon_${categoryId}.png`;
         seerLookupIllustrationCategoryIcon.hidden = false;
     } else {
         seerLookupSkinCategoryIcon.hidden = true;
@@ -1776,7 +1776,7 @@ async function renderSeerSkinPreview(entry, requestId) {
         seerLookupIllustrationCategoryIcon.hidden = true;
         seerLookupIllustrationCategoryIcon.removeAttribute("src");
     }
-    seerLookupTypeIcon.src = `https://img.yuyuqaq.cn/seer-pet/type/${typeDetails.id}.png`;
+    seerLookupTypeIcon.src = `./seer_icons/${typeDetails.id}.png`;
     seerLookupTypeName.textContent = typeDetails.name || "未知";
     seerLookupIllustrationImage.src = `https://newseer.61.com/web/monster//body/${encodeURIComponent(imageResourceId)}.png`;
     seerLookupIllustrationImage.alt = `${skinName}立繪`;
@@ -2002,7 +2002,7 @@ function renderSeerRelatedSkins(entries, requestId) {
         categoryIcon.loading = "lazy";
         if (Number.isSafeInteger(categoryId) && categoryId >= 0) {
             categoryIcon.src =
-                `https://img.yuyuqaq.cn/seer-common/common_pet_skin_icon_${categoryId}.png`;
+                `./seer_icons/common_pet_skin_icon_${categoryId}.png`;
             categoryIcon.addEventListener("error", () => categoryIcon.remove(), { once: true });
         } else {
             categoryIcon.remove();

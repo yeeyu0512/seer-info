@@ -872,7 +872,7 @@ async function fetchCharacterTypeIconUrl(characterId) {
     if (!Number.isSafeInteger(resolvedTypeId) || resolvedTypeId <= 0) {
         throw new Error("SeerAPI 回傳的屬性 ID 無效。");
     }
-    return `https://img.yuyuqaq.cn/seer-pet/type/${resolvedTypeId}.png`;
+    return `./seer_icons/${resolvedTypeId}.png`;
 }
 
 async function fetchSeerJson(url, options = {}) {
