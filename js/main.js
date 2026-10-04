@@ -1783,13 +1783,8 @@ async function renderSeerSkinPreview(entry, requestId) {
     if (Number.isSafeInteger(categoryId) && categoryId >= 0) {
         seerLookupSkinCategoryIcon.src = `https://img.yuyuqaq.cn/seer-common/common_pet_skin_icon_${categoryId}.png`;
         seerLookupSkinCategoryIcon.hidden = false;
-        if (![0, 2, 3].includes(categoryId)) {
-            seerLookupIllustrationCategoryIcon.src = `https://img.yuyuqaq.cn/seer-common/common_pet_skin_icon_${categoryId}.png`;
-            seerLookupIllustrationCategoryIcon.hidden = false;
-        } else {
-            seerLookupIllustrationCategoryIcon.hidden = true;
-            seerLookupIllustrationCategoryIcon.removeAttribute("src");
-        }
+        seerLookupIllustrationCategoryIcon.src = `https://img.yuyuqaq.cn/seer-common/common_pet_skin_icon_${categoryId}.png`;
+        seerLookupIllustrationCategoryIcon.hidden = false;
     } else {
         seerLookupSkinCategoryIcon.hidden = true;
         seerLookupSkinCategoryIcon.removeAttribute("src");
