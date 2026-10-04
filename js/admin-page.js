@@ -24,12 +24,18 @@ import {
     addCompetitivePoolCharacters,
     deleteCompetitivePoolCharacter
 } from "./competitive-pool.js";
+import { getSeerServerSettings, updateSeerServerSettings } from "./seer-server-settings.js";
 
 const adminWorkspace = document.getElementById("admin-workspace");
 const adminContent = document.getElementById("admin-content");
 const accessDenied = document.getElementById("access-denied");
 const adminToolTabs = Array.from(document.querySelectorAll("[data-admin-tab]"));
 const adminToolPanels = adminToolTabs.map((tab) => document.getElementById(tab.dataset.adminTab));
+const taiwanSeerSettingsForm = document.getElementById("taiwan-seer-settings-form");
+const taiwanLatestPetIdInput = document.getElementById("taiwan-latest-pet-id");
+const taiwanLatestSkinIdInput = document.getElementById("taiwan-latest-skin-id");
+const saveTaiwanSeerSettingsButton = document.getElementById("save-taiwan-seer-settings-button");
+const taiwanSeerSettingsMessage = document.getElementById("taiwan-seer-settings-message");
 const poolList = document.getElementById("admin-pool-list");
 const logoutButton = document.getElementById("logout-button");
 const editor = document.getElementById("pool-editor");
@@ -60,6 +66,12 @@ const characterImportProgressFill = document.getElementById("character-import-pr
 const characterList = document.getElementById("admin-character-list");
 const characterCount = document.getElementById("admin-character-count");
 const characterSearch = document.getElementById("admin-character-search");
+const deleteAllCharactersButton = document.getElementById("delete-all-characters-button");
+const deleteAllCharactersProgress = document.getElementById("delete-all-characters-progress");
+const deleteAllCharactersProgressText = document.getElementById("delete-all-characters-progress-text");
+const deleteAllCharactersProgressPercent = document.getElementById("delete-all-characters-progress-percent");
+const deleteAllCharactersProgressBar = document.getElementById("delete-all-characters-progress-bar");
+const deleteAllCharactersProgressFill = document.getElementById("delete-all-characters-progress-fill");
 const exportCharactersButton = document.getElementById("export-characters-button");
 const characterPreviousPageButton = document.getElementById("admin-character-previous-page");
 const characterNextPageButton = document.getElementById("admin-character-next-page");
@@ -165,6 +177,7 @@ adminToolTabs.forEach((tab) => {
     });
 });
 
+taiwanSeerSettingsForm.addEventListener("submit", saveTaiwanSeerSettings);
 adminConfirmCancelButton.addEventListener("click", () => finishConfirmDialog(false));
 adminConfirmAcceptButton.addEventListener("click", () => finishConfirmDialog(true));
 adminConfirmModal.addEventListener("click", (event) => {
@@ -380,6 +393,7 @@ characterSearch.addEventListener("input", () => {
     characterCurrentPage = 1;
     renderCharacters();
 });
+deleteAllCharactersButton.addEventListener("click", deleteAllPoolCharacters);
 characterPreviousPageButton.addEventListener("click", () => {
     characterCurrentPage -= 1;
     renderCharacters();
@@ -722,11 +736,52 @@ async function loadAdminPage() {
         adminWorkspace.hidden = false;
         await loadPools();
         await loadAdminCompetitivePools();
+        await loadTaiwanSeerSettings();
     } catch (error) {
         console.error("Load admin page error:", error);
         adminWorkspace.hidden = false;
         poolList.innerHTML = "<p class=\"empty-state\">載入管理資料失敗，請重新整理後再試。</p>";
         showAdminNotification(`載入管理資料失敗：${getAdminErrorMessage(error)}`, "error");
+    }
+}
+
+async function loadTaiwanSeerSettings() {
+    taiwanSeerSettingsMessage.textContent = "正在載入台服設定…";
+    try {
+        const settings = await getSeerServerSettings();
+        taiwanLatestPetIdInput.value = settings.latestPetId ?? "";
+        taiwanLatestSkinIdInput.value = settings.latestSkinId ?? "";
+        taiwanSeerSettingsMessage.textContent = settings.latestPetId && settings.latestSkinId
+            ? "台服設定已載入。"
+            : "請填寫台服目前最新的精靈與皮膚編號。";
+    } catch (error) {
+        console.error("Load Taiwan Seer settings error:", error);
+        taiwanSeerSettingsMessage.textContent = `載入台服設定失敗：${getAdminErrorMessage(error)}`;
+    }
+}
+
+async function saveTaiwanSeerSettings(event) {
+    event.preventDefault();
+    const latestPetId = Number(taiwanLatestPetIdInput.value);
+    const latestSkinId = Number(taiwanLatestSkinIdInput.value);
+    if (
+        !Number.isSafeInteger(latestPetId) || latestPetId < 1
+        || !Number.isSafeInteger(latestSkinId) || latestSkinId < 1
+    ) {
+        taiwanSeerSettingsMessage.textContent = "請輸入有效的正整數編號。";
+        return;
+    }
+
+    saveTaiwanSeerSettingsButton.disabled = true;
+    taiwanSeerSettingsMessage.textContent = "正在儲存台服設定…";
+    try {
+        await updateSeerServerSettings(latestPetId, latestSkinId);
+        taiwanSeerSettingsMessage.textContent = "台服設定已儲存。";
+    } catch (error) {
+        console.error("Save Taiwan Seer settings error:", error);
+        taiwanSeerSettingsMessage.textContent = `儲存台服設定失敗：${getAdminErrorMessage(error)}`;
+    } finally {
+        saveTaiwanSeerSettingsButton.disabled = false;
     }
 }
 
@@ -1425,6 +1480,7 @@ async function removeCompetitivePoolCharacter(character) {
 async function selectPool(poolId) {
     selectedPool = pools.find((pool) => pool.id === poolId) ?? null;
     if (!selectedPool) return;
+    deleteAllCharactersProgress.hidden = true;
     editor.hidden = false;
     document.getElementById("editor-title").textContent = selectedPool.name;
     document.getElementById("editor-description").textContent = `票選活動編號：${selectedPool.id}`;
@@ -1485,7 +1541,7 @@ function toTraditionalChinese(value) {
     const text = String(value).trim();
     if (!text) return "";
     try {
-        return text.split(/([岳杰托里])/).map((part) => "岳杰托里".includes(part) ? part : s2tConverter(part)).join("");
+        return text.split(/([岳杰托里背])/).map((part) => "岳杰托里背".includes(part) ? part : s2tConverter(part)).join("");
     } catch (error) {
         console.warn("Simplified-to-traditional conversion failed:", error);
         return text;
@@ -1646,6 +1702,7 @@ async function loadCharacters() {
     if (!selectedPool) return;
     characterList.innerHTML = "<p class=\"empty-state\">正在載入角色…</p>";
     characterCount.textContent = "正在載入角色…";
+    deleteAllCharactersButton.disabled = true;
     exportCharactersButton.disabled = true;
     if (loadedCharacterPoolId !== selectedPool.id) characterSearch.value = "";
     try {
@@ -1663,6 +1720,8 @@ async function loadCharacters() {
 }
 
 function renderCharacters() {
+    deleteAllCharactersButton.hidden = selectedPool?.status !== "draft";
+    deleteAllCharactersButton.disabled = selectedPool?.status !== "draft" || poolCharacters.length === 0;
     exportCharactersButton.disabled = poolCharacters.length === 0;
     const keyword = characterSearch.value.trim().toLowerCase();
     const filteredCharacters = poolCharacters.filter((character) => {
@@ -1695,6 +1754,72 @@ function renderCharacters() {
     }
 
     pageCharacters.forEach((character) => renderCharacter(character));
+}
+
+async function deleteAllPoolCharacters() {
+    if (!selectedPool || selectedPool.status !== "draft" || poolCharacters.length === 0) return;
+    const poolId = selectedPool.id;
+    const poolName = selectedPool.name;
+    const charactersToDelete = [...poolCharacters];
+    if (!await showConfirmDialog(
+        `確定要從「${poolName}」移除全部 ${charactersToDelete.length} 位角色嗎？此操作無法復原。`,
+        { confirmLabel: "全部刪除", danger: true }
+    )) return;
+
+    deleteAllCharactersButton.disabled = true;
+    characterSearch.disabled = true;
+    const updateDeleteProgress = (label, completed) => {
+        if (selectedPool?.id !== poolId) return;
+        const percent = Math.floor(completed / charactersToDelete.length * 100);
+        deleteAllCharactersProgress.hidden = false;
+        deleteAllCharactersProgressText.textContent = `${label}（${completed}/${charactersToDelete.length}）`;
+        deleteAllCharactersProgressPercent.textContent = `${percent}%`;
+        deleteAllCharactersProgressBar.setAttribute("aria-valuenow", String(percent));
+        deleteAllCharactersProgressBar.setAttribute(
+            "aria-valuetext",
+            `${label}，${completed}/${charactersToDelete.length}，${percent}%`
+        );
+        deleteAllCharactersProgressFill.style.width = `${percent}%`;
+    };
+    let deletedCount = 0;
+    let processedCount = 0;
+    const failures = [];
+    updateDeleteProgress("正在移除角色", 0);
+    try {
+        for (const character of charactersToDelete) {
+            try {
+                await deletePoolCharacter(character.id);
+                deletedCount += 1;
+            } catch (error) {
+                failures.push({ character, error });
+            } finally {
+                processedCount += 1;
+                updateDeleteProgress("正在移除角色", processedCount);
+            }
+        }
+        if (selectedPool?.id === poolId) await loadCharacters();
+        if (failures.length > 0) {
+            const failedNames = failures.slice(0, 3)
+                .map(({ character }) => `${character.character_name}（#${character.character_id}）`)
+                .join("、");
+            const message = `已移除 ${deletedCount} 位；${failures.length} 位失敗${failedNames ? `：${failedNames}${failures.length > 3 ? "…" : ""}` : ""}。`;
+            updateDeleteProgress(`處理完成：成功 ${deletedCount} 位、失敗 ${failures.length} 位`, processedCount);
+            showAdminNotification(message, "error");
+            failures.forEach(({ character, error }) => {
+                console.error(`Delete pool character ${character.id} error:`, error);
+            });
+        } else {
+            updateDeleteProgress("刪除完成", processedCount);
+            showAdminNotification(`已從「${poolName}」移除全部 ${deletedCount} 位角色。`, "success");
+        }
+    } catch (error) {
+        console.error("Delete all pool characters error:", error);
+        updateDeleteProgress("刪除中斷", processedCount);
+        showAdminNotification(`批次移除角色失敗：${getAdminErrorMessage(error)}`, "error");
+    } finally {
+        characterSearch.disabled = false;
+        if (selectedPool?.id === poolId) renderCharacters();
+    }
 }
 
 async function loadVoteRecords() {

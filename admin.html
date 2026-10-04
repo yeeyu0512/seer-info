@@ -37,6 +37,7 @@
         <nav class="main-tabs admin-tool-tabs" aria-label="後台管理功能" role="tablist">
             <button id="admin-voting-tab" class="main-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="admin-voting-tools" data-admin-tab="admin-voting-tools">票選活動管理</button>
             <button id="admin-competitive-pool-tab" class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="admin-competitive-tools" data-admin-tab="admin-competitive-tools">遊戲內競技池</button>
+            <button id="admin-taiwan-settings-tab" class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="admin-taiwan-settings-tools" data-admin-tab="admin-taiwan-settings-tools">台服設定</button>
         </nav>
         <div id="admin-voting-tools" class="admin-tool-panel" role="tabpanel" aria-labelledby="admin-voting-tab">
         <section id="admin-content" class="panel" aria-live="polite">
@@ -133,7 +134,17 @@
                     <span id="admin-character-count">尚未載入角色。</span>
                     <div class="admin-character-list-actions">
                         <input id="admin-character-search" type="search" placeholder="搜尋角色 ID 或名稱" autocomplete="off">
+                        <button id="delete-all-characters-button" class="danger-button compact-button" type="button" hidden disabled>全部刪除</button>
                         <button id="export-characters-button" class="secondary-button compact-button" type="button" disabled>匯出角色 CSV</button>
+                    </div>
+                </div>
+                <div id="delete-all-characters-progress" class="character-import-progress admin-character-delete-progress" hidden aria-live="polite">
+                    <div class="character-import-progress-label">
+                        <span id="delete-all-characters-progress-text"></span>
+                        <span id="delete-all-characters-progress-percent">0%</span>
+                    </div>
+                    <div id="delete-all-characters-progress-bar" class="character-import-progress-bar" role="progressbar" aria-label="全部刪除角色進度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                        <span id="delete-all-characters-progress-fill"></span>
                     </div>
                 </div>
                 <div id="admin-character-list" class="admin-character-list"></div>
@@ -263,7 +274,23 @@
             </section>
             </section>
             </div>
-        </section>
+            <div id="admin-taiwan-settings-tools" class="admin-tool-panel" role="tabpanel" aria-labelledby="admin-taiwan-settings-tab" hidden>
+                <section class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <h2 class="panel-title">台服進度設定</h2>
+                            <p class="panel-description">設定台服目前最新精靈與皮膚編號，供 Seer 查詢的「只顯示台服進度」篩選使用。</p>
+                        </div>
+                    </div>
+                    <form id="taiwan-seer-settings-form" class="admin-form taiwan-seer-settings-form">
+                        <label>台服最新精靈編號<input id="taiwan-latest-pet-id" type="number" min="1" step="1" inputmode="numeric" required></label>
+                        <label>台服最新皮膚編號<input id="taiwan-latest-skin-id" type="number" min="1" step="1" inputmode="numeric" required></label>
+                        <div class="form-actions"><button id="save-taiwan-seer-settings-button" class="admin-action-button" type="submit">儲存台服設定</button></div>
+                    </form>
+                    <p id="taiwan-seer-settings-message" class="form-message" aria-live="polite"></p>
+                </section>
+            </div>
+            </section>
 
         <section id="access-denied" class="panel access-denied" hidden>
             <h1>無管理權限</h1>

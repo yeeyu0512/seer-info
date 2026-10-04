@@ -1086,6 +1086,11 @@ button:disabled {
     margin-bottom: 0;
 }
 
+.seer-lookup-panel > .panel-header > div:first-child {
+    flex: 1;
+    min-width: 0;
+}
+
 .seer-lookup-layout > .seer-lookup-illustration {
     position: relative;
     border-color: rgba(196, 191, 255, .13);
@@ -1162,7 +1167,67 @@ button:disabled {
 }
 
 .seer-lookup-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     max-width: none;
+}
+
+.seer-lookup-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    min-width: 0;
+    width: 100%;
+}
+
+.seer-taiwan-progress-filter {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+    gap: 6px;
+    min-height: 30px;
+    margin: 0;
+    padding: 4px 9px;
+    border: 1px solid rgba(196, 191, 255, .13);
+    border-radius: 999px;
+    color: var(--text-secondary);
+    background: rgba(4, 6, 18, .3);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.seer-taiwan-progress-filter:has(input:checked) {
+    border-color: rgba(147, 135, 255, .42);
+    color: var(--text);
+    background: rgba(130, 113, 244, .16);
+}
+
+.seer-taiwan-progress-filter input {
+    flex: none;
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    accent-color: var(--primary-light);
+}
+
+.seer-taiwan-progress-filter-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    line-height: 1.2;
+}
+
+.seer-taiwan-progress-filter-copy small {
+    color: var(--text-muted);
+    font-size: 8px;
+    font-weight: 500;
+}
+
+.taiwan-seer-settings-form {
+    max-width: 720px;
 }
 
 .seer-skin-search-tabs {
@@ -1991,6 +2056,11 @@ button:disabled {
         width: 100%;
     }
 
+    .seer-lookup-title-row {
+        justify-content: space-between;
+        gap: 7px;
+    }
+
     .seer-skin-search-tab {
         min-width: 0;
         padding-right: 8px;
@@ -1999,9 +2069,14 @@ button:disabled {
     }
 
     .seer-lookup-form .game-account-controls,
-    .seer-lookup-form input {
+    .seer-lookup-form > input {
         min-width: 0;
         width: 100%;
+    }
+
+    .seer-taiwan-progress-filter {
+        min-height: 28px;
+        padding: 3px 8px;
     }
 
     .seer-skin-category-filter {
@@ -2174,15 +2249,21 @@ button:disabled {
     object-fit: contain;
 }
 
-.seer-lookup-result-skin-thumbnail {
+.seer-lookup-result-thumbnail {
+    display: grid;
+    flex: 0 0 40px;
+    width: 40px;
     height: 40px;
+    place-items: center;
     border-radius: 5px;
     background: rgba(4, 6, 18, .35);
 }
 
-.seer-lookup-result-skin-thumbnail img {
+.seer-lookup-result-thumbnail img {
+    display: block;
     width: 40px;
     height: 40px;
+    object-fit: contain;
 }
 
 .seer-lookup-result-name {
@@ -2264,7 +2345,8 @@ button:disabled {
     box-shadow: 0 0 0 3px rgba(147, 135, 255, .13);
 }
 
-.admin-character-list-actions > #export-characters-button {
+.admin-character-list-actions > #export-characters-button,
+.admin-character-list-actions > #delete-all-characters-button {
     width: auto;
     min-width: 0;
     min-height: 34px;
@@ -2273,6 +2355,10 @@ button:disabled {
     line-height: 1.2;
     white-space: nowrap;
     flex: 0 0 auto;
+}
+
+.admin-character-delete-progress {
+    margin-top: 12px;
 }
 
 .admin-character-item {
@@ -3117,6 +3203,21 @@ body::after,
     background: rgba(4, 6, 18, .3);
 }
 
+.primary-main-tabs {
+    margin-bottom: 14px;
+}
+
+.view-sub-tabs {
+    margin-top: 0;
+    background: rgba(4, 6, 18, .2);
+}
+
+.view-sub-tabs .main-tab {
+    min-height: 30px;
+    padding: 5px 12px;
+    font-size: 12px;
+}
+
 .main-tab {
     min-height: 32px;
     padding: 6px 14px;
@@ -3354,9 +3455,25 @@ body::after,
 .competitive-pool-view .competitive-pool-pet {
     min-height: 132px;
     padding: 14px;
+    appearance: none;
     border-color: rgba(196, 191, 255, .12);
     border-radius: 18px;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
     background: linear-gradient(145deg, rgba(40, 46, 82, .72), rgba(15, 18, 37, .68));
+}
+
+.competitive-pool-view .competitive-pool-pet:hover,
+.competitive-pool-view .competitive-pool-pet:focus-visible {
+    border-color: rgba(147, 135, 255, .55);
+    box-shadow: 0 0 0 2px rgba(147, 135, 255, .16);
+}
+
+.competitive-pool-view .competitive-pool-pet:focus-visible {
+    outline: 2px solid var(--primary-light);
+    outline-offset: 2px;
 }
 
 .competitive-pool-view .competitive-pool-pet.is-banned { border-color: rgba(255, 119, 139, .35); }
@@ -3832,6 +3949,37 @@ body::after,
     line-height: 1.35;
 }
 
+.character-card .character-name-info {
+    box-sizing: border-box;
+    justify-content: flex-start;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    color: var(--text);
+    background: transparent;
+    box-shadow: none;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: left;
+    text-decoration: underline;
+    text-decoration-color: rgba(196, 191, 255, .55);
+    text-underline-offset: 3px;
+    cursor: pointer;
+}
+
+.character-card .character-name-info:hover {
+    color: var(--primary-light);
+    background: transparent;
+    box-shadow: none;
+    transform: none;
+}
+
+.character-card .character-name-info:focus-visible {
+    outline: 2px solid var(--primary-light);
+    outline-offset: 2px;
+}
+
 .character-card:has(.character-portrait.is-unavailable) .character-name {
     left: 12px;
 }
@@ -3850,8 +3998,28 @@ body::after,
 
 /* Ranking character identity */
 .ranking-item {
+    appearance: none;
     grid-template-columns: 40px 42px minmax(0, 1fr) auto;
     gap: 10px;
+    width: 100%;
+    box-shadow: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.ranking-item:hover {
+    box-shadow: none;
+}
+
+.ranking-item:focus-visible {
+    outline: 2px solid var(--primary-light);
+    outline-offset: 2px;
+}
+
+.ranking-item:disabled {
+    cursor: default;
 }
 
 .ranking-portrait {
@@ -4577,8 +4745,10 @@ body {
     gap: 9px;
 }
 
-.game-account-controls input {
+.game-account-controls input,
+.seer-lookup-form > input {
     min-width: 0;
+    width: calc(100% - 15px);
     flex: 1;
     margin: 0;
     height: 36px;
@@ -4593,12 +4763,14 @@ body {
     transition: border-color .2s, box-shadow .2s, background .2s;
 }
 
-.game-account-controls input::placeholder {
+.game-account-controls input::placeholder,
+.seer-lookup-form > input::placeholder {
     color: var(--text-muted);
     opacity: 1;
 }
 
-.game-account-controls input:focus {
+.game-account-controls input:focus,
+.seer-lookup-form > input:focus {
     border-color: var(--primary-light);
     background: rgba(12, 14, 32, .68);
     box-shadow: 0 0 0 3px rgba(147, 135, 255, .13), inset 0 1px rgba(255, 255, 255, .035);

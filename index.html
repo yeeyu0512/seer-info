@@ -107,6 +107,12 @@
     <!-- Voting -->
     <!-- ==================== -->
 
+    <nav class="main-tabs primary-main-tabs" aria-label="主要功能" role="tablist">
+        <button class="main-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="vote-section" data-main-target="voting">投票</button>
+        <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="seer-lookup-section" data-main-target="encyclopedia">圖鑑</button>
+        <button id="account-tab" class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="account-section" data-main-target="account" hidden>帳號</button>
+    </nav>
+
     <section id="vote-section" hidden>
 
 
@@ -158,13 +164,10 @@
 
         </div>
 
-        <nav class="main-tabs" aria-label="投票功能">
-            <button class="main-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="selection-panel" data-tab-target="selection-panel">投票</button>
+        <nav id="voting-sub-tabs" class="main-tabs view-sub-tabs" aria-label="投票功能" role="tablist">
+            <button class="main-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="selection-panel" data-tab-target="selection-panel">限制池投票</button>
             <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="ranking-section" data-tab-target="ranking-section">即時排名</button>
-            <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="competitive-pool-section" data-tab-target="competitive-pool-section">競技池</button>
-            <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="seer-lookup-section" data-tab-target="seer-lookup-section" data-lookup-mode="pet">精靈查詢</button>
-            <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="seer-lookup-section" data-tab-target="seer-lookup-section" data-lookup-mode="skin">皮膚查詢</button>
-            <button id="account-tab" class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="account-section" data-tab-target="account-section" hidden>帳號</button>
+            <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="competitive-pool-section" data-tab-target="competitive-pool-section">當前競技池</button>
         </nav>
 
 
@@ -315,13 +318,28 @@
             </div>
             <div id="competitive-pool-groups" class="competitive-pool-pet-list" role="tabpanel" aria-labelledby="competitive-pool-tab-banned" hidden></div>
         </section>
+    </section>
+
+        <nav id="encyclopedia-sub-tabs" class="main-tabs view-sub-tabs encyclopedia-sub-tabs" aria-label="圖鑑種類" role="tablist" hidden>
+            <button class="main-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="seer-lookup-section" data-lookup-mode="pet">精靈查詢</button>
+            <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="seer-lookup-section" data-lookup-mode="skin">皮膚查詢</button>
+        </nav>
 
         <div id="seer-lookup-section" class="seer-lookup-layout" hidden>
             <section class="panel seer-lookup-panel">
                 <div class="panel-header">
                     <div>
-                        <h2 id="seer-lookup-title" class="panel-title">精靈查詢</h2>
-                        <p id="seer-lookup-description" class="panel-description">輸入精靈 ID 或中文名稱，可能包含僅陸服存在的項目或顯示錯誤。</p>
+                        <div class="seer-lookup-title-row">
+                            <h2 id="seer-lookup-title" class="panel-title">精靈查詢</h2>
+                            <label class="seer-taiwan-progress-filter" title="依管理後台設定的台服最新精靈與皮膚編號篩選，並保留精靈 #5000">
+                                <input id="seer-taiwan-progress-only" type="checkbox" aria-label="只顯示台服進度，保留精靈 #5000">
+                                <span class="seer-taiwan-progress-filter-copy">
+                                    <span>僅顯示至最新台服進度</span>
+                                    <small>部分精靈無法完全排除</small>
+                                </span>
+                            </label>
+                        </div>
+                        <p id="seer-lookup-description" class="panel-description">輸入精靈 ID 或中文名稱即可查找結果。</p>
                     </div>
                 </div>
                 <form id="seer-lookup-form" class="seer-lookup-form">
@@ -331,10 +349,7 @@
                         <button class="seer-skin-search-tab" type="button" role="tab" aria-selected="false" data-skin-search-mode="category">依種類查詢</button>
                     </div>
                     <label id="seer-lookup-input-label" class="field-label" for="seer-lookup-id">精靈 ID／名稱</label>
-                    <div class="game-account-controls">
-                        <input id="seer-lookup-id" type="search" autocomplete="off" placeholder="例如：5000 或 聖靈譜尼" required>
-                        <button id="seer-test-pet-shortcut" class="secondary-button compact-button seer-test-pet-button" type="button" title="快捷鍵：Ctrl+Shift+6">測試精靈 #3506</button>
-                    </div>
+                    <input id="seer-lookup-id" type="search" autocomplete="off" placeholder="例如：5000 或 聖靈譜尼" required>
                     <div id="seer-skin-category-filter" class="seer-skin-category-filter" aria-label="依皮膚種類篩選" hidden>
                         <div id="seer-skin-category-options" class="seer-skin-category-options"></div>
                     </div>
@@ -401,9 +416,6 @@
             </div>
 
         </section>
-
-
-    </section>
 
 </main>
 
