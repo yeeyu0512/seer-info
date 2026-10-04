@@ -2,6 +2,7 @@ import { Converter } from "https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/esm
 import { login, logout, getSession, register } from "./auth.js";
 import { supabaseClient } from "./supabase.js";
 import { initSeerLookup } from "./seer-lookup.js";
+import { preloadSeerIcons } from "./seer-icons.js";
 import { getActivePool, getPoolCharacters } from "./pool.js";
 import { getMyVote, hasVoted, submitVote } from "./vote.js";
 import { getPoolRanking } from "./ranking.js";
@@ -121,6 +122,7 @@ const seerLookup = initSeerLookup({
     convertToSimplifiedChinese,
     fetchSeerJson
 });
+preloadSeerIcons();
 
 loginTrigger.addEventListener("click", openLoginModal);
 publicLoginButton.addEventListener("click", openLoginModal);

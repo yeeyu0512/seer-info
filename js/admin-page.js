@@ -25,6 +25,7 @@ import {
     deleteCompetitivePoolCharacter
 } from "./competitive-pool.js";
 import { getSeerServerSettings, updateSeerServerSettings } from "./seer-server-settings.js";
+import { preloadSeerIcons } from "./seer-icons.js";
 
 const adminWorkspace = document.getElementById("admin-workspace");
 const adminContent = document.getElementById("admin-content");
@@ -2101,4 +2102,5 @@ function formatDate(value) {
 
 initializeTimeSelects();
 initializeDateTimePickers();
+preloadSeerIcons();
 loadAdminPage();
