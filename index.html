@@ -333,6 +333,7 @@
                     <label id="seer-lookup-input-label" class="field-label" for="seer-lookup-id">精靈 ID／名稱</label>
                     <div class="game-account-controls">
                         <input id="seer-lookup-id" type="search" autocomplete="off" placeholder="例如：5000 或 聖靈譜尼" required>
+                        <button id="seer-test-pet-shortcut" class="secondary-button compact-button seer-test-pet-button" type="button" title="快捷鍵：Ctrl+Shift+6">測試精靈 #3506</button>
                     </div>
                     <div id="seer-skin-category-filter" class="seer-skin-category-filter" aria-label="依皮膚種類篩選" hidden>
                         <div id="seer-skin-category-options" class="seer-skin-category-options"></div>
@@ -352,8 +353,9 @@
                         </div>
                         <img id="seer-lookup-skin-category-icon" class="seer-lookup-skin-category-icon" alt="皮膚種類" hidden>
                         <div class="seer-lookup-preview-actions">
-                            <button id="seer-lookup-more-info" class="secondary-button compact-button seer-lookup-more-info" type="button">更多資訊</button>
+                            <button id="seer-pet-info-toggle" class="secondary-button compact-button seer-pet-info-toggle" type="button" aria-haspopup="dialog" hidden>精靈資訊</button>
                             <button id="seer-lookup-pet-skins" class="secondary-button compact-button seer-lookup-more-info" type="button" hidden>查詢此精靈皮膚</button>
+                            <button id="seer-lookup-skin-more-info" class="secondary-button compact-button seer-lookup-more-info" type="button" hidden>前往百科</button>
                         </div>
                     </div>
                 </div>
@@ -413,6 +415,42 @@
             <button id="seer-external-link-cancel" class="secondary-button" type="button">取消</button>
             <a id="seer-external-link-open" class="primary-button compact-button" target="_blank" rel="noopener noreferrer">繼續</a>
         </div>
+    </section>
+</div>
+
+<div id="seer-pet-info-modal" class="admin-confirm-modal seer-pet-info-modal" role="presentation" hidden>
+    <section class="admin-confirm-dialog seer-pet-info-dialog" role="dialog" aria-modal="true" aria-labelledby="seer-pet-info-title">
+        <header class="seer-pet-info-modal-header">
+            <div class="seer-pet-info-identity">
+                <img id="seer-pet-info-avatar" class="seer-pet-info-avatar" alt="" hidden>
+                <div class="seer-pet-info-identity-copy">
+                    <h2 id="seer-pet-info-title">精靈資訊</h2>
+                    <div id="seer-pet-info-meta" class="seer-pet-info-meta"></div>
+                </div>
+            </div>
+            <div class="seer-pet-info-header-actions">
+                <button id="seer-pet-info-skins" class="secondary-button compact-button seer-pet-info-wiki-button" type="button">關聯皮膚</button>
+                <button id="seer-lookup-more-info" class="secondary-button compact-button seer-pet-info-wiki-button" type="button" hidden>前往百科</button>
+                <button id="seer-pet-info-close" class="seer-pet-info-close" type="button" aria-label="關閉精靈資訊">×</button>
+            </div>
+        </header>
+        <div id="seer-pet-info" class="seer-pet-info" aria-live="polite"></div>
+        <div class="seer-pet-info-modal-actions">
+            <button id="seer-pet-info-retry" class="secondary-button compact-button" type="button" hidden>重試載入</button>
+        </div>
+    </section>
+</div>
+
+<div id="seer-related-skins-modal" class="admin-confirm-modal seer-related-skins-modal" role="presentation" hidden>
+    <section class="admin-confirm-dialog seer-related-skins-dialog" role="dialog" aria-modal="true" aria-labelledby="seer-related-skins-title" aria-describedby="seer-related-skins-message">
+        <header class="seer-related-skins-header">
+            <div>
+                <h2 id="seer-related-skins-title">關聯皮膚</h2>
+                <p id="seer-related-skins-message" class="seer-pet-info-message" aria-live="polite">正在載入皮膚…</p>
+            </div>
+            <button id="seer-related-skins-close" class="seer-pet-info-close" type="button" aria-label="關閉關聯皮膚">×</button>
+        </header>
+        <div id="seer-related-skins-results" class="seer-related-skins-results" aria-label="關聯皮膚搜尋結果"></div>
     </section>
 </div>
 

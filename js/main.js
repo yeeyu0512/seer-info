@@ -81,7 +81,22 @@ const seerLookupIllustrationCategoryIcon = document.getElementById("seer-lookup-
 const seerLookupIllustrationTitle = document.getElementById("seer-lookup-illustration-title");
 const seerLookupIllustrationDescription = document.getElementById("seer-lookup-illustration-description");
 const seerLookupMoreInfoButton = document.getElementById("seer-lookup-more-info");
+const seerLookupSkinMoreInfoButton = document.getElementById("seer-lookup-skin-more-info");
 const seerLookupPetSkinsButton = document.getElementById("seer-lookup-pet-skins");
+const seerTestPetShortcutButton = document.getElementById("seer-test-pet-shortcut");
+const seerPetInfoToggle = document.getElementById("seer-pet-info-toggle");
+const seerPetInfoPanel = document.getElementById("seer-pet-info");
+const seerPetInfoModal = document.getElementById("seer-pet-info-modal");
+const seerPetInfoTitle = document.getElementById("seer-pet-info-title");
+const seerPetInfoAvatar = document.getElementById("seer-pet-info-avatar");
+const seerPetInfoMeta = document.getElementById("seer-pet-info-meta");
+const seerPetInfoSkinsButton = document.getElementById("seer-pet-info-skins");
+const seerPetInfoClose = document.getElementById("seer-pet-info-close");
+const seerPetInfoRetry = document.getElementById("seer-pet-info-retry");
+const seerRelatedSkinsModal = document.getElementById("seer-related-skins-modal");
+const seerRelatedSkinsClose = document.getElementById("seer-related-skins-close");
+const seerRelatedSkinsMessage = document.getElementById("seer-related-skins-message");
+const seerRelatedSkinsResults = document.getElementById("seer-related-skins-results");
 const seerExternalLinkModal = document.getElementById("seer-external-link-modal");
 const seerExternalLinkCancel = document.getElementById("seer-external-link-cancel");
 const seerExternalLinkOpen = document.getElementById("seer-external-link-open");
@@ -117,6 +132,12 @@ const characterTypeIconCache = new Map();
 const elementTypeIconCache = new Map();
 const elementTypeDetailsCache = new Map();
 const seerPetDetailsCache = new Map();
+const seerPetInfoCache = new Map();
+const seerSkillDetailsCache = new Map();
+const seerSkillActivationItemCache = new Map();
+const seerSoulmarkDetailsCache = new Map();
+const seerPetAdvanceCache = new Map();
+const seerSoulmarkImageCache = new Map();
 const seerSkinThumbnailFallbackCache = new Map();
 let seerSkinCatalogPromise = null;
 let seerSkinCategoriesPromise = null;
@@ -135,6 +156,13 @@ let seerLookupMode = "pet";
 let seerSkinSearchMode = "skin";
 let selectedSeerSkinCategoryId = null;
 let currentSeerPetId = null;
+let currentSeerPetData = null;
+let seerPetInfoRequestId = 0;
+let seerPetInfoOpener = null;
+let seerPetInfoPointerStartedOnBackdrop = false;
+let seerRelatedSkinsRequestId = 0;
+let seerRelatedSkinsOpener = null;
+let seerRelatedSkinsPointerStartedOnBackdrop = false;
 let currentSeerInfoUrl = null;
 let currentSeerSkinImageFallback = null;
 let externalLinkOpener = null;
@@ -268,7 +296,88 @@ seerLookupIdInput.addEventListener("compositionend", () => {
     scheduleSeerPetLookup();
 });
 seerLookupMoreInfoButton.addEventListener("click", openSeerExternalLinkModal);
+seerLookupSkinMoreInfoButton.addEventListener("click", openSeerExternalLinkModal);
+seerTestPetShortcutButton.addEventListener("click", loadTestSeerPet);
+document.addEventListener("keydown", (event) => {
+    if (
+        !event.ctrlKey
+        || !event.shiftKey
+        || event.altKey
+        || event.metaKey
+        || event.repeat
+        || event.code !== "Digit6"
+        || !seerPetInfoModal.hidden
+        || !seerExternalLinkModal.hidden
+    ) return;
+    const target = event.target;
+    if (target instanceof Element && target.closest("input, textarea, select, [contenteditable='true']")) return;
+    event.preventDefault();
+    loadTestSeerPet();
+});
 seerLookupPetSkinsButton.addEventListener("click", openSeerSkinSearchForCurrentPet);
+seerPetInfoSkinsButton.addEventListener("click", openSeerRelatedSkinsModal);
+seerRelatedSkinsClose.addEventListener("click", closeSeerRelatedSkinsModal);
+seerPetInfoToggle.addEventListener("click", () => {
+    openSeerPetInfoModal();
+});
+seerPetInfoClose.addEventListener("click", closeSeerPetInfoModal);
+seerPetInfoRetry.addEventListener("click", () => {
+    if (currentSeerPetData) void loadSeerPetInfo(currentSeerPetData);
+});
+seerPetInfoModal.addEventListener("pointerdown", (event) => {
+    seerPetInfoPointerStartedOnBackdrop = event.target === seerPetInfoModal;
+});
+seerPetInfoModal.addEventListener("click", (event) => {
+    if (seerPetInfoPointerStartedOnBackdrop && event.target === seerPetInfoModal) {
+        closeSeerPetInfoModal();
+    }
+    seerPetInfoPointerStartedOnBackdrop = false;
+});
+seerPetInfoModal.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+        event.preventDefault();
+        closeSeerPetInfoModal();
+        return;
+    }
+    if (event.key !== "Tab") return;
+    const focusable = seerPetInfoModal.querySelectorAll("button:not([disabled]):not([hidden])");
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+    }
+});
+seerRelatedSkinsModal.addEventListener("pointerdown", (event) => {
+    seerRelatedSkinsPointerStartedOnBackdrop = event.target === seerRelatedSkinsModal;
+});
+seerRelatedSkinsModal.addEventListener("click", (event) => {
+    if (seerRelatedSkinsPointerStartedOnBackdrop && event.target === seerRelatedSkinsModal) {
+        closeSeerRelatedSkinsModal();
+    }
+    seerRelatedSkinsPointerStartedOnBackdrop = false;
+});
+seerRelatedSkinsModal.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+        event.preventDefault();
+        closeSeerRelatedSkinsModal();
+        return;
+    }
+    if (event.key !== "Tab") return;
+    const focusable = seerRelatedSkinsModal.querySelectorAll("button:not([disabled]):not([hidden])");
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+    }
+});
 seerExternalLinkCancel.addEventListener("click", closeSeerExternalLinkModal);
 seerExternalLinkOpen.addEventListener("click", closeSeerExternalLinkModal);
 seerExternalLinkModal.addEventListener("pointerdown", (event) => {
@@ -1068,8 +1177,8 @@ async function fetchCharacterTypeIconUrl(characterId) {
     return `https://img.yuyuqaq.cn/seer-pet/type/${resolvedTypeId}.png`;
 }
 
-async function fetchSeerJson(url) {
-    const response = await fetch(url, { headers: { Accept: "application/json" } });
+async function fetchSeerJson(url, options = {}) {
+    const response = await fetch(url, { headers: { Accept: "application/json" }, ...options });
     if (!response.ok) throw new Error(`SeerAPI 請求失敗（${response.status}）`);
     return response.json();
 }
@@ -1099,7 +1208,7 @@ function invalidateSeerPetLookup() {
     clearSeerLookupResult();
 }
 
-function startSeerPetLookup(query) {
+function startSeerPetLookup(query, openInfoWhenLoaded = false) {
     if (!query) {
         scheduleSeerPetLookup();
         return;
@@ -1110,12 +1219,26 @@ function startSeerPetLookup(query) {
     }
     seerBrowseState = null;
     clearSeerBrowseSentinel();
+    resetSeerPetInfo();
     const requestId = ++seerLookupRequestId;
-    void lookupSeerPet(query, requestId);
+    void lookupSeerPet(query, requestId).then(() => {
+        if (openInfoWhenLoaded && requestId === seerLookupRequestId && currentSeerPetData) {
+            openSeerPetInfoModal();
+        }
+    });
+}
+
+function loadTestSeerPet() {
+    setSeerLookupMode("pet");
+    activateTab("seer-lookup-section");
+    seerLookupIdInput.value = "3506";
+    seerLookupIdInput.focus();
+    startSeerPetLookup("3506", true);
 }
 
 async function startLatestSeerBrowse(requestId) {
     if (requestId !== seerLookupRequestId || seerLookupIdInput.value.trim()) return;
+    resetSeerPetInfo();
     const isSkinResource = seerLookupMode === "skin" && ["skin", "category"].includes(seerSkinSearchMode);
     const resource = isSkinResource ? "pet_skin" : "pet";
     if (seerLookupMode === "skin" && seerSkinSearchMode === "pet") {
@@ -1312,6 +1435,21 @@ async function lookupSeerPet(query, requestId) {
         console.error("Seer pet lookup error:", error);
         seerLookupMessage.textContent = `查詢失敗：${error.message}`;
     }
+}
+
+function resetSeerPetInfo() {
+    seerPetInfoRequestId += 1;
+    currentSeerPetData = null;
+    seerPetInfoTitle.textContent = "精靈資訊";
+    seerPetInfoAvatar.hidden = true;
+    seerPetInfoAvatar.removeAttribute("src");
+    seerPetInfoMeta.replaceChildren();
+    seerPetInfoPanel.replaceChildren();
+    if (!seerPetInfoModal.hidden) closeSeerPetInfoModal();
+    seerPetInfoToggle.hidden = true;
+    seerPetInfoToggle.disabled = false;
+    seerPetInfoToggle.textContent = "精靈資訊";
+    seerPetInfoRetry.hidden = true;
 }
 
 async function lookupSeerSkin(query, requestId) {
@@ -1670,6 +1808,7 @@ function renderSeerPetSearchResults(pets, typeDetailsById, append = false) {
                 result.disabled = true;
                 result.classList.toggle("is-selected", result === button);
             });
+            resetSeerPetInfo();
             seerLookupPreview.hidden = true;
             seerLookupMessage.textContent = "正在載入精靈屬性…";
             try {
@@ -1755,6 +1894,7 @@ function renderSeerSkinSearchResults(entries, append = false) {
                 result.disabled = true;
                 result.classList.toggle("is-selected", result === button);
             });
+            resetSeerPetInfo();
             seerLookupPreview.hidden = true;
             seerLookupMessage.textContent = "正在載入皮膚資料…";
             try {
@@ -1808,6 +1948,7 @@ async function renderSeerPetPreview(pet, requestId) {
     seerLookupIllustrationImage.src = `https://newseer.61.com/web/monster//body/${encodeURIComponent(petId)}.png`;
     seerLookupIllustrationImage.alt = `${petName}立繪`;
     seerLookupMoreInfoButton.hidden = false;
+    seerLookupSkinMoreInfoButton.hidden = true;
     seerLookupPetSkinsButton.hidden = false;
     seerLookupIllustrationTitle.textContent = "立繪預覽";
     seerLookupIllustrationDescription.textContent = "已選擇精靈，可在此查看立繪。";
@@ -1815,6 +1956,668 @@ async function renderSeerPetPreview(pet, requestId) {
     currentSeerPetId = String(petId);
     seerLookupIllustrationImage.hidden = false;
     seerLookupPreview.hidden = false;
+    currentSeerPetData = pet;
+    seerPetInfoToggle.hidden = false;
+    seerPetInfoToggle.disabled = false;
+    seerPetInfoTitle.textContent = petName;
+    renderSeerPetInfoIdentity(pet, { id: resolvedTypeId, name: typeName });
+    seerPetInfoPanel.replaceChildren();
+    seerPetInfoRequestId += 1;
+}
+
+async function loadSeerPetInfo(pet) {
+    const requestId = ++seerPetInfoRequestId;
+    const petId = String(pet && pet.id || "");
+    if (!petId) return;
+    seerPetInfoRetry.hidden = true;
+    seerPetInfoPanel.replaceChildren();
+    const loading = document.createElement("p");
+    loading.className = "seer-pet-info-message";
+    loading.textContent = "正在載入精靈資料…";
+    seerPetInfoPanel.append(loading);
+
+    try {
+        const details = await fetchSeerPetInfo(petId);
+        if (requestId !== seerPetInfoRequestId || petId !== currentSeerPetId) return;
+        const skillRefs = Array.isArray(details.skill) ? details.skill : [];
+        const activationItemRefs = skillRefs
+            .map((reference) => reference && reference.skill_activation_item)
+            .filter((reference) => reference && reference.id !== undefined && reference.id !== null);
+        const soulmarkRefs = Array.isArray(details.soulmark) ? details.soulmark : [];
+        const [skills, activationItems, soulmarks, typeDetails] = await Promise.all([
+            fetchSeerPetRelatedRecords(skillRefs, "skill", seerSkillDetailsCache),
+            fetchSeerPetRelatedRecords(
+                activationItemRefs,
+                "skill_activation_item",
+                seerSkillActivationItemCache
+            ).catch((error) => {
+                console.warn(`Load Seer pet skill activation items ${petId} error:`, error);
+                return [];
+            }),
+            fetchSeerPetRelatedRecords(soulmarkRefs, "soulmark", seerSoulmarkDetailsCache),
+            details.type && details.type.id
+                ? fetchSeerElementTypeDetails(details.type.id).catch((error) => {
+                    console.warn(`Load Seer pet type ${petId} error:`, error);
+                    return null;
+                })
+                : Promise.resolve(null)
+        ]);
+        if (requestId !== seerPetInfoRequestId || petId !== currentSeerPetId) return;
+        let advanceStats = null;
+        let advanceLoadError = null;
+        if (details.advance) {
+            try {
+                const [advance] = await fetchSeerPetRelatedRecords(
+                    [details.advance],
+                    "pet_advance",
+                    seerPetAdvanceCache
+                );
+                advanceStats = advance && advance.record && advance.record.base_stats || null;
+            } catch (error) {
+                advanceLoadError = error;
+                console.warn(`Load Seer pet advance ${petId} error:`, error);
+            }
+        }
+        if (requestId !== seerPetInfoRequestId || petId !== currentSeerPetId) return;
+        const activationItemsById = new Map(activationItems
+            .filter(({ record }) => record && record.id !== undefined && record.id !== null)
+            .map(({ record }) => [String(record.id), record]));
+        renderSeerPetInfo(
+            details,
+            skills,
+            soulmarks,
+            advanceStats,
+            advanceLoadError,
+            typeDetails,
+            activationItemsById
+        );
+    } catch (error) {
+        if (requestId !== seerPetInfoRequestId || petId !== currentSeerPetId) return;
+        console.error(`Load Seer pet info ${petId} error:`, error);
+        seerPetInfoPanel.replaceChildren();
+        const message = document.createElement("p");
+        message.className = "seer-pet-info-message";
+        message.textContent = `精靈資料載入失敗：${error.message}`;
+        seerPetInfoPanel.append(message);
+        seerPetInfoRetry.hidden = false;
+    } finally {
+        if (requestId === seerPetInfoRequestId) seerPetInfoToggle.disabled = false;
+    }
+}
+
+function fetchSeerPetInfo(petId) {
+    const key = String(petId);
+    let promise = seerPetInfoCache.get(key);
+    if (!promise) {
+        promise = fetchSeerJson(`https://api.seerapi.com/v1/pet/${encodeURIComponent(key)}`)
+            .catch((error) => {
+                seerPetInfoCache.delete(key);
+                throw error;
+            });
+        seerPetInfoCache.set(key, promise);
+    }
+    return promise;
+}
+
+async function fetchSeerPetRelatedRecords(references, resource, cache) {
+    const getRelatedReference = (item) => item && (item[resource] || item);
+    const uniqueIds = [...new Set(references
+        .map((item) => getRelatedReference(item) && getRelatedReference(item).id)
+        .filter((id) => id !== undefined && id !== null)
+        .map(String))];
+    const pendingIds = uniqueIds.slice();
+    const recordsById = new Map();
+    const workers = Array.from({ length: Math.min(4, pendingIds.length) }, async () => {
+        while (pendingIds.length) {
+            const id = pendingIds.shift();
+            let promise = cache.get(id);
+            if (!promise) {
+                const reference = references.find((item) =>
+                    getRelatedReference(item) && String(getRelatedReference(item).id) === id
+                );
+                const relatedUrl = reference && getRelatedReference(reference).url;
+                const endpoint = relatedUrl || `https://api.seerapi.com/v1/${resource}/${encodeURIComponent(id)}`;
+                const parsedUrl = new URL(endpoint);
+                if (parsedUrl.origin !== "https://api.seerapi.com") {
+                    throw new Error(`SeerAPI 回傳了無效的 ${resource} 資料網址。`);
+                }
+                promise = fetchSeerJson(parsedUrl.href)
+                    .catch((error) => {
+                        cache.delete(id);
+                        throw error;
+                    });
+                cache.set(id, promise);
+            }
+            recordsById.set(id, await promise);
+        }
+    });
+    await Promise.all(workers);
+    return references.map((reference) => {
+        const relatedReference = getRelatedReference(reference);
+        const id = relatedReference && String(relatedReference.id);
+        return { reference, record: id ? recordsById.get(id) : null };
+    });
+}
+
+function renderSeerPetInfo(pet, skills, soulmarks, advanceStats, advanceLoadError, typeDetails, activationItemsById) {
+    seerPetInfoPanel.replaceChildren();
+    renderSeerPetInfoIdentity(pet, typeDetails);
+
+    const statsSection = document.createElement("section");
+    statsSection.className = "seer-pet-info-section";
+    const statsTitle = document.createElement("h3");
+    statsTitle.textContent = "種族值";
+    const statNames = [
+        ["hp", "體力"], ["atk", "攻擊"], ["def", "防禦"],
+        ["sp_atk", "特攻"], ["sp_def", "特防"], ["spd", "速度"]
+    ];
+    const createStatGrid = (stats) => {
+        const grid = document.createElement("dl");
+        grid.className = "seer-pet-stat-grid";
+        statNames.forEach(([key, label]) => {
+            const item = document.createElement("div");
+            const term = document.createElement("dt");
+            term.textContent = label;
+            const value = document.createElement("dd");
+            value.textContent = stats[key] === undefined || stats[key] === null
+                ? "—"
+                : String(stats[key]);
+            item.append(term, value);
+            grid.append(item);
+        });
+        const total = document.createElement("div");
+        total.className = "seer-pet-stat-total";
+        const totalTerm = document.createElement("dt");
+        totalTerm.textContent = "總和";
+        const totalValue = document.createElement("dd");
+        totalValue.textContent = stats.total === undefined || stats.total === null
+            ? "—"
+            : String(stats.total);
+        total.append(totalTerm, totalValue);
+        grid.append(total);
+        return grid;
+    };
+    const normalStats = pet.base_stats || {};
+    if (advanceStats) {
+        const tabList = document.createElement("div");
+        tabList.className = "seer-pet-stat-tabs";
+        tabList.setAttribute("role", "tablist");
+        tabList.setAttribute("aria-label", "種族值狀態");
+        const normalTab = document.createElement("button");
+        const advancedTab = document.createElement("button");
+        const normalPanel = createStatGrid(normalStats);
+        const advancedPanel = createStatGrid(advanceStats);
+        normalTab.className = "seer-pet-stat-tab";
+        advancedTab.className = "seer-pet-stat-tab";
+        normalTab.type = "button";
+        advancedTab.type = "button";
+        normalTab.id = `seer-stat-tab-${pet.id}-normal`;
+        advancedTab.id = `seer-stat-tab-${pet.id}-advance`;
+        normalPanel.id = `seer-stat-panel-${pet.id}-normal`;
+        advancedPanel.id = `seer-stat-panel-${pet.id}-advance`;
+        normalTab.setAttribute("role", "tab");
+        advancedTab.setAttribute("role", "tab");
+        normalTab.setAttribute("aria-controls", normalPanel.id);
+        advancedTab.setAttribute("aria-controls", advancedPanel.id);
+        normalTab.setAttribute("aria-selected", "true");
+        advancedTab.setAttribute("aria-selected", "false");
+        normalTab.tabIndex = 0;
+        advancedTab.tabIndex = -1;
+        normalTab.textContent = "覺醒前";
+        advancedTab.textContent = "神諭覺醒";
+        normalPanel.setAttribute("role", "tabpanel");
+        advancedPanel.setAttribute("role", "tabpanel");
+        normalPanel.setAttribute("aria-labelledby", normalTab.id);
+        advancedPanel.setAttribute("aria-labelledby", advancedTab.id);
+        normalPanel.tabIndex = 0;
+        advancedPanel.tabIndex = 0;
+        advancedPanel.hidden = true;
+        const activateStatsTab = (isAdvanced, moveFocus = false) => {
+            normalTab.setAttribute("aria-selected", String(!isAdvanced));
+            advancedTab.setAttribute("aria-selected", String(isAdvanced));
+            normalTab.tabIndex = isAdvanced ? -1 : 0;
+            advancedTab.tabIndex = isAdvanced ? 0 : -1;
+            normalPanel.hidden = isAdvanced;
+            advancedPanel.hidden = !isAdvanced;
+            if (moveFocus) (isAdvanced ? advancedTab : normalTab).focus();
+        };
+        [[normalTab, false], [advancedTab, true]].forEach(([tab, isAdvanced]) => {
+            tab.addEventListener("click", () => activateStatsTab(isAdvanced));
+            tab.addEventListener("keydown", (event) => {
+                let selectAdvanced;
+                if (event.key === "Home") {
+                    selectAdvanced = false;
+                } else if (event.key === "End") {
+                    selectAdvanced = true;
+                } else if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) {
+                    selectAdvanced = !isAdvanced;
+                } else {
+                    return;
+                }
+                event.preventDefault();
+                activateStatsTab(selectAdvanced, true);
+            });
+        });
+        tabList.append(normalTab, advancedTab);
+        statsSection.append(statsTitle, tabList, normalPanel, advancedPanel);
+    } else {
+        statsSection.append(statsTitle, createStatGrid(normalStats));
+        if (advanceLoadError) {
+            const advanceMessage = document.createElement("p");
+            advanceMessage.className = "seer-pet-info-message";
+            advanceMessage.textContent = "神諭覺醒種族值暫時無法取得。";
+            statsSection.append(advanceMessage);
+        }
+    }
+    seerPetInfoPanel.append(statsSection);
+
+    const skillsSection = document.createElement("section");
+    skillsSection.className = "seer-pet-info-section";
+    const skillsTitle = document.createElement("h3");
+    skillsTitle.textContent = `技能（${skills.length}）`;
+    const skillCategories = [
+        { key: "normal", label: "普通技能", skills: [] },
+        { key: "advanced", label: "神諭覺醒", skills: [] },
+        { key: "special", label: "特殊學習", skills: [] }
+    ];
+    skills.forEach((skill) => {
+        const { is_advanced: isAdvanced, is_special: isSpecial } = skill.reference;
+        if (isAdvanced) {
+            skillCategories.find((item) => item.key === "advanced").skills.push(skill);
+        }
+        if (isSpecial) {
+            skillCategories.find((item) => item.key === "special").skills.push(skill);
+        }
+        if (!isAdvanced && !isSpecial) {
+            skillCategories.find((item) => item.key === "normal").skills.push(skill);
+        }
+    });
+    const visibleSkillCategories = skillCategories.filter((category) => category.skills.length);
+    const hasClassifiedSkills = skills.some(({ reference }) => reference.is_advanced || reference.is_special);
+    const renderSkillList = (categorySkills) => {
+        const skillList = document.createElement("div");
+        skillList.className = "seer-pet-skill-list";
+        categorySkills
+            .slice()
+            .sort((first, second) => Number(first.reference.learning_level) - Number(second.reference.learning_level))
+            .forEach(({ reference, record }) => {
+                const item = document.createElement("article");
+                item.className = "seer-pet-skill";
+                const heading = document.createElement("div");
+                heading.className = "seer-pet-skill-heading";
+                const nameGroup = document.createElement("div");
+                nameGroup.className = "seer-pet-skill-name";
+                const typeId = Number(record && record.type && record.type.id);
+                if (Number.isSafeInteger(typeId) && typeId > 0) {
+                    const typeIcon = document.createElement("img");
+                    typeIcon.className = "seer-pet-skill-type-icon";
+                    typeIcon.src = Number(record && record.category && record.category.id) === 4
+                        ? "https://img.yuyuqaq.cn/seer-pet/type/prop.png"
+                        : `https://img.yuyuqaq.cn/seer-pet/type/${typeId}.png`;
+                    typeIcon.alt = "";
+                    typeIcon.setAttribute("aria-hidden", "true");
+                    typeIcon.loading = "lazy";
+                    typeIcon.addEventListener("error", () => typeIcon.remove(), { once: true });
+                    nameGroup.append(typeIcon);
+                }
+                const name = document.createElement("strong");
+                name.textContent = convertToTraditionalChinese(record && record.name || "技能資料未提供");
+                nameGroup.append(name);
+                if (reference.is_fifth) {
+                    const fifth = document.createElement("span");
+                    fifth.className = "seer-pet-skill-badge";
+                    fifth.textContent = "第五技能";
+                    nameGroup.append(fifth);
+                }
+                heading.append(nameGroup);
+                const learningLevel = Number(reference.learning_level);
+                const learningLevelText = Number.isFinite(learningLevel)
+                    ? `學習等級：${learningLevel}級`
+                    : "學習等級：特殊";
+                const statsText = document.createElement("p");
+                const power = record && record.power !== null && record.power !== undefined ? record.power : "—";
+                const pp = record && record.max_pp !== null && record.max_pp !== undefined ? record.max_pp : "—";
+                const accuracy = record && record.accuracy !== null && record.accuracy !== undefined ? `${record.accuracy}%` : "—";
+                statsText.textContent = `威力 ${power} · PP ${pp} · 命中 ${accuracy} · ${learningLevelText}`;
+                item.append(heading, statsText);
+                const activationItemId = reference.skill_activation_item
+                    && reference.skill_activation_item.id;
+                const activationItem = activationItemId === undefined || activationItemId === null
+                    ? null
+                    : activationItemsById.get(String(activationItemId));
+                const skillEffects = Array.isArray(record && record.skill_effect)
+                    ? record.skill_effect
+                    : [];
+                const effectTexts = skillEffects
+                    .map((effect) => {
+                        if (effect && typeof effect.info === "string" && effect.info.trim()) {
+                            return effect.info.trim();
+                        }
+                        if (!effect || typeof effect.analyze_info !== "string" || !effect.analyze_info.trim()) {
+                            return "";
+                        }
+                        return effect.analyze_info
+                            .replace(/\[(?:sprite\s+[^\]]+|\/?color(?:=[^\]]*)?)\]/gi, "")
+                            .trim();
+                    })
+                    .filter(Boolean);
+                if (effectTexts.length) {
+                    const effects = document.createElement("ul");
+                    effects.className = "seer-pet-skill-effects";
+                    effectTexts.forEach((effectText) => {
+                        const effectItem = document.createElement("li");
+                        effectItem.textContent = convertToTraditionalChinese(effectText);
+                        effects.append(effectItem);
+                    });
+                    item.append(effects);
+                }
+                if (record && record.info) {
+                    const description = document.createElement("p");
+                    description.className = "seer-pet-skill-description";
+                    description.textContent = convertToTraditionalChinese(String(record.info));
+                    item.append(description);
+                }
+                if (activationItem && activationItem.name) {
+                    const activationItemText = document.createElement("p");
+                    activationItemText.className = "seer-pet-skill-activation-item";
+                    const itemNumber = Number(activationItem.item_number);
+                    const itemCount = Number.isFinite(itemNumber) && itemNumber > 1
+                        ? ` ×${itemNumber}`
+                        : "";
+                    activationItemText.textContent =
+                        `學習道具：${convertToTraditionalChinese(String(activationItem.name))}${itemCount}`;
+                    item.append(activationItemText);
+                }
+                skillList.append(item);
+            });
+        if (!categorySkills.length) {
+            const empty = document.createElement("p");
+            empty.className = "seer-pet-info-message";
+            empty.textContent = "沒有技能資料。";
+            skillList.append(empty);
+        }
+        return skillList;
+    };
+    if (hasClassifiedSkills) {
+        const tabList = document.createElement("div");
+        tabList.className = "seer-pet-stat-tabs seer-pet-skill-tabs";
+        tabList.setAttribute("role", "tablist");
+        tabList.setAttribute("aria-label", "技能分類");
+        const panels = visibleSkillCategories.map((category) => {
+            const tab = document.createElement("button");
+            const panel = renderSkillList(category.skills);
+            const categoryId = `seer-skill-${String(pet.id || "pet").replace(/[^\w-]/g, "-")}-${category.key}`;
+            tab.className = "seer-pet-stat-tab";
+            tab.type = "button";
+            tab.id = `${categoryId}-tab`;
+            tab.setAttribute("role", "tab");
+            tab.setAttribute("aria-controls", `${categoryId}-panel`);
+            tab.setAttribute("aria-selected", "false");
+            tab.tabIndex = -1;
+            tab.textContent = `${category.label}（${category.skills.length}）`;
+            panel.id = `${categoryId}-panel`;
+            panel.setAttribute("role", "tabpanel");
+            panel.setAttribute("aria-labelledby", tab.id);
+            panel.tabIndex = 0;
+            panel.hidden = true;
+            tab.addEventListener("click", () => activateSkillTab(category.key));
+            tab.addEventListener("keydown", (event) => {
+                const currentIndex = visibleSkillCategories.findIndex((item) => item.key === category.key);
+                let nextIndex;
+                if (event.key === "Home") nextIndex = 0;
+                else if (event.key === "End") nextIndex = visibleSkillCategories.length - 1;
+                else if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+                    nextIndex = (currentIndex + 1) % visibleSkillCategories.length;
+                } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+                    nextIndex = (currentIndex - 1 + visibleSkillCategories.length) % visibleSkillCategories.length;
+                } else return;
+                event.preventDefault();
+                activateSkillTab(visibleSkillCategories[nextIndex].key, true);
+            });
+            tabList.append(tab);
+            return { category, tab, panel };
+        });
+        const activateSkillTab = (selectedKey, moveFocus = false) => {
+            panels.forEach(({ category, tab, panel }) => {
+                const selected = category.key === selectedKey;
+                tab.setAttribute("aria-selected", String(selected));
+                tab.tabIndex = selected ? 0 : -1;
+                panel.hidden = !selected;
+                if (selected && moveFocus) tab.focus();
+            });
+        };
+        skillsSection.append(skillsTitle, tabList, ...panels.map(({ panel }) => panel));
+        activateSkillTab(visibleSkillCategories[0].key);
+    } else {
+        skillsSection.append(skillsTitle, renderSkillList(skills));
+    }
+    seerPetInfoPanel.append(skillsSection);
+
+    const soulmarkSection = document.createElement("section");
+    soulmarkSection.className = "seer-pet-info-section";
+    const soulmarkTitle = document.createElement("h3");
+    soulmarkTitle.textContent = "魂印";
+    soulmarkSection.append(soulmarkTitle);
+    if (!soulmarks.length) {
+        const empty = document.createElement("p");
+        empty.className = "seer-pet-info-message";
+        empty.textContent = "沒有魂印資料。";
+        soulmarkSection.append(empty);
+    }
+    const soulmarkTabPrefix = `seer-soulmark-${String(pet.id || "pet").replace(/[^\w-]/g, "-")}`;
+    const soulmarkCards = soulmarks.map(({ reference, record }, index) => {
+        const soulmarkId = record && record.id || reference.id;
+        const card = document.createElement("article");
+        card.className = "seer-pet-soulmark-card";
+        card.id = `${soulmarkTabPrefix}-panel-${index}`;
+        if (soulmarkId) {
+            const image = document.createElement("img");
+            image.className = "seer-pet-soulmark-image";
+            image.alt = `魂印 ${soulmarkId}`;
+            image.loading = "lazy";
+            resolveSeerWikiSoulmarkImage(soulmarkId)
+                .then((imageUrl) => {
+                    if (imageUrl) image.src = imageUrl;
+                    else image.hidden = true;
+                })
+                .catch((error) => {
+                    console.warn(`Load wiki soulmark image ${soulmarkId} error:`, error);
+                    image.hidden = true;
+                });
+            image.addEventListener("error", () => {
+                image.hidden = true;
+            }, { once: true });
+            card.append(image);
+        }
+        const description = document.createElement("p");
+        description.className = "seer-pet-soulmark";
+        const descriptionText = [
+            record && record.desc,
+            record && record.desc_formatting_adjustment,
+            record && record.analyze_desc
+        ].find((value) => typeof value === "string" && value.trim());
+        if (descriptionText) {
+            const bossNotePattern = /^[（(]\s*boss\s*(?:無效|有效)\s*[）)]$/i;
+            const lines = convertToTraditionalChinese(descriptionText.trim())
+                .replace(/\s*\|\s*/g, "\n")
+                .replace(/\s*([（(]\s*boss\s*(?:無效|有效)\s*[）)])\s*/gi, "\n$1\n")
+                .split(/\n/)
+                .map((line) => line.trim())
+                .filter(Boolean);
+            description.textContent = lines
+                .map((line) => bossNotePattern.test(line) ? line : `• ${line}`)
+                .join("\n");
+        } else {
+            description.textContent = `魂印 #${soulmarkId || "?"} 描述未提供。`;
+        }
+        card.append(description);
+        return {
+            card,
+            id: soulmarkId,
+            name: record && record.name,
+            index
+        };
+    });
+    if (soulmarkCards.length > 1) {
+        const tabList = document.createElement("div");
+        tabList.className = "seer-pet-soulmark-tabs";
+        tabList.setAttribute("role", "tablist");
+        tabList.setAttribute("aria-label", "魂印");
+        const activateTab = (selectedIndex, moveFocus = false) => {
+            soulmarkCards.forEach(({ card }, tabIndex) => {
+                const tab = tabList.children[tabIndex];
+                const isSelected = tabIndex === selectedIndex;
+                tab.setAttribute("aria-selected", String(isSelected));
+                tab.tabIndex = isSelected ? 0 : -1;
+                card.hidden = !isSelected;
+                if (moveFocus && isSelected) tab.focus();
+            });
+        };
+        soulmarkCards.forEach(({ card }, tabIndex) => {
+            const tab = document.createElement("button");
+            const tabId = `${soulmarkTabPrefix}-tab-${tabIndex}`;
+            tab.className = "seer-pet-soulmark-tab";
+            tab.id = tabId;
+            tab.type = "button";
+            tab.setAttribute("role", "tab");
+            tab.setAttribute("aria-controls", card.id);
+            tab.setAttribute("aria-selected", String(tabIndex === 0));
+            tab.tabIndex = tabIndex === 0 ? 0 : -1;
+            tab.textContent = tabIndex === 0
+                ? "強化前"
+                : tabIndex === 1
+                    ? "強化後"
+                    : `強化後${tabIndex}`;
+            card.setAttribute("role", "tabpanel");
+            card.setAttribute("aria-labelledby", tabId);
+            card.tabIndex = 0;
+            card.hidden = tabIndex !== 0;
+            tab.addEventListener("click", () => activateTab(tabIndex));
+            tab.addEventListener("keydown", (event) => {
+                let nextIndex;
+                if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+                    nextIndex = (tabIndex + 1) % soulmarkCards.length;
+                } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+                    nextIndex = (tabIndex - 1 + soulmarkCards.length) % soulmarkCards.length;
+                } else if (event.key === "Home") {
+                    nextIndex = 0;
+                } else if (event.key === "End") {
+                    nextIndex = soulmarkCards.length - 1;
+                } else {
+                    return;
+                }
+                event.preventDefault();
+                activateTab(nextIndex, true);
+            });
+            tabList.append(tab);
+        });
+        soulmarkSection.append(tabList);
+        soulmarkCards.forEach(({ card }) => soulmarkSection.append(card));
+    } else {
+        soulmarkCards.forEach(({ card }) => soulmarkSection.append(card));
+    }
+    seerPetInfoPanel.insertBefore(soulmarkSection, skillsSection);
+}
+
+function renderSeerPetInfoIdentity(pet, typeDetails) {
+    const petId = String(pet.id || "");
+    const petName = convertToTraditionalChinese(String(pet.name || "精靈"));
+    seerPetInfoTitle.textContent = petName;
+    seerPetInfoAvatar.hidden = !petId;
+    seerPetInfoAvatar.alt = `${petName}縮圖`;
+    if (petId) {
+        seerPetInfoAvatar.src =
+            `https://newseer.61.com/web/monster/head/${encodeURIComponent(petId)}.png`;
+    } else {
+        seerPetInfoAvatar.removeAttribute("src");
+    }
+    seerPetInfoAvatar.onerror = () => {
+        seerPetInfoAvatar.hidden = true;
+    };
+    seerPetInfoMeta.replaceChildren();
+
+    const addMeta = (label, value, iconUrl = "") => {
+        const item = document.createElement("span");
+        item.className = "seer-pet-info-meta-item";
+        item.setAttribute("aria-label", `${label} ${value}`);
+        if (iconUrl) {
+            const icon = document.createElement("img");
+            icon.src = iconUrl;
+            icon.alt = "";
+            icon.loading = "lazy";
+            icon.addEventListener("error", () => icon.remove(), { once: true });
+            item.append(icon);
+        }
+        const text = document.createElement("span");
+        text.textContent = value;
+        item.append(text);
+        seerPetInfoMeta.append(item);
+    };
+
+    addMeta("編號", `#${petId}`);
+    const genderId = Number(pet.gender && pet.gender.id);
+    const gender = {
+        0: ["無性", "https://img.yuyuqaq.cn/seer-common/sex_sexless.png"],
+        1: ["雄性", "https://img.yuyuqaq.cn/seer-common/sex_male.png"],
+        2: ["雌性", "https://img.yuyuqaq.cn/seer-common/sex_female.png"]
+    }[genderId];
+    addMeta("性別", gender ? gender[0] : "未知", gender && gender[1]);
+    const typeId = typeDetails && typeDetails.id || pet.type && pet.type.id;
+    const typeName = typeDetails && typeDetails.name;
+    addMeta(
+        "屬性",
+        typeName || "",
+        typeId ? `https://img.yuyuqaq.cn/seer-pet/type/${encodeURIComponent(typeId)}.png` : ""
+    );
+}
+
+function resolveSeerWikiSoulmarkImage(soulmarkId) {
+    const key = String(soulmarkId);
+    let promise = seerSoulmarkImageCache.get(key);
+    if (!promise) {
+        const query = new URLSearchParams({
+            action: "parse",
+            page: `魂印:${key}`,
+            prop: "text",
+            format: "json",
+            origin: "*"
+        });
+        promise = fetchSeerJson(`https://wiki.biligame.com/seer/api.php?${query}`)
+            .then((response) => {
+                const html = response && response.parse && response.parse.text &&
+                    response.parse.text["*"];
+                if (typeof html !== "string") {
+                    throw new Error(`魂印 Wiki 頁面 ${key} 沒有可解析的內容。`);
+                }
+                const document = new DOMParser().parseFromString(html, "text/html");
+                const soulmarkImage = document.querySelector(
+                    ".mw-parser-output > table.wikitable td[rowspan] img"
+                );
+                const candidates = [
+                    soulmarkImage && soulmarkImage.getAttribute("src"),
+                    ...(soulmarkImage && soulmarkImage.getAttribute("srcset") || "")
+                        .split(",")
+                        .map((candidate) => candidate.trim().split(/\s+/)[0])
+                        .filter(Boolean),
+                ].filter(Boolean);
+                const imageUrl = candidates[candidates.length - 1];
+                if (!imageUrl) {
+                    throw new Error(`魂印 Wiki 頁面 ${key} 找不到魂印圖片。`);
+                }
+                const parsedImageUrl = new URL(imageUrl, "https://wiki.biligame.com");
+                if (parsedImageUrl.hostname !== "patchwiki.biligame.com" ||
+                    !parsedImageUrl.pathname.startsWith("/images/seer/")) {
+                    throw new Error(`魂印 Wiki 頁面 ${key} 回傳了無效圖片網址。`);
+                }
+                return parsedImageUrl.href;
+            })
+            .catch((error) => {
+                seerSoulmarkImageCache.delete(key);
+                throw error;
+            });
+        seerSoulmarkImageCache.set(key, promise);
+    }
+    return promise;
 }
 
 async function renderSeerSkinPreview(entry, requestId) {
@@ -1858,12 +2661,23 @@ async function renderSeerSkinPreview(entry, requestId) {
     seerLookupTypeName.textContent = typeDetails.name || "未知";
     seerLookupIllustrationImage.src = `https://newseer.61.com/web/monster//body/${encodeURIComponent(imageResourceId)}.png`;
     seerLookupIllustrationImage.alt = `${skinName}立繪`;
-    seerLookupMoreInfoButton.hidden = false;
+    seerLookupMoreInfoButton.hidden = true;
+    seerLookupSkinMoreInfoButton.hidden = false;
     seerLookupPetSkinsButton.hidden = true;
     seerLookupIllustrationTitle.textContent = "皮膚立繪預覽";
     seerLookupIllustrationDescription.textContent = `綁定精靈：${petName}`;
     currentSeerInfoUrl = `https://wiki.biligame.com/seer/${encodeURI(`皮肤:${getSeerSkinResourceId(skin)}`)}`;
     currentSeerPetId = null;
+    currentSeerPetData = null;
+    seerPetInfoTitle.textContent = "精靈資訊";
+    seerPetInfoAvatar.hidden = true;
+    seerPetInfoAvatar.removeAttribute("src");
+    seerPetInfoMeta.replaceChildren();
+    seerPetInfoRequestId += 1;
+    seerPetInfoPanel.replaceChildren();
+    if (!seerPetInfoModal.hidden) closeSeerPetInfoModal();
+    seerPetInfoToggle.hidden = true;
+    seerPetInfoRetry.hidden = true;
     seerLookupIllustrationImage.hidden = false;
     seerLookupPreview.hidden = false;
 }
@@ -1945,6 +2759,7 @@ async function handleSeerLookupImageError(image) {
 
 function clearSeerLookupResult() {
     seerLookupMessage.textContent = "";
+    resetSeerPetInfo();
     clearSeerBrowseSentinel();
     seerLookupResults.replaceChildren();
     seerLookupResults.hidden = true;
@@ -1965,7 +2780,8 @@ function clearSeerLookupResult() {
     seerLookupRelatedPet.textContent = "";
     seerLookupRelatedPet.hidden = true;
     seerLookupTypeName.textContent = "-";
-    seerLookupMoreInfoButton.hidden = seerLookupMode === "skin";
+    seerLookupMoreInfoButton.hidden = true;
+    seerLookupSkinMoreInfoButton.hidden = true;
     seerLookupPetSkinsButton.hidden = true;
     seerLookupIllustrationTitle.textContent = seerLookupMode === "skin" ? "皮膚立繪預覽" : "立繪預覽";
     seerLookupIllustrationDescription.textContent = seerLookupMode === "skin"
@@ -1984,23 +2800,178 @@ function openSeerSkinSearchForCurrentPet() {
     startSeerPetLookup(petId);
 }
 
+function openSeerRelatedSkinsModal() {
+    if (!currentSeerPetId) return;
+    seerRelatedSkinsOpener = document.activeElement;
+    const requestId = ++seerRelatedSkinsRequestId;
+    seerRelatedSkinsModal.classList.remove("is-closing");
+    seerRelatedSkinsModal.hidden = false;
+    seerRelatedSkinsResults.replaceChildren();
+    seerRelatedSkinsMessage.textContent = "正在載入關聯皮膚…";
+    updateSeerModalScrollLock();
+    seerRelatedSkinsClose.focus();
+    void loadSeerRelatedSkins(currentSeerPetId, requestId);
+}
+
+async function loadSeerRelatedSkins(petId, requestId) {
+    try {
+        const skins = await fetchSeerSkinCatalog();
+        if (requestId !== seerRelatedSkinsRequestId || seerRelatedSkinsModal.hidden) return;
+        const matchingSkins = skins
+            .filter((skin) => String(skin && skin.pet && skin.pet.id) === String(petId))
+            .sort((first, second) => Number(second.id) - Number(first.id));
+        if (!matchingSkins.length) {
+            seerRelatedSkinsMessage.textContent = "找不到這隻精靈的關聯皮膚。";
+            return;
+        }
+        const entries = await Promise.all(matchingSkins.map((skin) => loadSeerSkinEntry(skin)));
+        if (requestId !== seerRelatedSkinsRequestId || seerRelatedSkinsModal.hidden) return;
+        renderSeerRelatedSkins(entries, requestId);
+        seerRelatedSkinsMessage.textContent = `找到 ${entries.length} 款關聯皮膚，點選即可前往查看。`;
+    } catch (error) {
+        if (requestId !== seerRelatedSkinsRequestId || seerRelatedSkinsModal.hidden) return;
+        console.error(`Load related Seer skins for pet ${petId} error:`, error);
+        seerRelatedSkinsMessage.textContent = `關聯皮膚載入失敗：${error.message}`;
+    }
+}
+
+function renderSeerRelatedSkins(entries, requestId) {
+    seerRelatedSkinsResults.replaceChildren();
+    entries.forEach(({ skin, pet }) => {
+        const button = document.createElement("button");
+        button.className = "seer-related-skin-item";
+        button.type = "button";
+        const thumbnail = document.createElement("img");
+        thumbnail.className = "seer-related-skin-thumbnail";
+        thumbnail.src =
+            `https://newseer.61.com/web/monster/head/${encodeURIComponent(getSeerSkinImageResourceId(skin))}.png`;
+        thumbnail.alt = `${convertToTraditionalChinese(skin.name || "皮膚")}縮圖`;
+        thumbnail.loading = "lazy";
+        thumbnail.addEventListener("error", async () => {
+            if (thumbnail.dataset.fallbackAttempted === "true") {
+                thumbnail.hidden = true;
+                return;
+            }
+            thumbnail.dataset.fallbackAttempted = "true";
+            try {
+                const fallbackPet = await findSeerPetForSkinThumbnailFallback(skin, pet);
+                if (!thumbnail.isConnected || requestId !== seerRelatedSkinsRequestId) return;
+                if (!fallbackPet) {
+                    thumbnail.hidden = true;
+                    return;
+                }
+                thumbnail.src =
+                    `https://newseer.61.com/web/monster/head/${encodeURIComponent(fallbackPet.id)}.png`;
+                thumbnail.alt = `${convertToTraditionalChinese(fallbackPet.name || "精靈")}頭像`;
+            } catch (error) {
+                console.error(`Load fallback thumbnail for related Seer skin ${skin.id} error:`, error);
+                thumbnail.hidden = true;
+            }
+        });
+        const categoryId = Number(skin && skin.category && skin.category.id);
+        const categoryIcon = document.createElement("img");
+        categoryIcon.className = "seer-related-skin-category-icon";
+        categoryIcon.alt = "";
+        categoryIcon.setAttribute("aria-hidden", "true");
+        categoryIcon.loading = "lazy";
+        if (Number.isSafeInteger(categoryId) && categoryId >= 0) {
+            categoryIcon.src =
+                `https://img.yuyuqaq.cn/seer-common/common_pet_skin_icon_${categoryId}.png`;
+            categoryIcon.addEventListener("error", () => categoryIcon.remove(), { once: true });
+        } else {
+            categoryIcon.remove();
+        }
+        const details = document.createElement("span");
+        details.className = "seer-related-skin-details";
+        const name = document.createElement("strong");
+        name.className = "seer-related-skin-name";
+        name.textContent = convertToTraditionalChinese(skin.name || "未命名皮膚");
+        details.append(name);
+        const id = document.createElement("span");
+        id.className = "seer-related-skin-id";
+        id.textContent = `#${skin.id}`;
+        button.append(thumbnail, categoryIcon, details, id);
+        button.addEventListener("click", () => openSeerSkinInSearch(skin.id));
+        seerRelatedSkinsResults.append(button);
+    });
+}
+
+function openSeerSkinInSearch(skinId) {
+    closeSeerRelatedSkinsModal(false);
+    closeSeerPetInfoModal(false);
+    setSeerLookupMode("skin");
+    setSeerSkinSearchMode("skin");
+    activateTab("seer-lookup-section");
+    seerLookupIdInput.value = String(skinId);
+    seerLookupIdInput.focus();
+    startSeerPetLookup(String(skinId));
+}
+
+function openSeerPetInfoModal() {
+    if (!currentSeerPetData || !currentSeerPetId || !seerPetInfoModal.hidden) return;
+    seerPetInfoOpener = document.activeElement;
+    seerPetInfoModal.classList.remove("is-closing");
+    seerPetInfoModal.hidden = false;
+    updateSeerModalScrollLock();
+    seerPetInfoClose.focus();
+    void loadSeerPetInfo(currentSeerPetData);
+}
+
+function updateSeerModalScrollLock() {
+    document.body.classList.toggle(
+        "has-admin-confirm-modal",
+        !seerPetInfoModal.hidden || !seerExternalLinkModal.hidden || !seerRelatedSkinsModal.hidden
+    );
+}
+
+function closeSeerPetInfoModal(restoreFocus = true) {
+    if (seerPetInfoModal.hidden || seerPetInfoModal.classList.contains("is-closing")) return;
+    seerPetInfoModal.classList.add("is-closing");
+    window.setTimeout(() => {
+        if (!seerPetInfoModal.classList.contains("is-closing")) return;
+        seerPetInfoModal.hidden = true;
+        seerPetInfoModal.classList.remove("is-closing");
+        updateSeerModalScrollLock();
+        if (restoreFocus && seerPetInfoOpener && seerPetInfoOpener.isConnected && !seerPetInfoOpener.hidden) {
+            seerPetInfoOpener.focus();
+        }
+        seerPetInfoOpener = null;
+    }, 180);
+}
+
+function closeSeerRelatedSkinsModal(restoreFocus = true) {
+    if (seerRelatedSkinsModal.hidden || seerRelatedSkinsModal.classList.contains("is-closing")) return;
+    seerRelatedSkinsRequestId += 1;
+    seerRelatedSkinsModal.classList.add("is-closing");
+    window.setTimeout(() => {
+        if (!seerRelatedSkinsModal.classList.contains("is-closing")) return;
+        seerRelatedSkinsModal.hidden = true;
+        seerRelatedSkinsModal.classList.remove("is-closing");
+        updateSeerModalScrollLock();
+        if (restoreFocus && seerRelatedSkinsOpener && seerRelatedSkinsOpener.isConnected) {
+            seerRelatedSkinsOpener.focus();
+        }
+        seerRelatedSkinsOpener = null;
+    }, 180);
+}
+
 function openSeerExternalLinkModal() {
     if (!currentSeerInfoUrl) return;
     externalLinkOpener = document.activeElement;
     seerExternalLinkOpen.href = currentSeerInfoUrl;
     seerExternalLinkModal.classList.remove("is-closing");
     seerExternalLinkModal.hidden = false;
-    document.body.classList.add("has-admin-confirm-modal");
+    updateSeerModalScrollLock();
     seerExternalLinkCancel.focus();
 }
 
 function closeSeerExternalLinkModal() {
     if (seerExternalLinkModal.hidden || seerExternalLinkModal.classList.contains("is-closing")) return;
     seerExternalLinkModal.classList.add("is-closing");
-    document.body.classList.remove("has-admin-confirm-modal");
     window.setTimeout(() => {
         seerExternalLinkModal.hidden = true;
         seerExternalLinkModal.classList.remove("is-closing");
+        updateSeerModalScrollLock();
         if (externalLinkOpener && typeof externalLinkOpener.focus === "function") {
             externalLinkOpener.focus();
         }
