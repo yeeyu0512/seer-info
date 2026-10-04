@@ -1307,8 +1307,8 @@ button:disabled {
 
     .seer-pet-preview-content:has(.seer-lookup-more-info:not([hidden])) {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        column-gap: 10px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: 8px;
         row-gap: 4px;
     }
 
@@ -1327,17 +1327,24 @@ button:disabled {
     }
 
     .seer-pet-preview-content:has(.seer-lookup-more-info:not([hidden])) > .seer-lookup-preview-actions {
-        grid-column: 2;
-        grid-row: 4;
-        gap: 5px;
-        width: max-content;
-        max-width: 100%;
+        grid-column: 1 / -1;
+        grid-row: auto;
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        width: 100%;
+        max-width: none;
+        margin-top: 4px;
     }
 
     .seer-lookup-preview-actions .seer-lookup-more-info {
+        flex: 1 1 0;
+        width: 0;
+        min-width: 0;
         min-height: 34px;
         padding: 6px 9px;
         font-size: 12px;
+        white-space: normal;
     }
 
     .seer-lookup-illustration {
