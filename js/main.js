@@ -64,6 +64,8 @@ const seerLookupDescription = document.getElementById("seer-lookup-description")
 const seerLookupInputLabel = document.getElementById("seer-lookup-input-label");
 const seerSkinSearchTabs = document.getElementById("seer-skin-search-tabs");
 const seerSkinSearchModeTabs = Array.from(document.querySelectorAll(".seer-skin-search-tab"));
+const seerSkinCategoryFilter = document.getElementById("seer-skin-category-filter");
+const seerSkinCategoryOptions = document.getElementById("seer-skin-category-options");
 const seerLookupMessage = document.getElementById("seer-lookup-message");
 const seerLookupResults = document.getElementById("seer-lookup-results");
 const seerLookupPreview = document.getElementById("seer-lookup-preview");
@@ -116,23 +118,36 @@ const elementTypeIconCache = new Map();
 const elementTypeDetailsCache = new Map();
 const seerPetDetailsCache = new Map();
 let seerSkinCatalogPromise = null;
+let seerSkinCategoriesPromise = null;
 const characterTypeIconQueue = [];
 const observedTypeIconElements = new Set();
 let activeTypeIconRequests = 0;
 let seerLookupDebounceTimer = null;
 let seerLookupRequestId = 0;
+let seerBrowseState = null;
+let seerBrowseSentinel = null;
 let competitivePoolRequestId = 0;
 let currentCompetitivePoolCharacters = [];
 let selectedCompetitivePoolType = "banned";
 let isSeerLookupComposing = false;
 let seerLookupMode = "pet";
 let seerSkinSearchMode = "skin";
+let selectedSeerSkinCategoryId = null;
 let currentSeerPetId = null;
 let currentSeerInfoUrl = null;
 let currentSeerSkinImageFallback = null;
 let externalLinkOpener = null;
 let externalLinkPointerStartedOnBackdrop = false;
 const TYPE_ICON_REQUEST_LIMIT = 4;
+const SEER_BROWSE_PAGE_SIZE = 20;
+
+const seerBrowseObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+        if (entry.isIntersecting && seerBrowseState) {
+            void loadMoreSeerBrowseResults(seerBrowseState.requestId);
+        }
+    });
+}, { root: seerLookupResults, rootMargin: "100px" });
 const RANKINGS_PER_PAGE = 10;
 const CHARACTERS_PER_PAGE = 28;
 const s2tConverter = Converter({ from: "cn", to: "tw" });
@@ -165,6 +180,9 @@ mainTabs.forEach((tab) => {
         if (tab.dataset.lookupMode) setSeerLookupMode(tab.dataset.lookupMode);
         activateTab(tab.dataset.tabTarget);
         if (tab.dataset.tabTarget === "competitive-pool-section") loadCurrentCompetitivePool();
+        if (tab.dataset.tabTarget === "seer-lookup-section" && !seerLookupIdInput.value.trim()) {
+            void startLatestSeerBrowse(++seerLookupRequestId);
+        }
     });
 });
 refreshCompetitivePoolButton.addEventListener("click", loadCurrentCompetitivePool);
@@ -206,10 +224,36 @@ characterNextPageButton.addEventListener("click", () => {
 });
 seerLookupForm.addEventListener("submit", (event) => {
     event.preventDefault();
+    if (seerLookupMode === "skin" && seerSkinSearchMode === "category") {
+        void startLatestSeerBrowse(++seerLookupRequestId);
+        return;
+    }
     startSeerPetLookup(seerLookupIdInput.value.trim());
 });
 seerSkinSearchModeTabs.forEach((tab) => {
-    tab.addEventListener("click", () => setSeerSkinSearchMode(tab.dataset.skinSearchMode));
+    tab.addEventListener("click", () => {
+        setSeerSkinSearchMode(tab.dataset.skinSearchMode);
+        if (seerLookupMode === "skin" && (tab.dataset.skinSearchMode === "category" || !seerLookupIdInput.value.trim())) {
+            void startLatestSeerBrowse(++seerLookupRequestId);
+        }
+    });
+});
+seerSkinCategoryOptions.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-skin-category-id]");
+    if (!button || !seerSkinCategoryOptions.contains(button)) return;
+    const categoryValue = button.dataset.skinCategoryId;
+    selectedSeerSkinCategoryId = categoryValue === "all" ? null : Number(categoryValue);
+    seerSkinCategoryOptions.querySelectorAll("[data-skin-category-id]").forEach((option) => {
+        const selected = option === button;
+        option.classList.toggle("is-active", selected);
+        option.setAttribute("aria-pressed", String(selected));
+    });
+    if (seerLookupMode !== "skin" || !["skin", "category"].includes(seerSkinSearchMode)) return;
+    if (seerSkinSearchMode === "skin" && seerLookupIdInput.value.trim()) {
+        startSeerPetLookup(seerLookupIdInput.value.trim());
+    } else {
+        void startLatestSeerBrowse(++seerLookupRequestId);
+    }
 });
 seerLookupIdInput.addEventListener("input", () => {
     if (!isSeerLookupComposing) scheduleSeerPetLookup();
@@ -417,10 +461,16 @@ function setSeerLookupMode(mode) {
     invalidateSeerPetLookup();
     const isSkinMode = mode === "skin";
     seerSkinSearchTabs.hidden = !isSkinMode;
+    seerSkinCategoryFilter.hidden = !isSkinMode || seerSkinSearchMode !== "skin";
     if (isSkinMode) {
         updateSeerSkinSearchModeUi();
+        void loadSeerSkinCategoryOptions();
     } else {
         seerSkinSearchMode = "skin";
+        seerLookupInputLabel.hidden = false;
+        seerLookupIdInput.parentElement.hidden = false;
+        seerLookupIdInput.required = true;
+        seerSkinCategoryFilter.hidden = true;
     }
     seerLookupTitle.textContent = isSkinMode ? "皮膚查詢" : "精靈查詢";
     if (!isSkinMode) {
@@ -436,7 +486,7 @@ function setSeerLookupMode(mode) {
 }
 
 function setSeerSkinSearchMode(mode) {
-    if ((mode !== "skin" && mode !== "pet") || seerSkinSearchMode === mode) return;
+    if (!["skin", "pet", "category"].includes(mode) || seerSkinSearchMode === mode) return;
     seerSkinSearchMode = mode;
     seerLookupIdInput.value = "";
     invalidateSeerPetLookup();
@@ -445,17 +495,82 @@ function setSeerSkinSearchMode(mode) {
 
 function updateSeerSkinSearchModeUi() {
     const isPetMode = seerSkinSearchMode === "pet";
+    const isCategoryMode = seerSkinSearchMode === "category";
     seerSkinSearchModeTabs.forEach((tab) => {
         const isActive = tab.dataset.skinSearchMode === seerSkinSearchMode;
         tab.classList.toggle("is-active", isActive);
         tab.setAttribute("aria-selected", String(isActive));
     });
     if (seerLookupMode !== "skin") return;
+    seerLookupInputLabel.hidden = isCategoryMode;
+    seerLookupIdInput.parentElement.hidden = isCategoryMode;
+    seerLookupIdInput.required = !isCategoryMode;
+    seerSkinCategoryFilter.hidden = !isCategoryMode;
     seerLookupInputLabel.textContent = isPetMode ? "綁定精靈 ID／名稱" : "皮膚 ID／名稱";
     seerLookupIdInput.placeholder = isPetMode ? "例如：3506 或 波塞冬" : "例如：241 或 火焰萌王";
     seerLookupDescription.textContent = isPetMode
         ? "輸入綁定精靈 ID 或名稱，列出遊戲中綁定該精靈的皮膚，可能包含僅陸服存在的項目或顯示錯誤。"
-        : "輸入皮膚 ID 或名稱，可能包含僅陸服存在的項目或顯示錯誤。";
+        : isCategoryMode
+            ? "選擇皮膚種類圖示，即可瀏覽該種類的皮膚。"
+            : "輸入皮膚 ID 或名稱，可能包含僅陸服存在的項目或顯示錯誤。";
+}
+
+async function loadSeerSkinCategoryOptions() {
+    if (!seerSkinCategoriesPromise) {
+        seerSkinCategoriesPromise = fetchSeerJson(
+            "https://api.seerapi.com/v1/pet_skin_category?offset=0&limit=100"
+        ).then((page) => {
+            if (!Array.isArray(page.results)) throw new Error("SeerAPI 回傳的皮膚種類格式無效。");
+            return [...new Set(page.results
+                .map((category) => Number(category && category.id))
+                .filter((id) => Number.isSafeInteger(id) && id >= 0))]
+                .sort((first, second) => first - second);
+        }).catch((error) => {
+            seerSkinCategoriesPromise = null;
+            throw error;
+        });
+    }
+
+    try {
+        const categoryIds = await seerSkinCategoriesPromise;
+        renderSeerSkinCategoryOptions(categoryIds);
+    } catch (error) {
+        console.error("Load Seer skin categories error:", error);
+        seerLookupMessage.textContent = `載入皮膚種類失敗：${error.message}`;
+    }
+}
+
+function renderSeerSkinCategoryOptions(categoryIds) {
+    seerSkinCategoryOptions.replaceChildren();
+    const options = [{ id: "all", label: "全部" }, ...categoryIds.map((id) => ({
+        id: String(id),
+        label: `種類 ${id}`
+    }))];
+    options.forEach((option) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "seer-skin-category-option";
+        button.dataset.skinCategoryId = option.id;
+        button.setAttribute("aria-label", option.label);
+        button.setAttribute("aria-pressed", String(option.id === (selectedSeerSkinCategoryId === null ? "all" : String(selectedSeerSkinCategoryId))));
+        button.title = option.label;
+        if (option.id === "all") {
+            button.textContent = option.label;
+        } else {
+            const icon = document.createElement("img");
+            icon.src = `https://img.yuyuqaq.cn/seer-common/common_pet_skin_icon_${option.id}.png`;
+            icon.alt = "";
+            icon.loading = "lazy";
+            icon.addEventListener("error", () => {
+                icon.hidden = true;
+                button.textContent = option.label;
+            }, { once: true });
+            button.append(icon);
+        }
+        const selected = option.id === (selectedSeerSkinCategoryId === null ? "all" : String(selectedSeerSkinCategoryId));
+        button.classList.toggle("is-active", selected);
+        seerSkinCategoryOptions.append(button);
+    });
 }
 
 function openLoginModal() {
@@ -962,7 +1077,7 @@ function scheduleSeerPetLookup() {
     const query = seerLookupIdInput.value.trim();
     invalidateSeerPetLookup();
     if (!query) {
-        clearSeerLookupResult();
+        void startLatestSeerBrowse(seerLookupRequestId);
         return;
     }
     seerLookupMessage.textContent = "輸入完成後自動搜尋…";
@@ -978,17 +1093,166 @@ function invalidateSeerPetLookup() {
         seerLookupDebounceTimer = null;
     }
     seerLookupRequestId += 1;
+    seerBrowseState = null;
+    clearSeerBrowseSentinel();
     clearSeerLookupResult();
 }
 
 function startSeerPetLookup(query) {
-    if (!query) return;
+    if (!query) {
+        scheduleSeerPetLookup();
+        return;
+    }
     if (seerLookupDebounceTimer !== null) {
         window.clearTimeout(seerLookupDebounceTimer);
         seerLookupDebounceTimer = null;
     }
+    seerBrowseState = null;
+    clearSeerBrowseSentinel();
     const requestId = ++seerLookupRequestId;
     void lookupSeerPet(query, requestId);
+}
+
+async function startLatestSeerBrowse(requestId) {
+    if (requestId !== seerLookupRequestId || seerLookupIdInput.value.trim()) return;
+    const isSkinResource = seerLookupMode === "skin" && ["skin", "category"].includes(seerSkinSearchMode);
+    const resource = isSkinResource ? "pet_skin" : "pet";
+    if (seerLookupMode === "skin" && seerSkinSearchMode === "pet") {
+        seerBrowseState = null;
+        clearSeerBrowseSentinel();
+        seerLookupMessage.textContent = "輸入精靈 ID 或名稱以查詢綁定皮膚。";
+        seerLookupResults.replaceChildren();
+        seerLookupResults.hidden = true;
+        return;
+    }
+
+    seerBrowseState = {
+        requestId,
+        resource,
+        nextOffset: 0,
+        hasMore: false,
+        loading: true,
+        seenIds: new Set(),
+        categoryId: isSkinResource && seerSkinSearchMode === "category"
+            ? selectedSeerSkinCategoryId
+            : null
+    };
+    seerLookupPreview.hidden = true;
+    seerLookupResults.replaceChildren();
+    seerLookupResults.hidden = false;
+    seerLookupMessage.textContent = "正在載入最新編號資料…";
+    try {
+        const firstPage = await fetchSeerJson(
+            `https://api.seerapi.com/v1/${resource}?offset=0&limit=1&expand=true`
+        );
+        if (requestId !== seerLookupRequestId || !Array.isArray(firstPage.results)) return;
+        const count = Number(firstPage.count);
+        if (!Number.isSafeInteger(count) || count < 0) throw new Error("SeerAPI 回傳的資料筆數無效。");
+        if (count === 0) {
+            seerBrowseState = null;
+            seerLookupResults.hidden = true;
+            seerLookupMessage.textContent = "目前沒有可顯示的資料。";
+            return;
+        }
+
+        const offset = Math.max(0, count - SEER_BROWSE_PAGE_SIZE);
+        await loadSeerBrowsePage(seerBrowseState, offset);
+        if (requestId !== seerLookupRequestId) return;
+        const loadedCount = seerBrowseState.seenIds.size;
+        seerLookupMessage.textContent = `顯示最新 ${loadedCount} 筆${seerBrowseState.hasMore ? "；繼續向下捲動載入更早編號" : ""}。`;
+    } catch (error) {
+        if (requestId !== seerLookupRequestId) return;
+        console.error("Load latest Seer browse results error:", error);
+        seerBrowseState = null;
+        seerLookupResults.hidden = true;
+        seerLookupMessage.textContent = `載入最新資料失敗：${error.message}`;
+    }
+}
+
+async function loadMoreSeerBrowseResults(requestId) {
+    const state = seerBrowseState;
+    if (!state || state.requestId !== requestId || state.loading || !state.hasMore) return;
+    state.loading = true;
+    if (seerBrowseSentinel) seerBrowseSentinel.textContent = "正在載入更早編號…";
+    try {
+        const offset = state.nextOffset;
+        await loadSeerBrowsePage(state, offset);
+        if (seerBrowseState !== state || requestId !== seerLookupRequestId) return;
+        seerLookupMessage.textContent = `已載入 ${state.seenIds.size} 筆${state.hasMore ? "；繼續向下捲動載入更早編號" : "，已到最早編號"}。`;
+    } catch (error) {
+        if (seerBrowseState !== state || requestId !== seerLookupRequestId) return;
+        console.error("Load more Seer browse results error:", error);
+        if (seerBrowseSentinel) {
+            seerBrowseSentinel.textContent = "載入失敗，點此重試";
+            seerBrowseSentinel.disabled = false;
+        }
+        seerLookupMessage.textContent = `載入更多資料失敗：${error.message}`;
+    } finally {
+        if (seerBrowseState === state) {
+            state.loading = false;
+            updateSeerBrowseSentinel(state);
+        }
+    }
+}
+
+async function loadSeerBrowsePage(state, offset) {
+    const page = await fetchSeerJson(
+        `https://api.seerapi.com/v1/${state.resource}?offset=${offset}&limit=${SEER_BROWSE_PAGE_SIZE}&expand=true`
+    );
+    if (state.requestId !== seerLookupRequestId) return;
+    if (!Array.isArray(page.results)) throw new Error("SeerAPI 回傳的分頁資料格式無效。");
+
+    let orderedResults = page.results.slice().sort((first, second) => Number(second.id) - Number(first.id));
+    if (state.resource === "pet_skin") {
+        const matchingSkins = orderedResults.filter((skin) => matchesSelectedSkinCategory(skin, state.categoryId));
+        const pending = matchingSkins.slice();
+        const entries = [];
+        const workers = Array.from({ length: Math.min(4, pending.length) }, async () => {
+            while (pending.length > 0) {
+                const skin = pending.shift();
+                entries.push(await loadSeerSkinEntry(skin));
+            }
+        });
+        await Promise.all(workers);
+        if (state.requestId !== seerLookupRequestId) return;
+        const uniqueEntries = entries
+            .filter(({ skin }) => !state.seenIds.has(String(skin.id)))
+            .sort((first, second) => Number(second.skin.id) - Number(first.skin.id));
+        uniqueEntries.forEach(({ skin }) => state.seenIds.add(String(skin.id)));
+        renderSeerSkinSearchResults(uniqueEntries, true);
+    } else {
+        orderedResults = orderedResults.filter((pet) => !state.seenIds.has(String(pet.id)));
+        orderedResults.forEach((pet) => state.seenIds.add(String(pet.id)));
+        const typeDetailsById = await loadSeerPetSearchTypeDetails(orderedResults);
+        if (state.requestId !== seerLookupRequestId) return;
+        renderSeerPetSearchResults(orderedResults, typeDetailsById, true);
+    }
+
+    state.nextOffset = Math.max(0, offset - SEER_BROWSE_PAGE_SIZE);
+    state.hasMore = offset > 0 && page.results.length > 0;
+    state.loading = false;
+    updateSeerBrowseSentinel(state);
+}
+
+function updateSeerBrowseSentinel(state) {
+    clearSeerBrowseSentinel();
+    if (!state.hasMore || state.requestId !== seerLookupRequestId) return;
+    const sentinel = document.createElement("button");
+    sentinel.type = "button";
+    sentinel.className = "seer-lookup-browse-sentinel";
+    sentinel.textContent = state.loading ? "正在載入更早編號…" : "向下捲動或點此載入更早編號";
+    sentinel.disabled = state.loading;
+    sentinel.addEventListener("click", () => void loadMoreSeerBrowseResults(state.requestId));
+    seerBrowseSentinel = sentinel;
+    seerLookupResults.append(sentinel);
+    seerBrowseObserver.observe(sentinel);
+}
+
+function clearSeerBrowseSentinel() {
+    if (!seerBrowseSentinel) return;
+    seerBrowseObserver.unobserve(seerBrowseSentinel);
+    seerBrowseSentinel.remove();
+    seerBrowseSentinel = null;
 }
 
 async function lookupSeerPet(query, requestId) {
@@ -1080,9 +1344,7 @@ async function searchSeerSkinsForPet(query, requestId) {
         }
         const entries = await Promise.all(matchingSkins.map((skin) => loadSeerSkinEntry(skin)));
         if (requestId !== seerLookupRequestId) return;
-        const typeDetailsById = await loadSeerPetSearchTypeDetails(entries.map((entry) => entry.pet));
-        if (requestId !== seerLookupRequestId) return;
-        renderSeerSkinSearchResults(entries, typeDetailsById);
+        renderSeerSkinSearchResults(entries);
         seerLookupResults.hidden = false;
         seerLookupMessage.textContent = `找到 ${entries.length} 款綁定精靈「${convertToTraditionalChinese(pet.name || `#${petId}`)}」的皮膚。`;
     } catch (error) {
@@ -1115,9 +1377,7 @@ async function searchSeerSkinsForPetName(query, requestId) {
             skin,
             pet: petsById.get(String(skin.pet.id))
         }));
-        const typeDetailsById = await loadSeerPetSearchTypeDetails(entries.map((entry) => entry.pet));
-        if (requestId !== seerLookupRequestId) return;
-        renderSeerSkinSearchResults(entries, typeDetailsById);
+        renderSeerSkinSearchResults(entries);
         seerLookupResults.hidden = false;
         const hasMorePets = responses.some((response) =>
             Number(response.count) > (Array.isArray(response.results) ? response.results.length : 0)
@@ -1201,9 +1461,7 @@ async function searchSeerSkinsByName(query, requestId) {
     });
     await Promise.all(workers);
     if (requestId !== seerLookupRequestId) return;
-    const typeDetailsById = await loadSeerPetSearchTypeDetails(entries.map((entry) => entry.pet));
-    if (requestId !== seerLookupRequestId) return;
-    renderSeerSkinSearchResults(entries, typeDetailsById);
+    renderSeerSkinSearchResults(entries);
     seerLookupResults.hidden = false;
     const hasMoreMatches = responses.some((response) =>
         Number(response.count) > (Array.isArray(response.results) ? response.results.length : 0)
@@ -1214,6 +1472,11 @@ async function searchSeerSkinsByName(query, requestId) {
     seerLookupMessage.textContent = hasMoreMatches
         ? `${resultCountMessage} 結果較多，請輸入更完整的名稱以縮小範圍。`
         : resultCountMessage;
+}
+
+function matchesSelectedSkinCategory(skin, categoryId) {
+    return categoryId === null
+        || Number(skin && skin.category && skin.category.id) === categoryId;
 }
 
 async function loadSeerSkinEntry(skin) {
@@ -1326,8 +1589,8 @@ function fetchSeerElementTypeDetails(typeId) {
     return detailsPromise;
 }
 
-function renderSeerPetSearchResults(pets, typeDetailsById) {
-    seerLookupResults.replaceChildren();
+function renderSeerPetSearchResults(pets, typeDetailsById, append = false) {
+    if (!append) seerLookupResults.replaceChildren();
     pets.forEach((pet) => {
         const button = document.createElement("button");
         button.className = "seer-lookup-result";
@@ -1355,6 +1618,8 @@ function renderSeerPetSearchResults(pets, typeDetailsById) {
         id.textContent = `#${pet.id}`;
         button.append(content, id);
         button.addEventListener("click", async () => {
+            seerBrowseState = null;
+            clearSeerBrowseSentinel();
             const requestId = ++seerLookupRequestId;
             const resultButtons = seerLookupResults.querySelectorAll(".seer-lookup-result");
             resultButtons.forEach((result) => {
@@ -1381,8 +1646,8 @@ function renderSeerPetSearchResults(pets, typeDetailsById) {
     });
 }
 
-function renderSeerSkinSearchResults(entries, typeDetailsById) {
-    seerLookupResults.replaceChildren();
+function renderSeerSkinSearchResults(entries, append = false) {
+    if (!append) seerLookupResults.replaceChildren();
     entries.forEach((entry) => {
         const { skin, pet } = entry;
         const button = document.createElement("button");
@@ -1390,17 +1655,20 @@ function renderSeerSkinSearchResults(entries, typeDetailsById) {
         button.type = "button";
         const content = document.createElement("span");
         content.className = "seer-lookup-result-content";
-        const typeId = pet && pet.type && pet.type.id;
-        const typeDetails = typeId && typeDetailsById.get(String(typeId));
-        const type = document.createElement("span");
-        type.className = "seer-lookup-result-type";
-        if (typeDetails) {
-            const typeIcon = document.createElement("img");
-            typeIcon.src = `https://img.yuyuqaq.cn/seer-pet/type/${typeDetails.id}.png`;
-            typeIcon.alt = typeDetails.name || "屬性";
-            type.append(typeIcon);
+        const category = document.createElement("span");
+        category.className = "seer-lookup-result-category";
+        const categoryId = skin && skin.category && Number(skin.category.id);
+        if (Number.isSafeInteger(categoryId) && categoryId >= 0) {
+            const categoryIcon = document.createElement("img");
+            categoryIcon.src = `https://img.yuyuqaq.cn/seer-common/common_pet_skin_icon_${categoryId}.png`;
+            categoryIcon.alt = `皮膚種類 ${categoryId}`;
+            categoryIcon.loading = "lazy";
+            categoryIcon.addEventListener("error", () => {
+                categoryIcon.hidden = true;
+            }, { once: true });
+            category.append(categoryIcon);
         } else {
-            type.textContent = "-";
+            category.textContent = "-";
         }
         const details = document.createElement("span");
         details.className = "seer-lookup-result-details";
@@ -1411,12 +1679,14 @@ function renderSeerSkinSearchResults(entries, typeDetailsById) {
         petName.className = "seer-lookup-result-pet";
         petName.textContent = `綁定精靈：${convertToTraditionalChinese(pet.name || "未命名精靈")}`;
         details.append(name, petName);
-        content.append(type, details);
+        content.append(category, details);
         const id = document.createElement("span");
         id.className = "seer-lookup-result-id";
         id.textContent = `#${skin.id}`;
         button.append(content, id);
         button.addEventListener("click", async () => {
+            seerBrowseState = null;
+            clearSeerBrowseSentinel();
             const requestId = ++seerLookupRequestId;
             const resultButtons = seerLookupResults.querySelectorAll(".seer-lookup-result");
             resultButtons.forEach((result) => {
@@ -1600,6 +1870,7 @@ async function handleSeerLookupImageError(image) {
 
 function clearSeerLookupResult() {
     seerLookupMessage.textContent = "";
+    clearSeerBrowseSentinel();
     seerLookupResults.replaceChildren();
     seerLookupResults.hidden = true;
     seerLookupPreview.hidden = true;

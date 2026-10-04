@@ -328,10 +328,14 @@
                     <div id="seer-skin-search-tabs" class="seer-skin-search-tabs" role="tablist" aria-label="皮膚查詢方式" hidden>
                         <button class="seer-skin-search-tab is-active" type="button" role="tab" aria-selected="true" data-skin-search-mode="skin">搜尋皮膚</button>
                         <button class="seer-skin-search-tab" type="button" role="tab" aria-selected="false" data-skin-search-mode="pet">依綁定精靈查詢</button>
+                        <button class="seer-skin-search-tab" type="button" role="tab" aria-selected="false" data-skin-search-mode="category">依種類查詢</button>
                     </div>
                     <label id="seer-lookup-input-label" class="field-label" for="seer-lookup-id">精靈 ID／名稱</label>
                     <div class="game-account-controls">
                         <input id="seer-lookup-id" type="search" autocomplete="off" placeholder="例如：5000 或 聖靈譜尼" required>
+                    </div>
+                    <div id="seer-skin-category-filter" class="seer-skin-category-filter" aria-label="依皮膚種類篩選" hidden>
+                        <div id="seer-skin-category-options" class="seer-skin-category-options"></div>
                     </div>
                 </form>
                 <p id="seer-lookup-message" class="vote-message" aria-live="polite"></p>
