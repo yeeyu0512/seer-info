@@ -107,6 +107,18 @@ const RANKINGS_PER_PAGE = 10;
 const CHARACTERS_PER_PAGE = 28;
 const s2tConverter = Converter({ from: "cn", to: "tw" });
 const t2sConverter = Converter({ from: "tw", to: "cn" });
+const LOGIN_ENABLED = false;
+const REGISTRATION_ENABLED = false;
+
+if (!LOGIN_ENABLED) {
+    loginButton.disabled = true;
+    loginButton.textContent = "本站暫時不開放登入";
+}
+
+if (!REGISTRATION_ENABLED) {
+    registerButton.hidden = true;
+    authModeToggle.hidden = true;
+}
 
 const typeIconObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
@@ -406,6 +418,8 @@ function closeLoginModal() {
 }
 
 loginButton.addEventListener("click", async () => {
+    if (!LOGIN_ENABLED) return;
+
     const email = emailInput.value.trim();
     const password = passwordInput.value;
     if (!email || !password) {
@@ -432,6 +446,8 @@ loginButton.addEventListener("click", async () => {
 });
 
 registerButton.addEventListener("click", async () => {
+    if (!REGISTRATION_ENABLED) return;
+
     const email = emailInput.value.trim();
     const password = passwordInput.value;
     const passwordConfirm = passwordConfirmInput.value;
@@ -473,10 +489,12 @@ registerButton.addEventListener("click", async () => {
 });
 
 authModeToggle.addEventListener("click", () => {
+    if (!REGISTRATION_ENABLED) return;
     setAuthMode(!isRegisterMode);
 });
 
 function setAuthMode(registerMode) {
+    if (registerMode && !REGISTRATION_ENABLED) return;
     isRegisterMode = registerMode;
     passwordConfirmGroup.hidden = !isRegisterMode;
     mimiIdGroup.hidden = !isRegisterMode;

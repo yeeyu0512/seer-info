@@ -17,7 +17,7 @@
             </a>
             <div class="header-actions">
                 <a class="admin-home-link admin-header-control" href="./index.html">返回投票頁</a>
-                <button id="logout-button" class="admin-header-control" type="button">登出</button>
+                <button id="logout-button" class="admin-header-control" type="button" hidden>登出</button>
             </div>
         </div>
     </header>
@@ -31,6 +31,34 @@
                 </div>
                 <p>管理票選活動與遊戲內競技池資料。</p>
             </div>
+        </section>
+
+        <section id="admin-login-panel" class="panel admin-login-panel" aria-labelledby="admin-login-title" hidden>
+            <div class="admin-login-heading">
+                <div class="admin-login-emblem" aria-hidden="true">
+                    <img src="./1400867.png" alt="">
+                </div>
+                <div class="panel-header">
+                    <div>
+                        <span class="admin-login-kicker">ADMIN ACCESS</span>
+                        <h2 id="admin-login-title" class="panel-title">歡迎回來</h2>
+                        <p class="panel-description">使用既有管理員帳號登入後台。</p>
+                    </div>
+                </div>
+            </div>
+            <form id="admin-login-form" class="admin-login-form">
+                <label class="admin-login-field" for="admin-login-email">
+                    <span>Email</span>
+                    <input id="admin-login-email" type="email" autocomplete="username" placeholder="name@example.com" required>
+                </label>
+                <label class="admin-login-field" for="admin-login-password">
+                    <span>密碼</span>
+                    <input id="admin-login-password" type="password" autocomplete="current-password" placeholder="輸入管理員密碼" required>
+                </label>
+                <button id="admin-login-button" type="submit"><span>登入管理後台</span><span aria-hidden="true">→</span></button>
+                <p id="admin-login-message" class="form-message" aria-live="polite"></p>
+            </form>
+            <p class="admin-login-footnote"><span aria-hidden="true">◆</span> 僅管理員帳號可進入控制台</p>
         </section>
 
         <section id="admin-workspace" hidden>
@@ -295,6 +323,7 @@
         <section id="access-denied" class="panel access-denied" hidden>
             <h1>無管理權限</h1>
             <p class="panel-description">此帳號無法存取管理面板。</p>
+            <button id="admin-switch-account-button" class="secondary-button" type="button">登出並改用管理員帳號登入</button>
             <a class="primary-button" href="./index.html">返回投票頁</a>
         </section>
     </main>
