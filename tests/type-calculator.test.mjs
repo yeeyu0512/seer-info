@@ -6,7 +6,37 @@ import {
     getTypeMatchupAnalysis,
     getSkillStoneMatchupAnalysis,
     SeerTypeCalculatorController,
+    getRelatedTypeOptions,
 } from "../js/seer-type-calculator.js";
+
+test("related attribute choices include the single type and every matching dual type", () => {
+    assert.deepEqual(getRelatedTypeOptions(null), []);
+    for (const base of SEER_TYPE_DATA.singleTypes) {
+        const choices = getRelatedTypeOptions(base);
+        assert.equal(choices[0].name, base);
+        assert.equal(choices[0].types.length, 1);
+        assert(choices.every(type => type.types.includes(base)));
+        assert.equal(choices.length, SEER_TYPE_DATA.combinations.filter(type => type.types.includes(base)).length);
+    }
+});
+
+test("search spans all attributes rather than the selected base", () => {
+    const results = getRelatedTypeOptions("火", "聖靈超能");
+    assert(results.length > 0);
+    assert(results.every(type => type.types.includes("聖靈") && type.types.includes("超能")));
+    assert.deepEqual(getRelatedTypeOptions(null, " 聖靈 · 超能 "), results);
+    assert.deepEqual(getRelatedTypeOptions("火", "不存在的屬性"), []);
+});
+
+test("related filtering can use the encyclopedia API catalog", () => {
+    const catalog = [
+        { id: 1001, name: "火", types: ["火"] },
+        { id: 1002, name: "火 飛行", types: ["火", "飛行"] },
+        { id: 1003, name: "水", types: ["水"] },
+    ];
+    assert.deepEqual(getRelatedTypeOptions("火", "", catalog).map(type => type.id), [1001, 1002]);
+    assert.deepEqual(getRelatedTypeOptions("水", "火飛行", catalog).map(type => type.id), [1002]);
+});
 
 // Regression cases from https://www.bilibili.com/opus/393640212312106869
 const examples = [
@@ -29,6 +59,31 @@ test("both features start without selected attributes", () => {
     assert.equal(view.selectedTypeId, null);
     assert.equal(view.vsTypeAId, null);
     assert.equal(view.vsTypeBId, null);
+});
+
+test("opening a pet attribute resets stale lookup filters and selects the exact type ID", () => {
+    const view = Object.create(SeerTypeCalculatorController.prototype);
+    view.currentFeature = "vs";
+    view.searchQuery = "火";
+    view.targetSearchInput = { value: "火" };
+    view.currentMode = "defense";
+    view.currentFilter = "zero";
+    view.setFeature = feature => { view.currentFeature = feature; };
+    view.setMode = mode => { view.currentMode = mode; };
+    view.setFilter = filter => { view.currentFilter = filter; };
+    view.render = () => {};
+    for (const type of SEER_TYPE_DATA.combinations) {
+        assert.equal(view.openLookup(type.id), true);
+        assert.equal(view.selectedTypeId, type.id);
+    }
+    assert.equal(view.currentFeature, "lookup");
+    assert.equal(view.currentMode, "attack");
+    assert.equal(view.currentFilter, "all");
+    assert.equal(view.searchQuery, "");
+    assert.equal(view.targetSearchInput.value, "");
+    const previousType = view.selectedTypeId;
+    assert.equal(view.openLookup(-1), false);
+    assert.equal(view.selectedTypeId, previousType);
 });
 
 test("partial matchup selection hides results and never substitutes a default", (t) => {

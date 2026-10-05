@@ -566,26 +566,39 @@
     </section>
 </div>
 
-<div id="seer-pet-type-modal" class="admin-confirm-modal seer-pet-type-modal" role="presentation" hidden>
+<div id="seer-pet-type-modal" class="admin-confirm-modal seer-pet-type-modal type-related-picker" role="presentation" hidden>
     <section class="admin-confirm-dialog seer-pet-type-dialog" role="dialog" aria-modal="true" aria-labelledby="seer-pet-type-modal-title">
         <header class="seer-related-skins-header seer-pet-type-modal-header">
             <div>
                 <h2 id="seer-pet-type-modal-title">選擇精靈屬性</h2>
-                <p class="seer-pet-info-message">點選屬性後立即套用並瀏覽精靈</p>
+                <p class="seer-pet-info-message">點選單屬性，查看相關組合。</p>
             </div>
             <button id="seer-pet-type-close" class="seer-pet-info-close" type="button" aria-label="關閉屬性選擇">×</button>
         </header>
         <div class="seer-pet-type-modal-body">
-            <div class="seer-pet-type-tabs seer-skin-search-tabs" role="tablist" aria-label="精靈屬性分類">
-                <button class="seer-skin-search-tab is-active" type="button" role="tab" aria-selected="true" data-pet-type-category="single">單屬性</button>
-                <button class="seer-skin-search-tab" type="button" role="tab" aria-selected="false" data-pet-type-category="double">雙屬性</button>
+            <div class="type-picker-search-row">
+                <label class="field-label" for="seer-pet-type-search">搜尋屬性</label>
+                <input id="seer-pet-type-search" class="type-calc-picker-search-input type-picker-search" type="search" placeholder="輸入屬性名稱，例如：聖靈超能" autocomplete="off">
             </div>
-            <div id="seer-pet-type-options" class="seer-pet-type-options" role="group" aria-label="屬性選項"></div>
+            <div class="type-calc-picker-layout">
+                <section class="type-calc-picker-column" aria-labelledby="seer-pet-type-base-title">
+                    <h3 id="seer-pet-type-base-title">單屬性</h3>
+                    <div class="type-picker-all-options" role="group" aria-label="全部屬性篩選">
+                        <button type="button" data-pet-type-category="single">全部單屬性</button>
+                        <button type="button" data-pet-type-category="double">全部雙屬性</button>
+                    </div>
+                    <div id="seer-pet-type-bases" class="seer-pet-type-options type-picker-bases" role="group" aria-label="單屬性分類"></div>
+                </section>
+                <section class="type-calc-picker-column">
+                    <h3 id="seer-pet-type-options-title">相關屬性</h3>
+                    <div id="seer-pet-type-options" class="seer-pet-type-options type-picker-options" role="group" aria-label="屬性選項"></div>
+                </section>
+            </div>
         </div>
     </section>
 </div>
 
-<div id="type-calc-modal" class="admin-confirm-modal seer-pet-type-modal" role="presentation" hidden>
+<div id="type-calc-modal" class="admin-confirm-modal seer-pet-type-modal type-related-picker" role="presentation" hidden>
     <section class="admin-confirm-dialog seer-pet-type-dialog" role="dialog" aria-modal="true" aria-labelledby="type-calc-modal-title">
         <header class="seer-related-skins-header seer-pet-type-modal-header">
             <div>
@@ -595,11 +608,20 @@
             <button id="type-calc-modal-close" class="seer-pet-info-close" type="button" aria-label="關閉屬性選擇">×</button>
         </header>
         <div class="seer-pet-type-modal-body">
-            <div class="seer-pet-type-tabs seer-skin-search-tabs" role="tablist" aria-label="計算屬性分類">
-                <button class="seer-skin-search-tab is-active" type="button" role="tab" aria-selected="true" data-calc-type-category="single">單屬性</button>
-                <button class="seer-skin-search-tab" type="button" role="tab" aria-selected="false" data-calc-type-category="double">雙屬性</button>
+            <div id="type-calc-picker-search-row" class="type-picker-search-row">
+                <label class="field-label" for="type-calc-picker-search">搜尋屬性</label>
+                <input id="type-calc-picker-search" class="type-calc-picker-search-input type-picker-search" type="search" placeholder="輸入屬性名稱，例如：聖靈超能" autocomplete="off">
             </div>
-            <div id="type-calc-modal-options" class="seer-pet-type-options" role="group" aria-label="計算屬性選項"></div>
+            <div class="type-calc-picker-layout">
+                <section id="type-calc-picker-base-panel" class="type-calc-picker-column" aria-labelledby="type-calc-picker-base-title">
+                    <h3 id="type-calc-picker-base-title">單屬性</h3>
+                    <div id="type-calc-picker-bases" class="seer-pet-type-options type-picker-bases" role="group" aria-label="單屬性分類"></div>
+                </section>
+                <section class="type-calc-picker-column">
+                    <h3 id="type-calc-picker-options-title">選擇屬性</h3>
+                    <div id="type-calc-modal-options" class="seer-pet-type-options type-picker-options" role="group" aria-label="計算屬性選項"></div>
+                </section>
+            </div>
         </div>
     </section>
 </div>

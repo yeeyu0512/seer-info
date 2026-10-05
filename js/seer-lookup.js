@@ -1,4 +1,8 @@
 import { getSeerServerSettings } from "./seer-server-settings.js";
+import { SEER_TYPE_DATA } from "./seer-type-data.js";
+import { getRelatedTypeOptions } from "./seer-type-calculator.js";
+
+let openTypeLookup = null;
 
 const seerLookupForm = document.getElementById("seer-lookup-form");
 const seerLookupIdInput = document.getElementById("seer-lookup-id");
@@ -15,6 +19,11 @@ const seerPetSearchMethodButtons = Array.from(document.querySelectorAll("[data-p
 const seerPetTypeFilter = document.getElementById("seer-pet-type-filter");
 const seerPetTypeCategoryButtons = Array.from(document.querySelectorAll("[data-pet-type-category]"));
 const seerPetTypeOptions = document.getElementById("seer-pet-type-options");
+const seerPetTypeBases = document.getElementById("seer-pet-type-bases");
+const seerPetTypeSearch = document.getElementById("seer-pet-type-search");
+const seerPetTypeOptionsTitle = document.getElementById("seer-pet-type-options-title");
+let seerPetPickerBase = null;
+let seerPetPickerQuery = "";
 const seerPetTypeModal = document.getElementById("seer-pet-type-modal");
 const seerPetTypeClose = document.getElementById("seer-pet-type-close");
 const seerPetTypeOpenModalButton = document.getElementById("seer-pet-type-open-modal");
@@ -163,9 +172,9 @@ function updateSeerPetSearchMethodUi() {
         button.setAttribute("aria-selected", String(isActive));
     });
     seerPetTypeCategoryButtons.forEach((button) => {
-        const isActive = button.dataset.petTypeCategory === seerPetTypeCategory;
+        const isActive = selectedSeerPetTypeId === null && button.dataset.petTypeCategory === seerPetTypeCategory;
         button.classList.toggle("is-active", isActive);
-        button.setAttribute("aria-selected", String(isActive));
+        button.setAttribute("aria-pressed", String(isActive));
     });
 }
 
@@ -183,7 +192,7 @@ function setSeerPetSearchMethod(method) {
 }
 
 function setSeerPetTypeCategory(category) {
-    if (!["single", "double"].includes(category) || seerPetTypeCategory === category) return;
+    if (!["single", "double"].includes(category) || (seerPetTypeCategory === category && selectedSeerPetTypeId === null)) return;
     seerPetTypeCategory = category;
     selectedSeerPetTypeId = null;
     updateSeerPetSearchMethodUi();
@@ -526,12 +535,55 @@ function loadMoreSeerPetTypeFilterResults(state) {
 
 function renderSeerPetTypeOptions(combinations = null) {
     const availableCombinations = combinations || seerElementTypeCombinations;
-    const filteredCombinations = availableCombinations
-        .filter((combination) => combination.isDouble === (seerPetTypeCategory === "double"))
-        .sort((first, second) => first.id - second.id);
+    const catalog = availableCombinations.map(type => ({
+        ...type,
+        name: convertToTraditionalChinese(type.name),
+        types: SEER_TYPE_DATA.combinations.find(local => local.id === type.id)?.types
+            || [convertToTraditionalChinese(type.name)],
+    }));
+    if (!seerPetTypeBases.children.length && catalog.length) {
+        for (const type of catalog.filter(type => !type.isDouble)) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "seer-pet-type-option";
+            button.dataset.baseType = type.name;
+            const label = document.createElement("span");
+            label.className = "type-vs-inline-type";
+            const icon = document.createElement("img");
+            icon.src = `./seer_icons/${type.id}.png`;
+            icon.alt = "";
+            label.append(icon, type.name);
+            button.append(label);
+            button.addEventListener("click", () => {
+                seerPetPickerBase = type.name;
+                seerPetPickerQuery = "";
+                seerPetTypeSearch.value = "";
+                renderSeerPetTypeOptions();
+                seerPetTypeOptions.scrollTop = 0;
+            });
+            seerPetTypeBases.append(button);
+        }
+    }
+    const filteredCombinations = getRelatedTypeOptions(seerPetPickerBase, seerPetPickerQuery, catalog);
     seerPetTypeOptions.replaceChildren();
-
-    const options = [{ id: null, name: "全部" }, ...filteredCombinations];
+    for (const button of seerPetTypeBases.querySelectorAll("[data-base-type]")) {
+        const active = button.dataset.baseType === seerPetPickerBase && !seerPetPickerQuery.trim();
+        button.classList.toggle("is-active", active);
+        button.setAttribute("aria-pressed", String(active));
+    }
+    seerPetTypeOptionsTitle.textContent = seerPetPickerQuery.trim() ? `搜尋結果（${filteredCombinations.length}）`
+        : seerPetPickerBase ? `${seerPetPickerBase}系相關屬性（${filteredCombinations.length}）` : "相關屬性";
+    seerPetTypeOptions.classList.toggle("is-empty", !filteredCombinations.length);
+    if (!filteredCombinations.length) {
+        const hint = document.createElement("p");
+        hint.className = "type-calc-picker-hint";
+        hint.textContent = seerPetPickerQuery.trim() ? "找不到符合的屬性" : "選擇一個單屬性";
+        const detail = document.createElement("span");
+        detail.textContent = seerPetPickerQuery.trim() ? "試試其他名稱或縮短關鍵字" : "相關雙屬性會顯示在這裡";
+        hint.append(detail);
+        seerPetTypeOptions.append(hint);
+    }
+    const options = filteredCombinations;
     options.forEach((combination) => {
         const button = document.createElement("button");
         button.type = "button";
@@ -549,9 +601,7 @@ function renderSeerPetTypeOptions(combinations = null) {
             button.append(icon);
         }
         const label = document.createElement("span");
-        label.textContent = combination.id === null
-            ? `全部${seerPetTypeCategory === "double" ? "雙" : "單"}屬性`
-            : convertToTraditionalChinese(combination.name);
+        label.textContent = combination.name;
         button.append(label);
         seerPetTypeOptions.append(button);
     });
@@ -1938,10 +1988,17 @@ function renderSeerPetInfoIdentity(pet, typeDetails) {
     };
     seerPetInfoMeta.replaceChildren();
 
-    const addMeta = (label, value, iconUrl = "") => {
-        const item = document.createElement("span");
+    const addMeta = (label, value, iconUrl = "", onClick = null) => {
+        const item = document.createElement(onClick ? "button" : "span");
         item.className = "seer-pet-info-meta-item";
         item.setAttribute("aria-label", `${label} ${value}`);
+        if (onClick) {
+            item.type = "button";
+            item.classList.add("seer-pet-info-type-link");
+            item.title = `查看${value}屬性克制`;
+            item.setAttribute("aria-label", `查看${value}屬性克制`);
+            item.addEventListener("click", onClick);
+        }
         if (iconUrl) {
             const icon = document.createElement("img");
             icon.src = iconUrl;
@@ -1969,7 +2026,13 @@ function renderSeerPetInfoIdentity(pet, typeDetails) {
     addMeta(
         "屬性",
         typeName || "",
-        typeId ? `./seer_icons/${encodeURIComponent(typeId)}.png` : ""
+        typeId ? `./seer_icons/${encodeURIComponent(typeId)}.png` : "",
+        openTypeLookup && SEER_TYPE_DATA.combinations.some(type => type.id === Number(typeId))
+            ? () => {
+                closeSeerPetInfoModal(false);
+                window.setTimeout(() => openTypeLookup(Number(typeId)), 180);
+            }
+            : null
     );
 }
 
@@ -2367,6 +2430,13 @@ function closeSeerRelatedSkinsModal(restoreFocus = true) {
 function openSeerPetTypeModal(opener = document.activeElement) {
     if (!seerPetTypeModal.hidden) return;
     seerPetTypeModalOpener = opener;
+    seerPetPickerBase = SEER_TYPE_DATA.combinations.find(type => type.id === selectedSeerPetTypeId)?.types[0] || null;
+    seerPetPickerQuery = "";
+    seerPetTypeSearch.value = "";
+    renderSeerPetTypeOptions();
+    void fetchSeerElementTypeCombinations().then(() => renderSeerPetTypeOptions()).catch(error => {
+        seerPetTypeOptions.textContent = `無法載入屬性：${error.message}`;
+    });
     seerPetTypeModal.classList.remove("is-closing");
     seerPetTypeModal.hidden = false;
     updateSeerModalScrollLock();
@@ -2449,6 +2519,7 @@ seerLookupIllustrationImage.addEventListener("error", () => {
 
 
 export function initSeerLookup(dependencies) {
+    openTypeLookup = dependencies.openTypeLookup || null;
     activateTab = dependencies.activateTab;
     convertToTraditionalChinese = dependencies.convertToTraditionalChinese;
     convertToSimplifiedChinese = dependencies.convertToSimplifiedChinese;
@@ -2471,7 +2542,12 @@ export function initSeerLookup(dependencies) {
     seerPetTypeCategoryButtons.forEach((button) => {
         button.addEventListener("click", () => {
             setSeerPetTypeCategory(button.dataset.petTypeCategory);
+            closeSeerPetTypeModal();
         });
+    });
+    seerPetTypeSearch.addEventListener("input", () => {
+        seerPetPickerQuery = seerPetTypeSearch.value;
+        renderSeerPetTypeOptions();
     });
     seerPetTypeOptions.addEventListener("click", (event) => {
         const button = event.target.closest("[data-pet-type-id]");
@@ -2482,6 +2558,9 @@ export function initSeerLookup(dependencies) {
         closeSeerPetTypeModal();
         if (selectedSeerPetTypeId === nextTypeId) return;
         selectedSeerPetTypeId = nextTypeId;
+        const selectedType = seerElementTypeCombinations.find(type => type.id === nextTypeId);
+        if (selectedType) seerPetTypeCategory = selectedType.isDouble ? "double" : "single";
+        updateSeerPetSearchMethodUi();
         renderSeerPetTypeOptions();
         updateSeerPetTypeCurrentDisplay();
         if (seerPetSearchMethod === "type") {

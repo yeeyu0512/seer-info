@@ -134,6 +134,12 @@ const typeIconObserver = new IntersectionObserver((entries) => {
 
 const seerLookup = initSeerLookup({
     activateTab,
+    openTypeLookup(typeId) {
+        if (!seerTypeCalculator.openLookup(typeId)) return;
+        activateTab("type-chart-section");
+        typeChartSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        document.getElementById("type-calc-tab-lookup").focus({ preventScroll: true });
+    },
     convertToTraditionalChinese,
     convertToSimplifiedChinese,
     fetchSeerJson
@@ -780,6 +786,22 @@ function renderPublicCharacterPage() {
         characterId.textContent = `#${character.character_id}`;
         characterName.className = "character-name";
         const typeIcon = appendCharacterName(characterName, character.character_name, character.character_id);
+        card.setAttribute("role", "button");
+        card.tabIndex = 0;
+        card.setAttribute("aria-haspopup", "dialog");
+        card.setAttribute("aria-label", `查看${character.character_name}精靈資訊`);
+        const openInfo = () => {
+            if (isAuthenticated) return;
+            card.focus({ preventScroll: true });
+            seerLookup.openPetInfo(character.character_id);
+        };
+        card.addEventListener("click", openInfo);
+        card.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                openInfo();
+            }
+        });
         card.append(portrait, typeIcon, characterId, characterName);
         characterList.appendChild(card);
     }

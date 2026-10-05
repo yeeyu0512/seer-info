@@ -5,6 +5,15 @@ const { singleTypes, singleRelations, combinations } = SEER_TYPE_DATA;
 // 建立 ID 快速對照索引
 const combinationsById = new Map(combinations.map((item) => [item.id, item]));
 
+export function getRelatedTypeOptions(baseType, query = "", catalog = combinations) {
+    const normalize = value => value.replace(/[\s·・／/]/g, "");
+    const search = normalize(query.trim());
+    return catalog.filter(type => search
+        ? normalize(type.name).includes(search) || normalize(type.types.join("")).includes(search)
+        : type.types.includes(baseType)
+    ).sort((a, b) => a.types.length - b.types.length || a.id - b.id);
+}
+
 function createTypeLabel(type, text = type.name) {
     const label = document.createElement("span");
     label.className = "type-vs-inline-type";
@@ -168,7 +177,8 @@ export class SeerTypeCalculatorController {
         this.currentMode = "attack"; // 'attack' | 'defense'
         this.currentFilter = "all"; // 'all' | 'counter' | 'normal' | 'weak' | 'zero'
         this.searchQuery = "";
-        this.typePickerCategory = "single"; // 'single' | 'double'
+        this.pickerBaseType = null;
+        this.pickerSearchQuery = "";
         this.pickerModalOpener = null;
         this.modalPointerStartedOnBackdrop = false;
 
@@ -360,8 +370,12 @@ export class SeerTypeCalculatorController {
         // Global Modal elements (位於 document.body 層級，與精靈屬性彈窗完全相同)
         this.pickerModal = document.getElementById("type-calc-modal");
         this.pickerCloseBtn = document.getElementById("type-calc-modal-close");
-        this.pickerCategoryTabs = Array.from(this.pickerModal.querySelectorAll("[data-calc-type-category]"));
         this.pickerOptionsContainer = document.getElementById("type-calc-modal-options");
+        this.pickerBases = document.getElementById("type-calc-picker-bases");
+        this.pickerBasePanel = document.getElementById("type-calc-picker-base-panel");
+        this.pickerOptionsTitle = document.getElementById("type-calc-picker-options-title");
+        this.pickerSearchInput = document.getElementById("type-calc-picker-search");
+        this.pickerSearchRow = document.getElementById("type-calc-picker-search-row");
     }
 
     bindEvents() {
@@ -449,17 +463,9 @@ export class SeerTypeCalculatorController {
             this.modalPointerStartedOnBackdrop = false;
         });
 
-        // 彈窗分類標籤（單屬性 / 雙屬性）
-        this.pickerCategoryTabs.forEach((tab) => {
-            tab.addEventListener("click", () => {
-                this.pickerCategoryTabs.forEach((t) => {
-                    const isActive = t === tab;
-                    t.classList.toggle("is-active", isActive);
-                    t.setAttribute("aria-selected", String(isActive));
-                });
-                this.typePickerCategory = tab.dataset.calcTypeCategory;
-                this.renderPickerOptions();
-            });
+        this.pickerSearchInput.addEventListener("input", () => {
+            this.pickerSearchQuery = this.pickerSearchInput.value;
+            this.renderPickerOptions();
         });
 
         // ESC 鍵關閉彈窗
@@ -514,6 +520,18 @@ export class SeerTypeCalculatorController {
         this.render();
     }
 
+    openLookup(typeId) {
+        if (!combinationsById.has(typeId)) return false;
+        this.searchQuery = "";
+        this.targetSearchInput.value = "";
+        this.selectedTypeId = typeId;
+        this.setFeature("lookup");
+        this.setMode("attack");
+        this.setFilter("all");
+        this.render();
+        return true;
+    }
+
     setVsTypeA(typeId) {
         if (this.vsTypeAId === typeId) return;
         this.vsTypeAId = typeId;
@@ -554,10 +572,21 @@ export class SeerTypeCalculatorController {
         const modalTitle = document.getElementById("type-calc-modal-title");
         if (modalTitle) modalTitle.textContent = titleText;
         const isStone = this.currentPickerTarget === "stone";
-        this.pickerCategoryTabs[0].parentElement.hidden = isStone;
+        this.pickerBasePanel.hidden = isStone;
+        this.pickerSearchRow.hidden = isStone;
+        this.pickerOptionsTitle.hidden = isStone;
+        this.pickerModal.classList.toggle("is-stone-picker", isStone);
+        this.pickerSearchQuery = "";
+        this.pickerSearchInput.value = "";
+        if (!isStone) {
+            const activeId = this.currentPickerTarget === "vsA" ? this.vsTypeAId
+                : this.currentPickerTarget === "vsB" ? this.vsTypeBId : this.selectedTypeId;
+            this.pickerBaseType = combinationsById.get(activeId)?.types[0] || null;
+            this.renderPickerBases();
+        }
         this.pickerModal.querySelector(".seer-pet-info-message").textContent = isStone
             ? "選擇一種技能石，或不攜帶。"
-            : "點選屬性後立即計算克制與受擊倍率";
+            : "點選單屬性，查看相關組合。";
         this.pickerModal.classList.remove("is-closing");
         this.pickerModal.hidden = false;
         this.renderPickerOptions();
@@ -827,8 +856,28 @@ export class SeerTypeCalculatorController {
         });
     }
 
+    renderPickerBases() {
+        this.pickerBases.replaceChildren();
+        for (const type of combinations.filter(type => type.types.length === 1)) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "seer-pet-type-option";
+            button.dataset.baseType = type.name;
+            button.append(createTypeLabel(type));
+            button.addEventListener("click", () => {
+                this.pickerBaseType = type.name;
+                this.pickerSearchQuery = "";
+                this.pickerSearchInput.value = "";
+                this.renderPickerOptions();
+                this.pickerOptionsContainer.scrollTop = 0;
+            });
+            this.pickerBases.append(button);
+        }
+    }
+
     renderPickerOptions() {
         if (this.currentPickerTarget === "stone") {
+            this.pickerOptionsContainer.classList.remove("is-empty");
             this.renderStonePicker();
             return;
         }
@@ -839,9 +888,24 @@ export class SeerTypeCalculatorController {
             this.currentPickerTarget === "vsB" ? this.vsTypeBId :
             this.selectedTypeId;
 
-        const filtered = combinations
-            .filter((item) => item.isDouble === (this.typePickerCategory === "double"))
-            .sort((a, b) => a.id - b.id);
+        const filtered = getRelatedTypeOptions(this.pickerBaseType, this.pickerSearchQuery);
+        for (const button of this.pickerBases.querySelectorAll("[data-base-type]")) {
+            const active = button.dataset.baseType === this.pickerBaseType && !this.pickerSearchQuery.trim();
+            button.classList.toggle("is-active", active);
+            button.setAttribute("aria-pressed", String(active));
+        }
+        this.pickerOptionsTitle.textContent = this.pickerSearchQuery.trim() ? `搜尋結果（${filtered.length}）`
+            : this.pickerBaseType ? `${this.pickerBaseType}系相關屬性（${filtered.length}）` : "相關屬性";
+        this.pickerOptionsContainer.classList.toggle("is-empty", !filtered.length);
+        if (!filtered.length) {
+            const hint = document.createElement("p");
+            hint.className = "type-calc-picker-hint";
+            hint.textContent = this.pickerSearchQuery.trim() ? "找不到符合的屬性" : "選擇一個單屬性";
+            const detail = document.createElement("span");
+            detail.textContent = this.pickerSearchQuery.trim() ? "試試其他名稱或縮短關鍵字" : "相關雙屬性會顯示在這裡";
+            hint.append(detail);
+            this.pickerOptionsContainer.append(hint);
+        }
 
         filtered.forEach((item) => {
             const button = document.createElement("button");
