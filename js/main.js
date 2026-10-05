@@ -92,6 +92,7 @@ let currentRanking = [];
 let currentRankingPage = 1;
 let isRegisterMode = false;
 let isAuthenticated = false;
+let isAdministrator = false;
 let currentCharacters = [];
 let currentCharacterPage = 1;
 let selectedPoolCharacterIds = new Set();
@@ -257,6 +258,7 @@ gameAccountForm.addEventListener("submit", async (event) => {
 });
 
 function activateTab(targetId) {
+    if (!isAdministrator && votePanels.has(targetId)) targetId = "seer-lookup-section";
     const isLookup = targetId === "seer-lookup-section";
     const isSealEncyclopedia = targetId === "seal-encyclopedia-section";
     const isTypeChart = targetId === "type-chart-section";
@@ -577,6 +579,16 @@ function getChineseAuthError(error, action) {
 }
 
 async function initializeAuthenticatedPage() {
+    await syncAdminLink();
+    if (!isAuthenticated) return;
+    accountTab.hidden = false;
+    publicLoginPrompt.hidden = true;
+    if (!isAdministrator) {
+        stopRankingRefresh();
+        activateTab("seer-lookup-section");
+        await loadGameAccount();
+        return;
+    }
     activateTab("selection-panel");
     selectionPanel.hidden = false;
     selectionBar.hidden = false;
@@ -586,7 +598,6 @@ async function initializeAuthenticatedPage() {
     await loadPool();
     await loadRanking();
     startRankingRefresh();
-    await syncAdminLink();
 }
 
 async function loadGameAccount() {
@@ -611,6 +622,7 @@ function renderGameAccount(gameAccount) {
 }
 
 async function loadPool() {
+    if (!isAdministrator) return;
     try {
         // Authenticated state always wins over any earlier public-page render.
         publicLoginPrompt.hidden = true;
@@ -733,46 +745,17 @@ function restoreSavedVote(savedPoolCharacterIds) {
 
 async function initializePublicPage() {
     if (isAuthenticated) return;
-    activateTab("selection-panel");
-    voteSection.hidden = false;
-    selectionPanel.hidden = false;
+    stopRankingRefresh();
+    activateTab("seer-lookup-section");
     selectionBar.hidden = true;
     alreadyVoted.hidden = true;
     submitButton.hidden = true;
     voteMessage.textContent = "";
-    publicLoginPrompt.hidden = false;
+    publicLoginPrompt.hidden = true;
     mimiBindingPrompt.hidden = true;
     selectionCount.textContent = "0";
     selectionMax.textContent = "—";
 
-    try {
-        const pool = await getActivePool();
-        if (isAuthenticated) return;
-        if (!pool) {
-            renderNoActivePool();
-            return;
-        }
-        currentPool = pool;
-        renderPoolMeta(pool);
-        document.getElementById("vote-rule").textContent = "登入後即可選擇角色並提交投票。";
-
-        const characters = await getPoolCharacters(pool.id);
-        if (isAuthenticated) return;
-        currentCharacters = sortCharactersByIdDescending(characters);
-        currentCharacterPage = 1;
-        selectedPoolCharacterIds = new Set();
-        clearObservedTypeIcons(characterList);
-        renderPublicCharacterPage();
-        await loadRanking();
-        if (isAuthenticated) return;
-        startRankingRefresh();
-    } catch (error) {
-        console.error("Load public pool error:", error);
-        clearObservedTypeIcons(characterList);
-        characterList.innerHTML = "<p class=\"empty-state\">目前無法載入公開投票資訊。</p>";
-        characterPagination.hidden = true;
-        document.getElementById("vote-rule").textContent = "登入後即可查看投票資訊並參與投票。";
-    }
 }
 
 function renderPublicCharacterPage() {
@@ -1095,6 +1078,7 @@ function findRankingCharacter(item) {
 }
 
 function startRankingRefresh() {
+    if (!isAdministrator) return;
     if (rankingTimer === null) rankingTimer = setInterval(() => loadRanking(), 5000);
 }
 
@@ -1167,24 +1151,23 @@ function showAuthenticatedView() {
     loginModal.classList.remove("is-closing");
     loginModal.hidden = true;
     loginTrigger.hidden = true;
-    voteSection.hidden = false;
     logoutButton.hidden = false;
     accountTab.hidden = false;
 }
 
 function showLoggedOutView() {
     isAuthenticated = false;
-    activateTab("selection-panel");
+    isAdministrator = false;
+    primaryMainTabs.find((tab) => tab.dataset.mainTarget === "voting").hidden = true;
+    activateTab("seer-lookup-section");
     loginModal.classList.remove("is-closing");
     loginModal.hidden = true;
-    loginTrigger.hidden = false;
-    voteSection.hidden = false;
-    selectionPanel.hidden = false;
+    loginTrigger.hidden = true;
     selectionBar.hidden = true;
     logoutButton.hidden = true;
     accountTab.hidden = true;
     accountSection.hidden = true;
-    publicLoginPrompt.hidden = false;
+    publicLoginPrompt.hidden = true;
     mimiBindingPrompt.hidden = true;
     currentPool = null;
     adminLink.hidden = true;
@@ -1202,11 +1185,13 @@ function showLoggedOutView() {
 
 async function syncAdminLink() {
     try {
-        adminLink.hidden = !(await isAdmin());
+        isAdministrator = (await isAdmin()) === true && isAuthenticated;
     } catch (error) {
         console.error("Admin status error:", error);
-        adminLink.hidden = true;
+        isAdministrator = false;
     }
+    adminLink.hidden = !isAdministrator;
+    primaryMainTabs.find((tab) => tab.dataset.mainTarget === "voting").hidden = !isAdministrator;
 }
 
 supabaseClient.auth.onAuthStateChange((event) => {
