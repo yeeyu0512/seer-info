@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { selectMintmarks, fetchMintmarkCatalog } from "../js/seer-mintmarks.js";
+import { selectMintmarks, fetchMintmarkCatalog, fetchMintmarkSeries, mintmarkCornerCount } from "../js/seer-mintmarks.js";
 
 const records = [
     { id: 1, name: "攻擊", searchName: "攻击", type: { id: 3 }, max_attr_value: { atk: 30, total: 100 } },
@@ -47,4 +47,37 @@ test("exclusive universal mintmarks are hidden unless enabled, without excluding
 test("catalog rejects foreign pagination and cycles", async () => {
     await assert.rejects(fetchMintmarkCatalog(async () => ({ results: [], next: "https://example.com/v1/mintmark" })), /分頁/);
     await assert.rejects(fetchMintmarkCatalog(async url => ({ results: [], next: url })), /分頁/);
+});
+
+test("corner counts use nonzero maximum stats, ignore rarity and totals, and mark absent stats as inapplicable", () => {
+    assert.equal(mintmarkCornerCount({ type: { id: 3 }, rarity: { id: 3 }, max_attr_value: { atk: 50, def: 35, sp_atk: 0, sp_def: 35, spd: 20, hp: 80, total: 220 } }), 5);
+    assert.equal(mintmarkCornerCount({ type: { id: 0 }, max_attr_value: { sp_atk: 32, hp: 70, total: 102 } }), 2);
+    assert.equal(mintmarkCornerCount({ type: { id: 1 }, max_attr_value: { sp_atk: 32, hp: 70 } }), null);
+    assert.equal(mintmarkCornerCount({ max_attr_value: { total: 0 } }), null);
+    assert.equal(mintmarkCornerCount({ max_attr_value: null }), null);
+});
+
+test("corner and series filters intersect with search, Taiwan progress and exclusive visibility", () => {
+    const items = [
+        { id: 1, name: "系列甲", type: { id: 3 }, mintmark_class: { id: 61 }, max_attr_value: { atk: 5, hp: 10 } },
+        { id: 2, name: "系列乙", type: { id: 3 }, mintmark_class: { id: 62 }, max_attr_value: { atk: 5, hp: 10 } },
+        { id: 3, name: "系列專屬", type: { id: 3 }, mintmark_class: { id: 61 }, max_attr_value: { atk: 5, hp: 10 } },
+        { id: 4, name: "系列丙", type: { id: 3 }, mintmark_class: { id: 61 }, max_attr_value: { atk: 5, hp: 10, spd: 1 } },
+        { id: 5, name: "技能", type: { id: 1 }, max_attr_value: null },
+    ];
+    assert.deepEqual(selectMintmarks(items, { corners: "2", series: "61", query: "系列", maxId: 3 }).map(x => x.id), [1]);
+    assert.deepEqual(selectMintmarks(items, { corners: "2", series: "61", showExclusive: true }).map(x => x.id), [3, 1]);
+    assert.deepEqual(selectMintmarks(items, { corners: "3", series: "61" }).map(x => x.id), [4]);
+    assert.deepEqual(selectMintmarks(items, { type: "all", corners: "none", series: "none" }).map(x => x.id), [5]);
+});
+
+test("series loader follows validated pagination, deduplicates and keeps only IDs and names", async () => {
+    let calls = 0;
+    const result = await fetchMintmarkSeries(async () => ++calls === 1
+        ? { results: [{ id: 61, name: "英雄之证系列", mintmark: [{ id: 42729 }] }], next: "https://api.seerapi.com/v1/mintmark_class?offset=1" }
+        : { results: [{ id: 61, name: "英雄之证系列" }, { id: 62, name: "另一系列" }], next: null });
+    assert.deepEqual(result, [{ id: 61, name: "英雄之证系列" }, { id: 62, name: "另一系列" }]);
+    await assert.rejects(fetchMintmarkSeries(async () => ({ results: [], next: "https://example.com/v1/mintmark_class" })), /分頁/);
+    await assert.rejects(fetchMintmarkSeries(async url => ({ results: [], next: url })), /分頁/);
+    await assert.rejects(fetchMintmarkSeries(async () => ({ results: null })), /格式/);
 });

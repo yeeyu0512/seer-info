@@ -1,20 +1,47 @@
 import { observeMintmarkImage, unobserveMintmarkImages } from "./seer-mintmark-images.js";
+import { downloadMintmarkWorkbook } from "./seer-mintmark-export.js";
 
 const API = "https://api.seerapi.com/v1/mintmark";
 const TYPES = { 0: "能力刻印", 1: "技能刻印", 3: "全能刻印" };
 const STATS = [["atk", "攻擊"], ["sp_atk", "特攻"], ["def", "防禦"], ["sp_def", "特防"], ["spd", "速度"], ["hp", "體力"]];
 const PAGE_SIZE = 24;
 
-export function selectMintmarks(records, { query = "", type = "3", sort = "id", showExclusive = false, maxId = null } = {}) {
+export function mintmarkCornerCount(record) {
+    if (![0, 3].includes(Number(record.type?.id)) || !record.max_attr_value) return null;
+    const count = STATS.filter(([key]) => Number(record.max_attr_value[key]) > 0).length;
+    return count || null;
+}
+
+export function selectMintmarks(records, { query = "", type = "3", sort = "id", showExclusive = false, maxId = null, corners = "all", series = "all" } = {}) {
     const key = query.trim().toLocaleLowerCase();
     return records.filter(record => !record.is_hidden
         && (maxId === null || record.id <= maxId)
         && (type === "all" || String(record.type?.id) === type)
+        && (corners === "all" || (corners === "none" ? mintmarkCornerCount(record) === null : mintmarkCornerCount(record) === Number(corners)))
+        && (series === "all" || (series === "none" ? !record.mintmark_class?.id : String(record.mintmark_class?.id) === String(series)))
         && (showExclusive || Number(record.type?.id) !== 3
             || !(record.pet?.length || /專屬|专属/.test(`${record.name} ${record.searchName || ""}`)))
         && (!key || String(record.id).includes(key) || record.name.toLocaleLowerCase().includes(key) || record.searchName?.toLocaleLowerCase().includes(key)))
         .sort((a, b) => sort === "id" ? b.id - a.id
             : (Number(b.max_attr_value?.[sort]) || 0) - (Number(a.max_attr_value?.[sort]) || 0) || b.id - a.id);
+}
+
+export async function fetchMintmarkSeries(fetchJson) {
+    const series = new Map();
+    const visited = new Set();
+    let next = "https://api.seerapi.com/v1/mintmark_class?offset=0&limit=200&expand=true";
+    while (next) {
+        const url = new URL(next);
+        if (url.origin !== "https://api.seerapi.com" || url.pathname !== "/v1/mintmark_class" || visited.has(url.href)) throw new Error("刻印系列分頁網址無效");
+        visited.add(url.href);
+        const page = await fetchJson(url.href);
+        if (!Array.isArray(page.results)) throw new Error("刻印系列格式無效");
+        page.results.forEach(item => {
+            if (Number.isSafeInteger(item.id) && typeof item.name === "string") series.set(item.id, { id: item.id, name: item.name });
+        });
+        next = page.next;
+    }
+    return [...series.values()];
 }
 
 export async function fetchMintmarkCatalog(fetchJson, onProgress = () => {}) {
@@ -42,20 +69,28 @@ export function initSeerMintmarks(root, { fetchSeerJson, convertToTraditionalChi
     const content = root.querySelector("#seal-encyclopedia-content");
     content.innerHTML = `<div class="seal-toolbar">
         <label class="seal-search">名稱或 ID<input type="search" placeholder="搜尋刻印…" autocomplete="off"></label>
+        <label class="seal-series-filter">系列<select data-seal-series><option value="all">全部系列</option></select></label>
         <label>分類<select data-seal-type><option value="3">全能刻印</option><option value="0">能力刻印</option><option value="1">技能刻印</option><option value="all">全部刻印</option></select></label>
         <label>排序<select data-seal-sort><option value="id">ID 由大到小</option><option value="total">能力總和</option>${STATS.map(([key, label]) => `<option value="${key}">${label}由高到低</option>`).join("")}</select></label>
-    </div><div class="seal-status-row"><p class="seal-status" role="status" aria-live="polite"></p><label class="seal-exclusive-toggle"><input type="checkbox" data-seal-exclusive>顯示專屬刻印</label><button type="button" data-seal-retry hidden>重新載入</button></div>
+    </div><div class="seal-filter-options">
+        <div class="seal-corner-filter" role="group" aria-label="角數" title="能力與全能刻印依非零能力項目數計算"><span>角數</span><div class="seal-corner-buttons">${[["all", "全部"], [2, "二角"], [3, "三角"], [4, "四角"], [5, "五角"]].map(([count, label]) => `<button type="button" data-seal-corner="${count}" aria-pressed="${count === "all"}">${label}</button>`).join("")}</div></div>
+        <div class="seal-filter-toggles"><label class="seal-exclusive-toggle"><input type="checkbox" data-seal-exclusive>顯示專屬刻印</label></div>
+    </div><div class="seal-status-row"><p class="seal-status" role="status" aria-live="polite"></p><button type="button" data-seal-retry hidden>重新載入</button><button type="button" class="seal-export-button" data-seal-export disabled title="匯出符合目前條件的全部結果，按系列分組並合併儲存格">匯出 Excel</button></div><p class="seal-export-feedback" role="status" aria-live="polite" hidden></p>
     <div class="seal-grid"></div><nav class="seal-pagination" aria-label="刻印分頁" hidden><button type="button" data-seal-prev>上一頁</button><span></span><button type="button" data-seal-next>下一頁</button></nav>`;
     const input = content.querySelector("input");
     const type = content.querySelector("[data-seal-type]");
     const sort = content.querySelector("[data-seal-sort]");
+    const cornerButtons = [...content.querySelectorAll("[data-seal-corner]")];
+    const series = content.querySelector("[data-seal-series]");
     const exclusive = content.querySelector("[data-seal-exclusive]");
     const taiwanOnly = root.querySelector("#seal-taiwan-progress-only");
-    if (taiwanOnly) content.querySelector(".seal-toolbar").append(taiwanOnly.closest("label"));
+    if (taiwanOnly) content.querySelector(".seal-filter-toggles").prepend(taiwanOnly.closest("label"));
     const status = content.querySelector(".seal-status");
     const grid = content.querySelector(".seal-grid");
     const pagination = content.querySelector(".seal-pagination");
     const retry = content.querySelector("[data-seal-retry]");
+    const exportButton = content.querySelector("[data-seal-export]");
+    const exportFeedback = content.querySelector(".seal-export-feedback");
     const previous = content.querySelector("[data-seal-prev]");
     const next = content.querySelector("[data-seal-next]");
     const dialog = document.createElement("dialog");
@@ -69,6 +104,55 @@ export function initSeerMintmarks(root, { fetchSeerJson, convertToTraditionalChi
     let latestMintmarkId = null;
     let settingsPending = null;
     let settingsMessage = "正在讀取台服刻印進度…";
+    let seriesNames = new Map();
+    let selectedCorners = "all";
+    let exporting = false;
+
+    function currentMatches() {
+        return selectMintmarks(records, { query: input.value, type: type.value, sort: sort.value, corners: selectedCorners, series: series.value, showExclusive: exclusive.checked, maxId: taiwanOnly?.checked ? latestMintmarkId : null });
+    }
+    exportButton.addEventListener("click", async () => {
+        if (exporting || !loaded || (taiwanOnly?.checked && latestMintmarkId === null)) return;
+        const matches = currentMatches();
+        if (!matches.length) return;
+        const filterDescription = [type.selectedOptions[0].textContent, selectedCorners !== "all" ? `${selectedCorners} 角` : "", series.value !== "all" ? series.selectedOptions[0].textContent : "", input.value.trim() ? `搜尋：${input.value.trim()}` : "", exclusive.checked ? "包含專屬刻印" : "排除專屬全能刻印", taiwanOnly?.checked ? `台服進度至 #${latestMintmarkId}` : ""].filter(Boolean).join("／");
+        exporting = true;
+        exportButton.disabled = true;
+        exportButton.textContent = "匯出中…";
+        exportFeedback.hidden = false;
+        exportFeedback.textContent = "正在產生 Excel，首次使用需載入匯出工具，請稍候。";
+        try {
+            await downloadMintmarkWorkbook(matches, new Map(seriesNames), { filterDescription });
+            exportFeedback.textContent = `已產生 ${matches.length.toLocaleString()} 筆刻印的 Excel，請查看瀏覽器下載。`;
+        } catch (error) {
+            console.error("Mintmark export error:", error);
+            exportFeedback.textContent = "Excel 匯出失敗，請檢查網路後再試一次。";
+        } finally {
+            exporting = false;
+            exportButton.textContent = "匯出 Excel";
+            render();
+        }
+    });
+
+    function updateCornerButtons() {
+        cornerButtons.forEach(button => {
+            button.disabled = type.value === "1";
+            button.setAttribute("aria-pressed", String(button.dataset.sealCorner === selectedCorners));
+        });
+    }
+    cornerButtons.forEach(button => button.addEventListener("click", () => {
+        selectedCorners = button.dataset.sealCorner;
+        page = 1;
+        updateCornerButtons();
+        if (loaded) render();
+    }));
+
+    function populateSeries() {
+        const ids = [...new Set(records.filter(record => !record.is_hidden).map(record => record.mintmark_class?.id).filter(id => Number.isSafeInteger(id) && id > 0))].sort((a, b) => a - b);
+        series.replaceChildren(new Option("全部系列", "all"));
+        ids.forEach(id => series.append(new Option(seriesNames.get(id) || `系列 #${id}`, String(id))));
+        if (records.some(record => !record.is_hidden && !record.mintmark_class?.id)) series.append(new Option("未分類", "none"));
+    }
 
     function imageSlot(record) {
         const slot = document.createElement("span");
@@ -166,13 +250,15 @@ export function initSeerMintmarks(root, { fetchSeerJson, convertToTraditionalChi
     dialog.addEventListener("close", () => unobserveMintmarkImages(dialog));
     function render() {
         if (taiwanOnly?.checked && latestMintmarkId === null) {
+            exportButton.disabled = true;
             unobserveMintmarkImages(grid);
             grid.replaceChildren();
             pagination.hidden = true;
             status.textContent = settingsMessage;
             return;
         }
-        const matches = selectMintmarks(records, { query: input.value, type: type.value, sort: sort.value, showExclusive: exclusive.checked, maxId: taiwanOnly?.checked ? latestMintmarkId : null });
+        const matches = currentMatches();
+        exportButton.disabled = exporting || !loaded || !matches.length;
         const pages = Math.max(1, Math.ceil(matches.length / PAGE_SIZE));
         page = Math.min(page, pages);
         unobserveMintmarkImages(grid);
@@ -208,7 +294,14 @@ export function initSeerMintmarks(root, { fetchSeerJson, convertToTraditionalChi
         previous.disabled = page === 1;
         next.disabled = page === pages;
     }
-    [input, type, sort, exclusive].forEach(control => control.addEventListener(control === input ? "input" : "change", () => { page = 1; if (loaded) render(); }));
+    [input, type, sort, series, exclusive].forEach(control => control.addEventListener(control === input ? "input" : "change", () => {
+        page = 1;
+        if (control === type) {
+            if (type.value === "1") selectedCorners = "all";
+            updateCornerButtons();
+        }
+        if (loaded) render();
+    }));
     async function updateTaiwanFilter() {
         page = 1;
         if (!taiwanOnly.checked || latestMintmarkId !== null) { if (loaded) render(); return; }
@@ -242,9 +335,16 @@ export function initSeerMintmarks(root, { fetchSeerJson, convertToTraditionalChi
         content.setAttribute("aria-busy", "true");
         pending = (async () => {
             try {
-                records = (await fetchMintmarkCatalog(fetchSeerJson, (count, total) => {
+                const [catalog, classes] = await Promise.all([fetchMintmarkCatalog(fetchSeerJson, (count, total) => {
                     status.textContent = `正在載入刻印… ${count.toLocaleString()} / ${Number(total).toLocaleString()}`;
-                })).map(record => ({ ...record, searchName: record.name, name: convertToTraditionalChinese(record.name) }));
+                }), fetchMintmarkSeries(fetchSeerJson).catch(error => {
+                    console.warn("Mintmark series names unavailable:", error);
+                    series.title = "系列名稱讀取失敗，暫以系列編號顯示；重新整理可重試。";
+                    return [];
+                })]);
+                records = catalog.map(record => ({ ...record, searchName: record.name, name: convertToTraditionalChinese(record.name) }));
+                seriesNames = new Map(classes.map(item => [item.id, convertToTraditionalChinese(item.name)]));
+                populateSeries();
                 loaded = true;
                 if (taiwanOnly?.checked) await updateTaiwanFilter();
                 else render();
