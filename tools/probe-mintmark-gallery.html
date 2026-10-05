@@ -1,0 +1,19 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>刻印圖片相容性測試</title>
+<link rel="stylesheet" href="/css/style.css">
+<style>body{padding:24px}.probe-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:20px;max-width:900px}.probe-grid>div{padding:16px;border:1px solid #444;border-radius:12px}</style>
+<h1>10 個刻印 ID · 按需渲染測試</h1>
+<p>只有畫面內的項目會下載；請求依序執行。</p>
+<div class="probe-grid"></div>
+<script type="module">
+import { observeMintmarkImage } from '/js/seer-mintmark-images.js';
+for(const id of [10001,10002,20001,20002,40001,40002,41001,42001,42724,42729]){
+ const card=document.createElement('div');
+ const label=document.createElement('p');label.textContent=`#${id}`;
+ const slot=document.createElement('span');slot.className='seal-image-slot';slot.textContent='◇';
+ card.append(slot,label);document.querySelector('.probe-grid').append(card);
+ observeMintmarkImage(slot,id);
+}
+</script>

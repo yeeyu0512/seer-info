@@ -3,6 +3,8 @@ import { login, logout, getSession, register } from "./auth.js";
 import { supabaseClient } from "./supabase.js";
 import { initSeerLookup } from "./seer-lookup.js";
 import { initSeerTypeCalculator } from "./seer-type-calculator.js";
+import { initSeerMintmarks } from "./seer-mintmarks.js";
+import { getSeerServerSettings } from "./seer-server-settings.js";
 import { preloadSeerIcons } from "./seer-icons.js";
 import { getActivePool, getPoolCharacters } from "./pool.js";
 import { getMyVote, hasVoted, submitVote } from "./vote.js";
@@ -145,6 +147,7 @@ const seerLookup = initSeerLookup({
     fetchSeerJson
 });
 const seerTypeCalculator = initSeerTypeCalculator("#type-chart-section");
+const seerMintmarks = initSeerMintmarks(sealEncyclopediaSection, { fetchSeerJson, convertToTraditionalChinese, getSeerServerSettings });
 preloadSeerIcons();
 
 loginTrigger.addEventListener("click", openLoginModal);
@@ -273,6 +276,7 @@ function activateTab(targetId) {
     voteSection.hidden = mainTarget !== "voting";
     seerLookupSection.hidden = !isLookup;
     sealEncyclopediaSection.hidden = !isSealEncyclopedia;
+    if (isSealEncyclopedia) seerMintmarks.load();
     if (typeChartSection) typeChartSection.hidden = !isTypeChart;
     accountSection.hidden = !isAccount;
     aboutSection.hidden = !isAbout;

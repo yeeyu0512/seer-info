@@ -364,7 +364,7 @@
                                 <input id="seer-taiwan-progress-only" type="checkbox" aria-label="只顯示台服進度，保留精靈 #5000">
                                 <span class="seer-taiwan-progress-filter-copy">
                                     <span>僅顯示至最新台服進度</span>
-                                    <small>部分精靈無法完全排除</small>
+                                    <small>部分合作項目無法完全排除</small>
                                 </span>
                             </label>
                         </div>
@@ -438,12 +438,19 @@
         </div>
 
         <section id="seal-encyclopedia-section" class="panel seal-encyclopedia-panel" role="tabpanel" aria-labelledby="seal-encyclopedia-title" hidden>
-            <div class="seal-coming-soon">
-                <img class="seal-coming-soon-icon" src="./42578.png" alt="" width="128" height="128" decoding="async">
-                <span class="about-detail-kicker">Under Construction</span>
-                <h2 id="seal-encyclopedia-title">施工中</h2>
-                <p>敬請期待</p>
+            <div class="panel-header">
+                <div>
+                    <h2 id="seal-encyclopedia-title" class="panel-title">刻印圖鑑</h2>
+                    <p class="panel-description">輸入刻印 ID 或名稱即可查找，點擊卡片可查看詳細能力值。</p>
+                    <p class="seal-loading-note">首次載入可能需要較長時間，圖片會依序顯示，請稍候。</p>
+                </div>
             </div>
+            <label class="seer-taiwan-progress-filter seal-progress-toggle" title="依管理後台設定的台服最新刻印編號篩選">
+                <input id="seal-taiwan-progress-only" type="checkbox" aria-label="只顯示台服刻印進度">
+                <span class="seer-taiwan-progress-filter-copy"><span>僅顯示至最新台服進度</span><small>部分合作刻印無法完全排除</small></span>
+            </label>
+            <div id="seal-encyclopedia-content"></div>
+            <p class="seal-technical-note"><small>資料來源：<a href="https://api.seerapi.com/" target="_blank" rel="noopener noreferrer">SeerAPI</a>。圖片由 <a href="https://ruffle.rs/" target="_blank" rel="noopener noreferrer">Ruffle</a> 按需渲染官方 SWF，並暫存在目前頁面。</small></p>
         </section>
 
         <nav id="type-chart-sub-tabs" class="main-tabs view-sub-tabs" role="tablist" aria-label="屬性克制功能" hidden>

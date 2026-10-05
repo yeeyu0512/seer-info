@@ -308,12 +308,13 @@
                     <div class="panel-header">
                         <div>
                             <h2 class="panel-title">台服進度設定</h2>
-                            <p class="panel-description">設定台服目前最新精靈與皮膚編號，供 Seer 查詢的「只顯示台服進度」篩選使用。</p>
+                            <p class="panel-description">設定台服目前最新精靈、皮膚與刻印編號，供圖鑑的台服進度篩選使用。</p>
                         </div>
                     </div>
                     <form id="taiwan-seer-settings-form" class="admin-form taiwan-seer-settings-form">
                         <label>台服最新精靈編號<input id="taiwan-latest-pet-id" type="number" min="1" step="1" inputmode="numeric" required></label>
                         <label>台服最新皮膚編號<input id="taiwan-latest-skin-id" type="number" min="1" step="1" inputmode="numeric" required></label>
+                        <label>台服最新刻印編號<input id="taiwan-latest-mintmark-id" type="number" min="1" step="1" inputmode="numeric" placeholder="尚未設定可留空"><small>刻印圖鑑啟用台服篩選時，只顯示不超過此編號的刻印。</small></label>
                         <div class="form-actions"><button id="save-taiwan-seer-settings-button" class="admin-action-button" type="submit">儲存台服設定</button></div>
                     </form>
                     <p id="taiwan-seer-settings-message" class="form-message" aria-live="polite"></p>

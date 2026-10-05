@@ -2,8 +2,13 @@ create table if not exists public.seer_server_settings (
     id smallint primary key check (id = 1),
     latest_pet_id bigint check (latest_pet_id is null or latest_pet_id > 0),
     latest_skin_id bigint check (latest_skin_id is null or latest_skin_id > 0),
+    latest_mintmark_id bigint check (latest_mintmark_id is null or latest_mintmark_id > 0),
     updated_at timestamptz not null default now()
 );
+
+alter table public.seer_server_settings
+    add column if not exists latest_mintmark_id bigint
+    check (latest_mintmark_id is null or latest_mintmark_id > 0);
 
 insert into public.seer_server_settings (id)
 values (1)

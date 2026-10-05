@@ -1,0 +1,264 @@
+import { observeMintmarkImage, unobserveMintmarkImages } from "./seer-mintmark-images.js";
+
+const API = "https://api.seerapi.com/v1/mintmark";
+const TYPES = { 0: "能力刻印", 1: "技能刻印", 3: "全能刻印" };
+const STATS = [["atk", "攻擊"], ["sp_atk", "特攻"], ["def", "防禦"], ["sp_def", "特防"], ["spd", "速度"], ["hp", "體力"]];
+const PAGE_SIZE = 24;
+
+export function selectMintmarks(records, { query = "", type = "3", sort = "id", showExclusive = false, maxId = null } = {}) {
+    const key = query.trim().toLocaleLowerCase();
+    return records.filter(record => !record.is_hidden
+        && (maxId === null || record.id <= maxId)
+        && (type === "all" || String(record.type?.id) === type)
+        && (showExclusive || Number(record.type?.id) !== 3
+            || !(record.pet?.length || /專屬|专属/.test(`${record.name} ${record.searchName || ""}`)))
+        && (!key || String(record.id).includes(key) || record.name.toLocaleLowerCase().includes(key) || record.searchName?.toLocaleLowerCase().includes(key)))
+        .sort((a, b) => sort === "id" ? b.id - a.id
+            : (Number(b.max_attr_value?.[sort]) || 0) - (Number(a.max_attr_value?.[sort]) || 0) || b.id - a.id);
+}
+
+export async function fetchMintmarkCatalog(fetchJson, onProgress = () => {}) {
+    const records = new Map();
+    let next = `${API}?offset=0&limit=200&expand=true`;
+    const visited = new Set();
+    while (next) {
+        const url = new URL(next);
+        if (url.origin !== "https://api.seerapi.com" || url.pathname !== "/v1/mintmark" || visited.has(url.href)) {
+            throw new Error("刻印資料分頁網址無效");
+        }
+        visited.add(url.href);
+        const page = await fetchJson(url.href);
+        if (!Array.isArray(page.results)) throw new Error("刻印資料格式無效");
+        page.results.forEach(record => {
+            if (Number.isSafeInteger(record.id) && typeof record.name === "string") records.set(record.id, record);
+        });
+        onProgress(records.size, page.count);
+        next = page.next;
+    }
+    return [...records.values()];
+}
+
+export function initSeerMintmarks(root, { fetchSeerJson, convertToTraditionalChinese = value => value, getSeerServerSettings }) {
+    const content = root.querySelector("#seal-encyclopedia-content");
+    content.innerHTML = `<div class="seal-toolbar">
+        <label class="seal-search">名稱或 ID<input type="search" placeholder="搜尋刻印…" autocomplete="off"></label>
+        <label>分類<select data-seal-type><option value="3">全能刻印</option><option value="0">能力刻印</option><option value="1">技能刻印</option><option value="all">全部刻印</option></select></label>
+        <label>排序<select data-seal-sort><option value="id">ID 由大到小</option><option value="total">能力總和</option>${STATS.map(([key, label]) => `<option value="${key}">${label}由高到低</option>`).join("")}</select></label>
+    </div><div class="seal-status-row"><p class="seal-status" role="status" aria-live="polite"></p><label class="seal-exclusive-toggle"><input type="checkbox" data-seal-exclusive>顯示專屬刻印</label><button type="button" data-seal-retry hidden>重新載入</button></div>
+    <div class="seal-grid"></div><nav class="seal-pagination" aria-label="刻印分頁" hidden><button type="button" data-seal-prev>上一頁</button><span></span><button type="button" data-seal-next>下一頁</button></nav>`;
+    const input = content.querySelector("input");
+    const type = content.querySelector("[data-seal-type]");
+    const sort = content.querySelector("[data-seal-sort]");
+    const exclusive = content.querySelector("[data-seal-exclusive]");
+    const taiwanOnly = root.querySelector("#seal-taiwan-progress-only");
+    if (taiwanOnly) content.querySelector(".seal-toolbar").append(taiwanOnly.closest("label"));
+    const status = content.querySelector(".seal-status");
+    const grid = content.querySelector(".seal-grid");
+    const pagination = content.querySelector(".seal-pagination");
+    const retry = content.querySelector("[data-seal-retry]");
+    const previous = content.querySelector("[data-seal-prev]");
+    const next = content.querySelector("[data-seal-next]");
+    const dialog = document.createElement("dialog");
+    dialog.className = "seal-dialog";
+    dialog.setAttribute("aria-labelledby", "seal-detail-title");
+    document.body.append(dialog);
+    let records = [];
+    let pending = null;
+    let loaded = false;
+    let page = 1;
+    let latestMintmarkId = null;
+    let settingsPending = null;
+    let settingsMessage = "正在讀取台服刻印進度…";
+
+    function imageSlot(record) {
+        const slot = document.createElement("span");
+        slot.className = "seal-image-slot";
+        slot.setAttribute("aria-label", "刻印圖片尚未提供");
+        slot.textContent = "◇";
+        observeMintmarkImage(slot, record.id);
+        return slot;
+    }
+    function stats(record, values = record.max_attr_value) {
+        const list = document.createElement("dl");
+        list.className = "seal-stats";
+        STATS.forEach(([key, label]) => {
+            const pair = document.createElement("div");
+            const term = document.createElement("dt");
+            term.textContent = label;
+            const value = document.createElement("dd");
+            value.textContent = values ? `${values[key] ?? 0}${values.percent ? "%" : ""}` : "—";
+            pair.append(term, value);
+            list.append(pair);
+        });
+        return list;
+    }
+    function detail(record) {
+        unobserveMintmarkImages(dialog);
+        dialog.replaceChildren();
+        const header = document.createElement("div");
+        header.className = "seal-detail-header";
+        const title = document.createElement("h2");
+        title.id = "seal-detail-title";
+        title.textContent = record.name;
+        const close = document.createElement("button");
+        close.type = "button";
+        close.textContent = "×";
+        close.setAttribute("aria-label", "關閉刻印詳情");
+        close.addEventListener("click", () => dialog.close());
+        const identity = document.createElement("div");
+        identity.className = "seal-detail-identity";
+        const meta = document.createElement("p");
+        meta.className = "seal-meta";
+        meta.textContent = `#${record.id} · ${TYPES[record.type?.id] || "刻印"}`;
+        identity.append(title, meta);
+        header.append(imageSlot(record), identity, close);
+        dialog.append(header);
+        const columns = [["初始", record.base_attr_value], ["最大", record.max_attr_value], ["額外", record.extra_attr_value]].filter(([, values]) => values);
+        if (columns.length) {
+            const table = document.createElement("table");
+            table.className = "seal-detail-table";
+            const caption = table.createCaption();
+            caption.textContent = "能力值";
+            const head = table.createTHead().insertRow();
+            ["能力", ...columns.map(([label]) => label)].forEach(label => {
+                const cell = document.createElement("th");
+                cell.scope = "col";
+                cell.textContent = label;
+                head.append(cell);
+            });
+            const body = table.createTBody();
+            [...STATS, ["total", "總和"]].forEach(([key, label]) => {
+                const row = body.insertRow();
+                const name = document.createElement("th");
+                name.scope = "row";
+                name.textContent = label;
+                row.append(name);
+                columns.forEach(([columnLabel, values]) => {
+                    const cell = row.insertCell();
+                    cell.textContent = key === "total" && values.percent ? "—" : values[key] == null ? "—" : `${values[key]}${values.percent ? "%" : ""}`;
+                    if (columnLabel === "最大") cell.className = "seal-stat-max";
+                });
+                if (key === "total") row.className = "seal-stat-total";
+            });
+            dialog.append(table);
+        }
+        // Keep effect text, but omit numeric descriptions already covered by the table.
+        const descriptionText = convertToTraditionalChinese(record.desc || "").split(/[,，、;；\n]+/)
+            .filter(part => !columns.length || !/^\s*(攻擊|攻击|防禦|防御|特攻|特防|速度|體力|体力)\s*[+:：]?\s*\d+(?:\.\d+)?%?(?:\s*\/\s*\d+(?:\.\d+)?%?)?\s*$/.test(part)).join("，").trim();
+        if (descriptionText) {
+            const description = document.createElement("p");
+            description.className = "seal-description";
+            description.textContent = descriptionText;
+            dialog.append(description);
+        }
+        if (record.pet?.length || record.skill?.length) {
+            const links = document.createElement("p");
+            links.className = "seal-meta";
+            links.textContent = [record.pet?.length ? `適用精靈 ID：${record.pet.map(item => item.id).join("、")}` : "", record.skill?.length ? `適用技能 ID：${record.skill.map(item => item.id).join("、")}` : ""].filter(Boolean).join("\n");
+            dialog.append(links);
+        }
+        dialog.showModal();
+    }
+    dialog.addEventListener("click", event => {
+        const rect = dialog.getBoundingClientRect();
+        if (event.target === dialog && (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom)) dialog.close();
+    });
+    dialog.addEventListener("close", () => unobserveMintmarkImages(dialog));
+    function render() {
+        if (taiwanOnly?.checked && latestMintmarkId === null) {
+            unobserveMintmarkImages(grid);
+            grid.replaceChildren();
+            pagination.hidden = true;
+            status.textContent = settingsMessage;
+            return;
+        }
+        const matches = selectMintmarks(records, { query: input.value, type: type.value, sort: sort.value, showExclusive: exclusive.checked, maxId: taiwanOnly?.checked ? latestMintmarkId : null });
+        const pages = Math.max(1, Math.ceil(matches.length / PAGE_SIZE));
+        page = Math.min(page, pages);
+        unobserveMintmarkImages(grid);
+        grid.replaceChildren();
+        matches.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).forEach(record => {
+            const card = document.createElement("button");
+            card.type = "button";
+            card.className = "seal-card";
+            const header = document.createElement("span");
+            header.className = "seal-card-header";
+            const text = document.createElement("span");
+            const name = document.createElement("strong");
+            name.textContent = record.name;
+            name.title = record.name;
+            const meta = document.createElement("small");
+            meta.textContent = `#${record.id} · ${TYPES[record.type?.id] || "刻印"}`;
+            text.append(name, meta);
+            header.append(imageSlot(record), text);
+            card.append(header);
+            if (record.max_attr_value) card.append(stats(record));
+            else {
+                const desc = document.createElement("span");
+                desc.className = "seal-card-description";
+                desc.textContent = convertToTraditionalChinese(record.desc || "查看刻印詳情");
+                card.append(desc);
+            }
+            card.addEventListener("click", () => detail(record));
+            grid.append(card);
+        });
+        status.textContent = matches.length ? `${matches.length.toLocaleString()} 個刻印${taiwanOnly?.checked ? ` · 台服進度至 #${latestMintmarkId}` : ""}` : taiwanOnly?.checked ? "找不到符合台服進度及目前條件的刻印。" : "找不到符合條件的刻印。";
+        pagination.hidden = pages <= 1;
+        pagination.querySelector("span").textContent = `${page} / ${pages}`;
+        previous.disabled = page === 1;
+        next.disabled = page === pages;
+    }
+    [input, type, sort, exclusive].forEach(control => control.addEventListener(control === input ? "input" : "change", () => { page = 1; if (loaded) render(); }));
+    async function updateTaiwanFilter() {
+        page = 1;
+        if (!taiwanOnly.checked || latestMintmarkId !== null) { if (loaded) render(); return; }
+        settingsMessage = "正在讀取台服刻印進度…";
+        if (loaded) render();
+        if (!settingsPending) settingsPending = (async () => {
+            try {
+                const settings = await getSeerServerSettings();
+                const id = settings.latestMintmarkId;
+                if (!Number.isSafeInteger(id) || id < 1) {
+                    settingsMessage = "後台尚未設定台服最新刻印編號，可取消台服篩選查看全部資料。";
+                    return;
+                }
+                latestMintmarkId = id;
+            } catch (error) {
+                console.error("Mintmark Taiwan settings error:", error);
+                settingsMessage = "台服刻印進度讀取失敗，請重新勾選重試，或取消篩選。";
+            }
+        })().finally(() => { settingsPending = null; });
+        await settingsPending;
+        if (loaded) render();
+    }
+    taiwanOnly?.addEventListener("change", updateTaiwanFilter);
+    function changePage(delta) { page += delta; render(); content.scrollIntoView({ block: "start", behavior: "smooth" }); }
+    previous.addEventListener("click", () => changePage(-1));
+    next.addEventListener("click", () => changePage(1));
+    async function load() {
+        if (loaded || pending) return pending;
+        retry.hidden = true;
+        status.textContent = "正在載入刻印…";
+        content.setAttribute("aria-busy", "true");
+        pending = (async () => {
+            try {
+                records = (await fetchMintmarkCatalog(fetchSeerJson, (count, total) => {
+                    status.textContent = `正在載入刻印… ${count.toLocaleString()} / ${Number(total).toLocaleString()}`;
+                })).map(record => ({ ...record, searchName: record.name, name: convertToTraditionalChinese(record.name) }));
+                loaded = true;
+                if (taiwanOnly?.checked) await updateTaiwanFilter();
+                else render();
+            } catch (error) {
+                console.error("Mintmark catalog error:", error);
+                status.textContent = "刻印資料載入失敗，請稍後重試。";
+                retry.hidden = false;
+            } finally {
+                pending = null;
+                content.removeAttribute("aria-busy");
+            }
+        })();
+        return pending;
+    }
+    retry.addEventListener("click", load);
+    return { load };
+}
