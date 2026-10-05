@@ -5801,3 +5801,472 @@ body.has-competitive-pool-preview {
         grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
     }
 }
+
+/* ========================================
+   屬性克制計算機 (Type Effectiveness Calculator)
+   ======================================== */
+
+.type-calculator-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 24px;
+}
+
+.type-calc-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* 頂部英雄卡片：當前選中屬性 */
+.type-calc-hero {
+    background: linear-gradient(135deg, rgba(30, 36, 56, 0.75) 0%, rgba(18, 22, 34, 0.88) 100%);
+    border: 1px solid rgba(124, 140, 255, 0.25);
+    border-radius: var(--radius-md);
+    padding: 20px 24px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(12px);
+    position: relative;
+    overflow: hidden;
+}
+
+.type-calc-hero::before {
+    content: "";
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 180px;
+    height: 180px;
+    background: radial-gradient(circle, rgba(124, 140, 255, 0.15) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.type-calc-hero-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.type-calc-current-badge-wrap {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.type-calc-current-icon {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.45));
+}
+
+.type-calc-current-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.type-calc-current-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.type-calc-current-name {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.5px;
+}
+
+.type-calc-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.type-calc-tag.is-single {
+    background: rgba(93, 214, 160, 0.18);
+    color: #5dd6a0;
+    border: 1px solid rgba(93, 214, 160, 0.35);
+}
+
+.type-calc-tag.is-double {
+    background: rgba(124, 140, 255, 0.18);
+    color: #a8b0ff;
+    border: 1px solid rgba(124, 140, 255, 0.35);
+}
+
+.type-calc-current-detail {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.type-calc-change-btn {
+    min-width: 100px;
+}
+
+/* 控制列：模式切換與搜尋 */
+.type-calc-controls-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.type-calc-mode-tabs {
+    display: inline-flex;
+    background: rgba(4, 6, 18, 0.45);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 4px;
+    gap: 4px;
+}
+
+.type-calc-mode-tab {
+    padding: 8px 18px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.type-calc-mode-tab:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.type-calc-mode-tab.is-active {
+    background: var(--primary);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(124, 140, 255, 0.35);
+}
+
+.type-calc-search-box {
+    flex: 1;
+    max-width: 280px;
+}
+
+.type-calc-search-input {
+    width: 100%;
+    padding: 8px 14px;
+    font-size: 13px;
+    border-radius: var(--radius-sm);
+    background: rgba(4, 6, 18, 0.35);
+    border: 1px solid var(--border);
+    color: var(--text);
+}
+
+.type-calc-search-input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+/* 篩選標籤列 */
+.type-calc-stats-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.type-calc-filter-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.type-calc-pill {
+    padding: 5px 12px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.18s ease;
+}
+
+.type-calc-pill:hover {
+    border-color: var(--border-hover);
+    color: var(--text);
+}
+
+.type-calc-pill.is-active {
+    background: rgba(124, 140, 255, 0.2);
+    border-color: var(--primary);
+    color: #ffffff;
+    font-weight: 600;
+}
+
+/* 結果列表容器 */
+.type-calc-results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.type-calc-empty {
+    grid-column: 1 / -1;
+    width: 100%;
+    padding: 36px 16px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: var(--radius-sm);
+    border: 1px dashed var(--border);
+}
+
+/* 屬性卡片網格與卡片樣式 */
+.type-calc-results-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.type-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(54px, 60px));
+    gap: 6px;
+    width: 100%;
+}
+
+.type-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-width: 54px;
+    max-width: 60px;
+    height: 78px;
+    background: linear-gradient(180deg, rgba(20, 25, 40, 0.85) 0%, rgba(12, 16, 26, 0.95) 100%);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(196, 191, 255, 0.12);
+    border-radius: 8px;
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    outline: none;
+    position: relative;
+}
+
+.type-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(167, 160, 255, 0.55);
+    background: linear-gradient(180deg, rgba(28, 34, 54, 0.9) 0%, rgba(16, 21, 34, 0.98) 100%);
+    box-shadow: 0 6px 18px rgba(93, 108, 240, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    z-index: 2;
+}
+
+.type-card:focus-visible {
+    border-color: var(--primary-light);
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
+}
+
+.type-card-body {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 3px 3px;
+    gap: 4px;
+    min-height: 0;
+}
+
+.type-card-icon {
+    display: block;
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+    filter: none;
+    transition: transform 0.15s ease;
+}
+
+.type-card:hover .type-card-icon {
+    transform: scale(1.08);
+}
+
+.type-card-name {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--text);
+    text-align: center;
+    line-height: 1.2;
+    width: 100%;
+    padding: 0 2px;
+    margin-top: 1px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    letter-spacing: -0.1px;
+}
+
+.type-card-multiplier {
+    width: 100%;
+    height: 19px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11.5px;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1;
+    flex-shrink: 0;
+    letter-spacing: 0.2px;
+    border-radius: 0 0 7px 7px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+/* 倍率色彩體系（契合網站深色太空質感主題） */
+
+/* 克制 (> 1): 溫潤沉著的科技緋紅玫瑰漸層 */
+.type-card-multiplier.is-counter {
+    background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+/* 普通 (1x): 網站的深半透明底色，文字次要柔和 */
+.type-card-multiplier.is-normal {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-secondary);
+    font-weight: 700;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* 微弱 (0 < x < 1): 網站綠色調 --success 漸層 */
+.type-card-multiplier.is-weak {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+/* 無效 (0x): 深霧灰色調 */
+.type-card-multiplier.is-zero {
+    background: rgba(51, 65, 85, 0.65);
+    color: var(--text-muted);
+    font-weight: 700;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* 選擇器彈窗微調 */
+.type-calc-picker-top {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.type-calc-picker-search-input {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    background: rgba(4, 6, 18, 0.4);
+    border: 1px solid var(--border);
+    color: var(--text);
+}
+
+.type-calc-picker-search-input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+@media (max-width: 680px) {
+    .type-calculator-panel {
+        padding: 16px 12px;
+    }
+
+    .type-calc-hero {
+        padding: 16px;
+    }
+
+    .type-calc-current-icon {
+        width: 44px;
+        height: 44px;
+    }
+
+    .type-calc-current-name {
+        font-size: 20px;
+    }
+
+    .type-calc-controls-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .type-calc-search-box {
+        max-width: none;
+    }
+
+    .type-calc-mode-tabs {
+        width: 100%;
+    }
+
+    .type-calc-mode-tab {
+        flex: 1;
+        text-align: center;
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+
+    .type-card-grid {
+        grid-template-columns: repeat(auto-fill, minmax(48px, 54px));
+        gap: 5px;
+    }
+
+    .type-card {
+        min-width: 48px;
+        max-width: 54px;
+        height: 70px;
+        border-radius: 7px;
+    }
+
+    .type-card-body {
+        padding: 4px 2px 2px;
+        gap: 3px;
+    }
+
+    .type-card-icon {
+        width: 19px;
+        height: 19px;
+        filter: none;
+    }
+
+    .type-card-name {
+        font-size: 9.5px;
+        line-height: 1.15;
+        margin-top: 1px;
+    }
+
+    .type-card-multiplier {
+        height: 17px;
+        font-size: 10.5px;
+        border-radius: 0 0 6px 6px;
+    }
+}

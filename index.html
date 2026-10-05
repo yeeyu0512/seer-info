@@ -136,6 +136,7 @@
     <nav class="main-tabs primary-main-tabs" aria-label="主要功能" role="tablist">
         <button class="main-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="vote-section" data-main-target="voting">投票</button>
         <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="seer-lookup-section" data-main-target="encyclopedia">圖鑑</button>
+        <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="type-chart-section" data-main-target="type-chart">屬性克制</button>
         <button id="account-tab" class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="account-section" data-main-target="account" hidden>帳號</button>
         <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="about-section" data-main-target="about">關於本站</button>
     </nav>
@@ -445,6 +446,9 @@
             </div>
         </section>
 
+        <section id="type-chart-section" class="panel type-calculator-panel" role="tabpanel" aria-label="屬性克制計算機" hidden>
+        </section>
+
         <section id="about-section" class="panel about-panel" role="tabpanel" hidden>
             <div class="about-hero">
                 <span class="about-eyebrow">SEER PLAYER COMMUNITY</span>
@@ -572,6 +576,25 @@
                 <button class="seer-skin-search-tab" type="button" role="tab" aria-selected="false" data-pet-type-category="double">雙屬性</button>
             </div>
             <div id="seer-pet-type-options" class="seer-pet-type-options" role="group" aria-label="屬性選項"></div>
+        </div>
+    </section>
+</div>
+
+<div id="type-calc-modal" class="admin-confirm-modal seer-pet-type-modal" role="presentation" hidden>
+    <section class="admin-confirm-dialog seer-pet-type-dialog" role="dialog" aria-modal="true" aria-labelledby="type-calc-modal-title">
+        <header class="seer-related-skins-header seer-pet-type-modal-header">
+            <div>
+                <h2 id="type-calc-modal-title">選擇計算屬性</h2>
+                <p class="seer-pet-info-message">點選屬性後立即計算克制與受擊倍率</p>
+            </div>
+            <button id="type-calc-modal-close" class="seer-pet-info-close" type="button" aria-label="關閉屬性選擇">×</button>
+        </header>
+        <div class="seer-pet-type-modal-body">
+            <div class="seer-pet-type-tabs seer-skin-search-tabs" role="tablist" aria-label="計算屬性分類">
+                <button class="seer-skin-search-tab is-active" type="button" role="tab" aria-selected="true" data-calc-type-category="single">單屬性</button>
+                <button class="seer-skin-search-tab" type="button" role="tab" aria-selected="false" data-calc-type-category="double">雙屬性</button>
+            </div>
+            <div id="type-calc-modal-options" class="seer-pet-type-options" role="group" aria-label="計算屬性選項"></div>
         </div>
     </section>
 </div>

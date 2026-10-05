@@ -2,6 +2,7 @@ import { Converter } from "https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/esm
 import { login, logout, getSession, register } from "./auth.js";
 import { supabaseClient } from "./supabase.js";
 import { initSeerLookup } from "./seer-lookup.js";
+import { initSeerTypeCalculator } from "./seer-type-calculator.js";
 import { preloadSeerIcons } from "./seer-icons.js";
 import { getActivePool, getPoolCharacters } from "./pool.js";
 import { getMyVote, hasVoted, submitVote } from "./vote.js";
@@ -56,6 +57,7 @@ const voteSubTabs = Array.from(votingSubTabs.querySelectorAll("[data-tab-target]
 const encyclopediaModeTabs = Array.from(encyclopediaSubTabs.querySelectorAll("[data-lookup-mode]"));
 const seerLookupSection = document.getElementById("seer-lookup-section");
 const sealEncyclopediaSection = document.getElementById("seal-encyclopedia-section");
+const typeChartSection = document.getElementById("type-chart-section");
 const competitivePoolSection = document.getElementById("competitive-pool-section");
 const competitivePoolPeriod = document.getElementById("competitive-pool-period");
 const competitivePoolMessage = document.getElementById("competitive-pool-message");
@@ -136,6 +138,7 @@ const seerLookup = initSeerLookup({
     convertToSimplifiedChinese,
     fetchSeerJson
 });
+const seerTypeCalculator = initSeerTypeCalculator("#type-chart-section");
 preloadSeerIcons();
 
 loginTrigger.addEventListener("click", openLoginModal);
@@ -157,9 +160,11 @@ primaryMainTabs.forEach((tab) => {
             ? currentVotePanelId
             : target === "encyclopedia"
                 ? "seer-lookup-section"
-                : target === "account"
-                    ? "account-section"
-                    : "about-section");
+                : target === "type-chart"
+                    ? "type-chart-section"
+                    : target === "account"
+                        ? "account-section"
+                        : "about-section");
     });
 });
 voteSubTabs.forEach((tab) => {
@@ -245,14 +250,24 @@ gameAccountForm.addEventListener("submit", async (event) => {
 function activateTab(targetId) {
     const isLookup = targetId === "seer-lookup-section";
     const isSealEncyclopedia = targetId === "seal-encyclopedia-section";
+    const isTypeChart = targetId === "type-chart-section";
     const isAccount = targetId === "account-section";
     const isAbout = targetId === "about-section";
-    const mainTarget = isAbout ? "about" : isAccount ? "account" : isLookup || isSealEncyclopedia ? "encyclopedia" : "voting";
-    if (!isLookup && !isAccount && votePanels.has(targetId)) currentVotePanelId = targetId;
+    const mainTarget = isAbout
+        ? "about"
+        : isAccount
+            ? "account"
+            : isTypeChart
+                ? "type-chart"
+                : isLookup || isSealEncyclopedia
+                    ? "encyclopedia"
+                    : "voting";
+    if (!isLookup && !isAccount && !isTypeChart && votePanels.has(targetId)) currentVotePanelId = targetId;
 
     voteSection.hidden = mainTarget !== "voting";
     seerLookupSection.hidden = !isLookup;
     sealEncyclopediaSection.hidden = !isSealEncyclopedia;
+    if (typeChartSection) typeChartSection.hidden = !isTypeChart;
     accountSection.hidden = !isAccount;
     aboutSection.hidden = !isAbout;
     votingSubTabs.hidden = mainTarget !== "voting";
