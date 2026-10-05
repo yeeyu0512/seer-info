@@ -272,6 +272,7 @@ function activateTab(targetId) {
     aboutSection.hidden = !isAbout;
     votingSubTabs.hidden = mainTarget !== "voting";
     encyclopediaSubTabs.hidden = mainTarget !== "encyclopedia";
+    document.getElementById("type-chart-sub-tabs").hidden = !isTypeChart;
     votePanels.forEach((panel, panelId) => {
         panel.hidden = panelId !== currentVotePanelId;
     });
