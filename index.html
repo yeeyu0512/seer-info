@@ -34,7 +34,7 @@
     </script>
 
     <link rel="icon" href="./favicon.ico" sizes="any">
-<link rel="stylesheet" href="./css/style.css">
+<link rel="stylesheet" href="./css/style.css?v=20261005_modal">
 
 
 </head>
@@ -370,12 +370,31 @@
                         <p id="seer-lookup-description" class="panel-description">輸入精靈 ID 或中文名稱即可查找結果。</p>
                     </div>
                 </div>
-                <form id="seer-lookup-form" class="seer-lookup-form">
-                    <div id="seer-skin-search-tabs" class="seer-skin-search-tabs" role="tablist" aria-label="皮膚查詢方式" hidden>
-                        <button class="seer-skin-search-tab is-active" type="button" role="tab" aria-selected="true" data-skin-search-mode="skin">搜尋皮膚</button>
-                        <button class="seer-skin-search-tab" type="button" role="tab" aria-selected="false" data-skin-search-mode="pet">依綁定精靈查詢</button>
-                        <button class="seer-skin-search-tab" type="button" role="tab" aria-selected="false" data-skin-search-mode="category">依種類查詢</button>
+                <div id="seer-pet-search-method-tabs" class="seer-pet-search-method-tabs main-tabs view-sub-tabs" role="tablist" aria-label="精靈查詢方式">
+                    <button class="main-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="seer-lookup-form" data-pet-search-method="query">ID／名稱查詢</button>
+                    <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="seer-pet-type-filter" data-pet-search-method="type">屬性篩選</button>
+                </div>
+                <div id="seer-skin-search-tabs" class="seer-skin-search-tabs" role="tablist" aria-label="皮膚查詢方式" hidden>
+                    <button class="seer-skin-search-tab is-active" type="button" role="tab" aria-selected="true" data-skin-search-mode="skin">搜尋皮膚</button>
+                    <button class="seer-skin-search-tab" type="button" role="tab" aria-selected="false" data-skin-search-mode="pet">依綁定精靈查詢</button>
+                    <button class="seer-skin-search-tab" type="button" role="tab" aria-selected="false" data-skin-search-mode="category">依種類查詢</button>
+                </div>
+                <section id="seer-pet-type-filter" class="seer-pet-type-filter" aria-label="依屬性篩選精靈" hidden>
+                    <div class="seer-pet-type-trigger-card" role="button" tabindex="0" aria-haspopup="dialog" aria-label="開啟屬性選擇視窗">
+                        <div class="seer-pet-type-current-info">
+                            <span class="seer-pet-type-trigger-label">當前篩選屬性</span>
+                            <div class="seer-pet-type-current-badge">
+                                <img id="seer-pet-type-current-icon" class="seer-pet-type-current-icon" alt="" hidden>
+                                <span id="seer-pet-type-current-name">全部單屬性</span>
+                            </div>
+                        </div>
+                        <button id="seer-pet-type-open-modal" class="primary-button compact-button seer-pet-type-trigger-button" type="button" aria-haspopup="dialog">
+                            <span>選擇屬性</span>
+                            <span aria-hidden="true">▾</span>
+                        </button>
                     </div>
+                </section>
+                <form id="seer-lookup-form" class="seer-lookup-form">
                     <label id="seer-lookup-input-label" class="field-label" for="seer-lookup-id">精靈 ID／名稱</label>
                     <input id="seer-lookup-id" type="search" autocomplete="off" placeholder="例如：5000 或 聖靈譜尼" required>
                     <div id="seer-skin-category-filter" class="seer-skin-category-filter" aria-label="依皮膚種類篩選" hidden>
@@ -535,6 +554,25 @@
             <button id="seer-related-skins-close" class="seer-pet-info-close" type="button" aria-label="關閉關聯皮膚">×</button>
         </header>
         <div id="seer-related-skins-results" class="seer-related-skins-results" aria-label="關聯皮膚搜尋結果"></div>
+    </section>
+</div>
+
+<div id="seer-pet-type-modal" class="admin-confirm-modal seer-pet-type-modal" role="presentation" hidden>
+    <section class="admin-confirm-dialog seer-pet-type-dialog" role="dialog" aria-modal="true" aria-labelledby="seer-pet-type-modal-title">
+        <header class="seer-related-skins-header seer-pet-type-modal-header">
+            <div>
+                <h2 id="seer-pet-type-modal-title">選擇精靈屬性</h2>
+                <p class="seer-pet-info-message">點選屬性後立即套用並瀏覽精靈</p>
+            </div>
+            <button id="seer-pet-type-close" class="seer-pet-info-close" type="button" aria-label="關閉屬性選擇">×</button>
+        </header>
+        <div class="seer-pet-type-modal-body">
+            <div class="seer-pet-type-tabs seer-skin-search-tabs" role="tablist" aria-label="精靈屬性分類">
+                <button class="seer-skin-search-tab is-active" type="button" role="tab" aria-selected="true" data-pet-type-category="single">單屬性</button>
+                <button class="seer-skin-search-tab" type="button" role="tab" aria-selected="false" data-pet-type-category="double">雙屬性</button>
+            </div>
+            <div id="seer-pet-type-options" class="seer-pet-type-options" role="group" aria-label="屬性選項"></div>
+        </div>
     </section>
 </div>
 

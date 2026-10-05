@@ -1286,6 +1286,10 @@ button:disabled {
     margin-bottom: 0;
 }
 
+.seer-lookup-panel > .panel-header {
+    margin-bottom: 0;
+}
+
 .seer-lookup-panel > .panel-header > div:first-child {
     flex: 1;
     min-width: 0;
@@ -1441,11 +1445,179 @@ button:disabled {
     display: flex;
     gap: 4px;
     width: fit-content;
-    margin-top: 12px;
     padding: 4px;
     border: 1px solid rgba(196,191,255,.12);
     border-radius: 12px;
     background: rgba(4, 6, 18, .3);
+}
+
+.seer-lookup-panel > .seer-pet-search-method-tabs,
+.seer-lookup-panel > .seer-skin-search-tabs {
+    margin: 18px 0 0;
+    background: rgba(4, 6, 18, .3);
+}
+
+#seer-pet-search-method-tabs .main-tab {
+    min-height: 32px;
+    padding: 6px 14px;
+    font-size: 13px;
+}
+
+.seer-pet-type-filter {
+    margin: 16px 0 10px;
+}
+
+.seer-pet-type-trigger-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 10px 14px;
+    border: 1px solid rgba(196, 191, 255, .14);
+    border-radius: 12px;
+    background: rgba(4, 6, 18, .28);
+    cursor: pointer;
+    transition: border-color .18s, background .18s;
+}
+
+.seer-pet-type-trigger-card:hover {
+    border-color: rgba(167, 160, 255, .4);
+    background: rgba(130, 113, 244, .1);
+}
+
+.seer-pet-type-trigger-card:focus-visible {
+    outline: 2px solid var(--primary-light);
+    outline-offset: 2px;
+}
+
+.seer-pet-type-current-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.seer-pet-type-trigger-label {
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+}
+
+.seer-pet-type-current-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.seer-pet-type-current-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+#seer-pet-type-current-name {
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.seer-pet-type-trigger-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    min-height: 32px;
+    padding: 6px 14px;
+}
+
+/* Pet Type Modal */
+.seer-pet-type-modal {
+    z-index: 1002;
+}
+
+.seer-pet-type-dialog {
+    display: flex;
+    flex-direction: column;
+    width: min(720px, 92vw);
+    max-height: min(82dvh, 680px);
+    padding: 0;
+    overflow: hidden;
+}
+
+.seer-pet-type-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 20px 20px;
+    overflow: hidden;
+    min-height: 0;
+    flex: 1;
+}
+
+.seer-pet-type-modal-body .seer-pet-type-tabs {
+    margin-top: 0;
+    flex-shrink: 0;
+}
+
+.seer-pet-type-dialog .seer-pet-type-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+    gap: 7px;
+    max-height: none;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-color: rgba(147, 135, 255, .4) transparent;
+    padding: 2px 2px 6px;
+    min-height: 0;
+    flex: 1;
+}
+
+.seer-pet-type-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-width: 0;
+    min-height: 64px;
+    margin: 0;
+    padding: 6px 4px;
+    border: 1px solid rgba(196, 191, 255, .14);
+    border-radius: 10px;
+    color: var(--text-secondary);
+    background: rgba(4, 6, 18, .2);
+    box-shadow: none;
+    font-size: 11px;
+    line-height: 1.3;
+    text-align: center;
+}
+
+.seer-pet-type-option img {
+    display: block;
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+}
+
+.seer-pet-type-option:hover,
+.seer-pet-type-option.is-active {
+    border-color: rgba(167, 160, 255, .55);
+    color: var(--text);
+    background: rgba(130, 113, 244, .2);
+    box-shadow: inset 0 1px rgba(255, 255, 255, .08);
+    transform: none;
+}
+
+.seer-pet-type-option:focus-visible {
+    outline: 2px solid var(--primary-light);
+    outline-offset: 2px;
 }
 
 .seer-skin-search-tab {
@@ -1482,7 +1654,7 @@ button:disabled {
     align-items: center;
     gap: 10px;
     min-width: 0;
-    margin-top: 10px;
+    margin-top: 16px;
 }
 
 .seer-skin-category-filter[hidden] {
@@ -5613,5 +5785,19 @@ body.has-competitive-pool-preview {
 
     .competitive-pool-preview-header h2 {
         font-size: 17px;
+    }
+
+    .seer-lookup-panel > .seer-pet-search-method-tabs,
+    .seer-lookup-panel > .seer-skin-search-tabs {
+        margin-top: 16px;
+    }
+
+    .seer-pet-type-dialog {
+        width: min(100%, 100vw - 16px);
+        max-height: calc(100dvh - 24px);
+    }
+
+    .seer-pet-type-dialog .seer-pet-type-options {
+        grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
     }
 }

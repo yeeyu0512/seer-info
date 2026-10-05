@@ -10,6 +10,17 @@ const seerSkinSearchTabs = document.getElementById("seer-skin-search-tabs");
 const seerSkinSearchModeTabs = Array.from(document.querySelectorAll(".seer-skin-search-tab"));
 const seerSkinCategoryFilter = document.getElementById("seer-skin-category-filter");
 const seerSkinCategoryOptions = document.getElementById("seer-skin-category-options");
+const seerPetSearchMethodTabs = document.getElementById("seer-pet-search-method-tabs");
+const seerPetSearchMethodButtons = Array.from(document.querySelectorAll("[data-pet-search-method]"));
+const seerPetTypeFilter = document.getElementById("seer-pet-type-filter");
+const seerPetTypeCategoryButtons = Array.from(document.querySelectorAll("[data-pet-type-category]"));
+const seerPetTypeOptions = document.getElementById("seer-pet-type-options");
+const seerPetTypeModal = document.getElementById("seer-pet-type-modal");
+const seerPetTypeClose = document.getElementById("seer-pet-type-close");
+const seerPetTypeOpenModalButton = document.getElementById("seer-pet-type-open-modal");
+const seerPetTypeTriggerCard = document.querySelector(".seer-pet-type-trigger-card");
+const seerPetTypeCurrentIcon = document.getElementById("seer-pet-type-current-icon");
+const seerPetTypeCurrentName = document.getElementById("seer-pet-type-current-name");
 const seerLookupMessage = document.getElementById("seer-lookup-message");
 const seerLookupResults = document.getElementById("seer-lookup-results");
 const seerLookupPreview = document.getElementById("seer-lookup-preview");
@@ -51,6 +62,9 @@ let seerBrowseSentinel = null;
 let isSeerLookupComposing = false;
 let seerLookupMode = "pet";
 let seerSkinSearchMode = "skin";
+let seerPetSearchMethod = "query";
+let seerPetTypeCategory = "single";
+let selectedSeerPetTypeId = null;
 let selectedSeerSkinCategoryId = null;
 let seerTaiwanOnlyEnabled = false;
 let seerTaiwanSettingsPromise = null;
@@ -66,6 +80,8 @@ let currentSeerInfoUrl = null;
 let currentSeerSkinImageFallback = null;
 let externalLinkOpener = null;
 let externalLinkPointerStartedOnBackdrop = false;
+let seerPetTypeModalOpener = null;
+let seerPetTypePointerStartedOnBackdrop = false;
 const elementTypeDetailsCache = new Map();
 const seerPetDetailsCache = new Map();
 const seerPetInfoCache = new Map();
@@ -77,6 +93,10 @@ const seerSoulmarkImageCache = new Map();
 const seerSkinThumbnailFallbackCache = new Map();
 let seerSkinCatalogPromise = null;
 let seerSkinCategoriesPromise = null;
+let seerPetCatalogPromise = null;
+let seerElementTypeCombinationsPromise = null;
+let seerElementTypeCombinations = [];
+let seerPetTypeFilterState = null;
 const SEER_BROWSE_PAGE_SIZE = 20;
 
 const seerBrowseObserver = new IntersectionObserver((entries) => {
@@ -96,8 +116,10 @@ function setSeerLookupMode(mode) {
     if (mode !== "pet" && mode !== "skin") return;
     if (seerLookupMode === mode) return;
     seerLookupMode = mode;
+    seerPetSearchMethod = "query";
     seerLookupIdInput.value = "";
     invalidateSeerPetLookup();
+    updateSeerPetSearchMethodUi();
     const isSkinMode = mode === "skin";
     seerSkinSearchTabs.hidden = !isSkinMode;
     seerSkinCategoryFilter.hidden = !isSkinMode || seerSkinSearchMode !== "skin";
@@ -122,6 +144,54 @@ function setSeerLookupMode(mode) {
     seerLookupIllustrationDescription.textContent = isSkinMode
         ? "先搜尋並選擇皮膚，即可在此查看立繪。"
         : "先搜尋並選擇精靈，即可在此查看立繪。";
+}
+
+function updateSeerPetSearchMethodUi() {
+    const isPetTypeFilter = seerLookupMode === "pet" && seerPetSearchMethod === "type";
+    seerPetSearchMethodTabs.hidden = seerLookupMode !== "pet";
+    seerLookupForm.hidden = isPetTypeFilter;
+    seerPetTypeFilter.hidden = !isPetTypeFilter;
+    if (seerLookupMode === "pet") {
+        seerLookupDescription.textContent = isPetTypeFilter
+            ? "依屬性分類篩選精靈。"
+            : "輸入精靈 ID 或中文名稱，即可瀏覽相關結果。";
+    }
+    updateSeerPetTypeCurrentDisplay();
+    seerPetSearchMethodButtons.forEach((button) => {
+        const isActive = button.dataset.petSearchMethod === seerPetSearchMethod;
+        button.classList.toggle("is-active", isActive);
+        button.setAttribute("aria-selected", String(isActive));
+    });
+    seerPetTypeCategoryButtons.forEach((button) => {
+        const isActive = button.dataset.petTypeCategory === seerPetTypeCategory;
+        button.classList.toggle("is-active", isActive);
+        button.setAttribute("aria-selected", String(isActive));
+    });
+}
+
+function setSeerPetSearchMethod(method) {
+    if (!["query", "type"].includes(method) || seerPetSearchMethod === method) return;
+    seerPetSearchMethod = method;
+    seerLookupIdInput.value = "";
+    invalidateSeerPetLookup();
+    updateSeerPetSearchMethodUi();
+    if (method === "type") {
+        void startSeerPetTypeFilter(++seerLookupRequestId);
+    } else {
+        void startLatestSeerBrowse(++seerLookupRequestId);
+    }
+}
+
+function setSeerPetTypeCategory(category) {
+    if (!["single", "double"].includes(category) || seerPetTypeCategory === category) return;
+    seerPetTypeCategory = category;
+    selectedSeerPetTypeId = null;
+    updateSeerPetSearchMethodUi();
+    renderSeerPetTypeOptions();
+    updateSeerPetTypeCurrentDisplay();
+    if (seerPetSearchMethod === "type") {
+        void startSeerPetTypeFilter(++seerLookupRequestId);
+    }
 }
 
 function setSeerSkinSearchMode(mode) {
@@ -261,6 +331,10 @@ function matchesTaiwanSkinProgress(skin, pet, settings) {
 }
 
 function refreshCurrentSeerLookup() {
+    if (seerLookupMode === "pet" && seerPetSearchMethod === "type") {
+        void startSeerPetTypeFilter(++seerLookupRequestId);
+        return;
+    }
     if (seerSkinSearchMode === "category" || !seerLookupIdInput.value.trim()) {
         void startLatestSeerBrowse(++seerLookupRequestId);
         return;
@@ -275,6 +349,7 @@ function invalidateSeerPetLookup() {
     }
     seerLookupRequestId += 1;
     seerBrowseState = null;
+    seerPetTypeFilterState = null;
     clearSeerBrowseSentinel();
     clearSeerLookupResult();
 }
@@ -289,6 +364,7 @@ function startSeerPetLookup(query, openInfoWhenLoaded = false, infoModalOpener =
         seerLookupDebounceTimer = null;
     }
     seerBrowseState = null;
+    seerPetTypeFilterState = null;
     clearSeerBrowseSentinel();
     resetSeerPetInfo();
     const requestId = ++seerLookupRequestId;
@@ -360,6 +436,211 @@ async function startLatestSeerBrowse(requestId) {
         seerLookupResults.hidden = true;
         seerLookupMessage.textContent = `載入最新資料失敗：${error.message}`;
     }
+}
+
+async function startSeerPetTypeFilter(requestId) {
+    if (requestId !== seerLookupRequestId || seerLookupMode !== "pet" || seerPetSearchMethod !== "type") return;
+    resetSeerPetInfo();
+    seerBrowseState = null;
+    clearSeerBrowseSentinel();
+    seerLookupPreview.hidden = true;
+    seerLookupResults.replaceChildren();
+    seerLookupResults.scrollTop = 0;
+    seerLookupResults.hidden = false;
+    seerLookupMessage.textContent = "正在載入屬性資料…";
+    const state = { requestId, pets: [], nextIndex: 0, loading: true, typeDetailsById: new Map() };
+    seerPetTypeFilterState = state;
+
+    try {
+        const combinations = await fetchSeerElementTypeCombinations();
+        if (requestId !== seerLookupRequestId) return;
+        combinations.forEach((combination) => {
+            state.typeDetailsById.set(String(combination.id), {
+                id: combination.id,
+                name: convertToTraditionalChinese(combination.name)
+            });
+        });
+        renderSeerPetTypeOptions(combinations);
+
+        const settings = await getTaiwanProgressSettings();
+        if (requestId !== seerLookupRequestId) return;
+        const catalog = await fetchSeerPetCatalog((loaded, total) => {
+            if (requestId === seerLookupRequestId) {
+                seerLookupMessage.textContent = `正在載入精靈資料… ${loaded}／${total}`;
+            }
+        });
+        if (requestId !== seerLookupRequestId) return;
+
+        const matchingTypeIds = new Set(combinations
+            .filter((combination) => combination.isDouble === (seerPetTypeCategory === "double"))
+            .filter((combination) => selectedSeerPetTypeId === null || combination.id === selectedSeerPetTypeId)
+            .map((combination) => String(combination.id)));
+        state.pets = catalog.filter((pet) =>
+            pet.typeId !== null
+            && matchingTypeIds.has(String(pet.typeId))
+            && matchesTaiwanPetProgress(pet, settings)
+        );
+        state.loading = false;
+        if (state.pets.length === 0) {
+            seerLookupResults.hidden = true;
+            seerLookupMessage.textContent = seerTaiwanOnlyEnabled
+                ? "目前篩選條件沒有符合台服進度的精靈。"
+                : "目前沒有符合篩選條件的精靈。";
+            return;
+        }
+        loadMoreSeerPetTypeFilterResults(state);
+        const selectedType = selectedSeerPetTypeId === null
+            ? ""
+            : `「${state.typeDetailsById.get(String(selectedSeerPetTypeId))?.name || "所選屬性"}」`;
+        seerLookupMessage.textContent = `找到 ${state.pets.length} 隻${selectedType}精靈，已顯示 ${Math.min(state.pets.length, SEER_BROWSE_PAGE_SIZE)} 隻。`;
+    } catch (error) {
+        if (requestId !== seerLookupRequestId) return;
+        console.error("Load Seer pets by type error:", error);
+        seerPetTypeFilterState = null;
+        seerLookupResults.hidden = true;
+        seerLookupMessage.textContent = `載入屬性篩選失敗：${error.message}`;
+    }
+}
+
+function loadMoreSeerPetTypeFilterResults(state) {
+    if (
+        state !== seerPetTypeFilterState
+        || state.requestId !== seerLookupRequestId
+        || state.loading
+        || state.nextIndex >= state.pets.length
+    ) return;
+    const nextPets = state.pets.slice(state.nextIndex, state.nextIndex + SEER_BROWSE_PAGE_SIZE);
+    state.nextIndex += nextPets.length;
+    renderSeerPetSearchResults(nextPets, state.typeDetailsById, state.nextIndex > nextPets.length);
+    clearSeerBrowseSentinel();
+    if (state.nextIndex < state.pets.length) {
+        const sentinel = document.createElement("button");
+        sentinel.type = "button";
+        sentinel.className = "seer-lookup-browse-sentinel";
+        sentinel.textContent = `點擊載入更多精靈（${state.nextIndex}／${state.pets.length}）`;
+        sentinel.addEventListener("click", () => loadMoreSeerPetTypeFilterResults(state));
+        seerBrowseSentinel = sentinel;
+        seerLookupResults.append(sentinel);
+    }
+}
+
+function renderSeerPetTypeOptions(combinations = null) {
+    const availableCombinations = combinations || seerElementTypeCombinations;
+    const filteredCombinations = availableCombinations
+        .filter((combination) => combination.isDouble === (seerPetTypeCategory === "double"))
+        .sort((first, second) => first.id - second.id);
+    seerPetTypeOptions.replaceChildren();
+
+    const options = [{ id: null, name: "全部" }, ...filteredCombinations];
+    options.forEach((combination) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "seer-pet-type-option";
+        const isSelected = combination.id === selectedSeerPetTypeId;
+        button.classList.toggle("is-active", isSelected);
+        button.setAttribute("aria-pressed", String(isSelected));
+        button.dataset.petTypeId = combination.id === null ? "all" : String(combination.id);
+        if (combination.id !== null) {
+            const icon = document.createElement("img");
+            icon.src = `./seer_icons/${combination.id}.png`;
+            icon.alt = "";
+            icon.loading = "lazy";
+            icon.addEventListener("error", () => { icon.hidden = true; }, { once: true });
+            button.append(icon);
+        }
+        const label = document.createElement("span");
+        label.textContent = combination.id === null
+            ? `全部${seerPetTypeCategory === "double" ? "雙" : "單"}屬性`
+            : convertToTraditionalChinese(combination.name);
+        button.append(label);
+        seerPetTypeOptions.append(button);
+    });
+    updateSeerPetTypeCurrentDisplay();
+}
+
+function fetchSeerElementTypeCombinations() {
+    if (!seerElementTypeCombinationsPromise) {
+        seerElementTypeCombinationsPromise = fetchSeerJson(
+            "https://api.seerapi.com/v1/element_type_combination?offset=0&limit=200&expand=true"
+        ).then((page) => {
+            if (!Array.isArray(page.results)) throw new Error("SeerAPI 回傳的屬性清單格式無效。");
+            const combinations = page.results.map((item) => {
+                const id = Number(item && item.id);
+                const name = String(item && item.name || "").trim();
+                if (
+                    !Number.isSafeInteger(id) || id <= 0
+                    || !name
+                    || typeof (item && item.is_double) !== "boolean"
+                ) {
+                    throw new Error("SeerAPI 回傳了不完整的屬性資料。");
+                }
+                return { id, name, isDouble: item.is_double };
+            });
+            const count = Number(page.count);
+            if (!Number.isSafeInteger(count) || count !== combinations.length) {
+                throw new Error("SeerAPI 回傳的屬性清單筆數不完整。");
+            }
+            if (combinations.length === 0) throw new Error("SeerAPI 沒有提供可用的屬性資料。");
+            seerElementTypeCombinations = combinations;
+            return combinations;
+        }).catch((error) => {
+            seerElementTypeCombinationsPromise = null;
+            seerElementTypeCombinations = [];
+            throw error;
+        });
+    }
+    return seerElementTypeCombinationsPromise;
+}
+
+function fetchSeerPetCatalog(onProgress) {
+    if (!seerPetCatalogPromise) {
+        seerPetCatalogPromise = (async () => {
+            const firstPage = await fetchSeerJson(
+                "https://api.seerapi.com/v1/pet?offset=0&limit=200&expand=true"
+            );
+            if (!Array.isArray(firstPage.results)) throw new Error("SeerAPI 回傳的精靈清單格式無效。");
+            const count = Number(firstPage.count);
+            if (!Number.isSafeInteger(count) || count < 0 || count > 20000) {
+                throw new Error("SeerAPI 回傳的精靈筆數無效。");
+            }
+            const pets = firstPage.results.map(toSeerPetCatalogEntry);
+            onProgress(pets.length, count);
+            const offsets = [];
+            for (let offset = 200; offset < count; offset += 200) offsets.push(offset);
+            const workers = Array.from({ length: Math.min(4, offsets.length) }, async () => {
+                while (offsets.length > 0) {
+                    const offset = offsets.shift();
+                    const page = await fetchSeerJson(
+                        `https://api.seerapi.com/v1/pet?offset=${offset}&limit=200&expand=true`
+                    );
+                    if (!Array.isArray(page.results)) throw new Error("SeerAPI 回傳的精靈分頁格式無效。");
+                    pets.push(...page.results.map(toSeerPetCatalogEntry));
+                    onProgress(pets.length, count);
+                }
+            });
+            await Promise.all(workers);
+            if (pets.length !== count) {
+                throw new Error(`SeerAPI 精靈資料不完整（收到 ${pets.length}／${count} 筆）。`);
+            }
+            pets.sort((first, second) => second.id - first.id);
+            return pets;
+        })().catch((error) => {
+            seerPetCatalogPromise = null;
+            throw error;
+        });
+    }
+    return seerPetCatalogPromise;
+}
+
+function toSeerPetCatalogEntry(pet) {
+    const id = Number(pet && pet.id);
+    const typeId = Number(pet && pet.type && pet.type.id);
+    if (!Number.isSafeInteger(id) || id < 1) throw new Error("SeerAPI 回傳了無效的精靈 ID。");
+    return {
+        id,
+        name: String(pet && pet.name || ""),
+        typeId: Number.isSafeInteger(typeId) && typeId > 0 ? typeId : null
+    };
 }
 
 async function loadMoreSeerBrowseResults(requestId) {
@@ -895,7 +1176,7 @@ function renderSeerPetSearchResults(pets, typeDetailsById, append = false) {
             thumbnail.hidden = true;
         });
         visual.append(thumbnail);
-        const typeId = pet && pet.type && pet.type.id;
+        const typeId = pet && pet.type && pet.type.id || pet && pet.typeId;
         const typeDetails = typeId && typeDetailsById.get(String(typeId));
         const type = document.createElement("span");
         type.className = "seer-lookup-result-type";
@@ -921,6 +1202,7 @@ function renderSeerPetSearchResults(pets, typeDetailsById, append = false) {
                 && !seerLookupIdInput.value.trim();
             if (!isBrowsing) {
                 seerBrowseState = null;
+                seerPetTypeFilterState = null;
                 clearSeerBrowseSentinel();
             }
             const requestId = isBrowsing ? seerLookupRequestId : ++seerLookupRequestId;
@@ -1007,6 +1289,7 @@ function renderSeerSkinSearchResults(entries, append = false) {
                 && !seerLookupIdInput.value.trim();
             if (!isBrowsing) {
                 seerBrowseState = null;
+                seerPetTypeFilterState = null;
                 clearSeerBrowseSentinel();
             }
             const requestId = isBrowsing ? seerLookupRequestId : ++seerLookupRequestId;
@@ -1038,7 +1321,7 @@ function renderSeerSkinSearchResults(entries, append = false) {
 
 async function renderSeerPetPreview(pet, requestId) {
     const petId = pet && pet.id;
-    const typeId = pet && pet.type && pet.type.id;
+    const typeId = pet && pet.type && pet.type.id || pet && pet.typeId;
     const petName = convertToTraditionalChinese(pet && pet.name ? String(pet.name).trim() : "");
     if (!petId || !petName) throw new Error("SeerAPI 回傳未包含精靈 ID 或名稱。");
     if (!typeId) throw new Error("SeerAPI 回傳未包含精靈屬性資料。");
@@ -2046,7 +2329,7 @@ function openSeerPetInfoModal(opener = document.activeElement) {
 function updateSeerModalScrollLock() {
     document.body.classList.toggle(
         "has-admin-confirm-modal",
-        !seerPetInfoModal.hidden || !seerExternalLinkModal.hidden || !seerRelatedSkinsModal.hidden
+        !seerPetInfoModal.hidden || !seerExternalLinkModal.hidden || !seerRelatedSkinsModal.hidden || !seerPetTypeModal.hidden
     );
 }
 
@@ -2079,6 +2362,57 @@ function closeSeerRelatedSkinsModal(restoreFocus = true) {
         }
         seerRelatedSkinsOpener = null;
     }, 180);
+}
+
+function openSeerPetTypeModal(opener = document.activeElement) {
+    if (!seerPetTypeModal.hidden) return;
+    seerPetTypeModalOpener = opener;
+    seerPetTypeModal.classList.remove("is-closing");
+    seerPetTypeModal.hidden = false;
+    updateSeerModalScrollLock();
+    seerPetTypeClose.focus();
+}
+
+function closeSeerPetTypeModal(restoreFocus = true) {
+    if (seerPetTypeModal.hidden || seerPetTypeModal.classList.contains("is-closing")) return;
+    seerPetTypeModal.classList.add("is-closing");
+    window.setTimeout(() => {
+        if (!seerPetTypeModal.classList.contains("is-closing")) return;
+        seerPetTypeModal.hidden = true;
+        seerPetTypeModal.classList.remove("is-closing");
+        updateSeerModalScrollLock();
+        if (restoreFocus && seerPetTypeModalOpener && seerPetTypeModalOpener.isConnected) {
+            seerPetTypeModalOpener.focus();
+        }
+        seerPetTypeModalOpener = null;
+    }, 180);
+}
+
+function updateSeerPetTypeCurrentDisplay() {
+    if (!seerPetTypeCurrentName) return;
+    if (selectedSeerPetTypeId === null) {
+        if (seerPetTypeCurrentIcon) {
+            seerPetTypeCurrentIcon.hidden = true;
+            seerPetTypeCurrentIcon.removeAttribute("src");
+        }
+        seerPetTypeCurrentName.textContent = seerPetTypeCategory === "double" ? "全部雙屬性" : "全部單屬性";
+        return;
+    }
+    if (seerPetTypeCurrentIcon) {
+        seerPetTypeCurrentIcon.hidden = false;
+        seerPetTypeCurrentIcon.src = `./seer_icons/${selectedSeerPetTypeId}.png`;
+    }
+    const match = seerElementTypeCombinations.find((item) => item.id === selectedSeerPetTypeId);
+    if (match) {
+        seerPetTypeCurrentName.textContent = convertToTraditionalChinese(match.name);
+    } else {
+        const cached = elementTypeDetailsCache.get(String(selectedSeerPetTypeId));
+        if (cached && cached.name) {
+            seerPetTypeCurrentName.textContent = cached.name;
+        } else {
+            seerPetTypeCurrentName.textContent = `屬性 ${selectedSeerPetTypeId}`;
+        }
+    }
 }
 
 function openSeerExternalLinkModal(url = currentSeerInfoUrl) {
@@ -2119,6 +2453,7 @@ export function initSeerLookup(dependencies) {
     convertToTraditionalChinese = dependencies.convertToTraditionalChinese;
     convertToSimplifiedChinese = dependencies.convertToSimplifiedChinese;
     fetchSeerJson = dependencies.fetchSeerJson;
+    updateSeerPetSearchMethodUi();
 
     seerLookupForm.addEventListener("submit", (event) => {
         event.preventDefault();
@@ -2128,6 +2463,83 @@ export function initSeerLookup(dependencies) {
         }
         startSeerPetLookup(seerLookupIdInput.value.trim());
     });
+    seerPetSearchMethodButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            setSeerPetSearchMethod(button.dataset.petSearchMethod);
+        });
+    });
+    seerPetTypeCategoryButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            setSeerPetTypeCategory(button.dataset.petTypeCategory);
+        });
+    });
+    seerPetTypeOptions.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-pet-type-id]");
+        if (!button || !seerPetTypeOptions.contains(button)) return;
+        const nextTypeId = button.dataset.petTypeId === "all"
+            ? null
+            : Number(button.dataset.petTypeId);
+        closeSeerPetTypeModal();
+        if (selectedSeerPetTypeId === nextTypeId) return;
+        selectedSeerPetTypeId = nextTypeId;
+        renderSeerPetTypeOptions();
+        updateSeerPetTypeCurrentDisplay();
+        if (seerPetSearchMethod === "type") {
+            void startSeerPetTypeFilter(++seerLookupRequestId);
+        }
+    });
+    updateSeerPetTypeCurrentDisplay();
+    if (seerPetTypeOpenModalButton) {
+        seerPetTypeOpenModalButton.addEventListener("click", () => {
+            openSeerPetTypeModal(seerPetTypeOpenModalButton);
+        });
+    }
+    if (seerPetTypeTriggerCard) {
+        seerPetTypeTriggerCard.addEventListener("click", (event) => {
+            if (!event.target.closest("button")) {
+                openSeerPetTypeModal(seerPetTypeOpenModalButton);
+            }
+        });
+        seerPetTypeTriggerCard.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                openSeerPetTypeModal(seerPetTypeOpenModalButton);
+            }
+        });
+    }
+    if (seerPetTypeClose) {
+        seerPetTypeClose.addEventListener("click", () => closeSeerPetTypeModal());
+    }
+    if (seerPetTypeModal) {
+        seerPetTypeModal.addEventListener("pointerdown", (event) => {
+            seerPetTypePointerStartedOnBackdrop = event.target === seerPetTypeModal;
+        });
+        seerPetTypeModal.addEventListener("click", (event) => {
+            if (seerPetTypePointerStartedOnBackdrop && event.target === seerPetTypeModal) {
+                closeSeerPetTypeModal();
+            }
+            seerPetTypePointerStartedOnBackdrop = false;
+        });
+        seerPetTypeModal.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+                event.preventDefault();
+                closeSeerPetTypeModal();
+                return;
+            }
+            if (event.key !== "Tab") return;
+            const focusable = seerPetTypeModal.querySelectorAll("button:not([disabled]):not([hidden])");
+            if (focusable.length === 0) return;
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        });
+    }
     document.querySelectorAll("[data-external-link]").forEach((link) => {
         link.addEventListener("click", (event) => {
             event.preventDefault();
@@ -2288,7 +2700,11 @@ export function initSeerLookup(dependencies) {
         openExternalLink: (url) => openSeerExternalLinkModal(url),
         browseLatestIfEmpty: () => {
             if (!seerLookupIdInput.value.trim()) {
-                void startLatestSeerBrowse(++seerLookupRequestId);
+                if (seerLookupMode === "pet" && seerPetSearchMethod === "type") {
+                    void startSeerPetTypeFilter(++seerLookupRequestId);
+                } else {
+                    void startLatestSeerBrowse(++seerLookupRequestId);
+                }
             }
         }
     };
