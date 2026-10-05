@@ -1414,7 +1414,7 @@ button:disabled {
     width: 14px;
     height: 14px;
     margin: 0;
-    accent-    color: var(--primary-light);
+    accent-color:var(--primary-light);
 }
 
 .registration-closed-notice {
