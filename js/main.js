@@ -5,6 +5,7 @@ import { initSeerLookup } from "./seer-lookup.js";
 import { initSeerTypeCalculator } from "./seer-type-calculator.js";
 import { initSeerMintmarks } from "./seer-mintmarks.js";
 import { initSeerSuits } from "./seer-suits.js";
+import { initSeerTraining } from "./seer-training.js";
 import { getSeerServerSettings } from "./seer-server-settings.js";
 import { preloadSeerIcons } from "./seer-icons.js";
 import { getActivePool, getPoolCharacters } from "./pool.js";
@@ -62,6 +63,7 @@ const seerLookupSection = document.getElementById("seer-lookup-section");
 const sealEncyclopediaSection = document.getElementById("seal-encyclopedia-section");
 const suitEncyclopediaSection = document.getElementById("suit-encyclopedia-section");
 const typeChartSection = document.getElementById("type-chart-section");
+const trainingSection = document.getElementById("training-section");
 const competitivePoolSection = document.getElementById("competitive-pool-section");
 const competitivePoolPeriod = document.getElementById("competitive-pool-period");
 const competitivePoolMessage = document.getElementById("competitive-pool-message");
@@ -152,6 +154,7 @@ const seerLookup = initSeerLookup({
 const seerTypeCalculator = initSeerTypeCalculator("#type-chart-section");
 const seerMintmarks = initSeerMintmarks(sealEncyclopediaSection, { fetchSeerJson, convertToTraditionalChinese, getSeerServerSettings });
 const seerSuits = initSeerSuits(suitEncyclopediaSection, { fetchSeerJson, convertToTraditionalChinese });
+const seerTraining = initSeerTraining(trainingSection, { fetchSeerJson, convertToTraditionalChinese, convertToSimplifiedChinese });
 preloadSeerIcons();
 
 loginTrigger.addEventListener("click", openLoginModal);
@@ -175,6 +178,8 @@ primaryMainTabs.forEach((tab) => {
                 ? "seer-lookup-section"
                 : target === "type-chart"
                     ? "type-chart-section"
+                    : target === "training"
+                        ? "training-section"
                     : target === "account"
                         ? "account-section"
                         : "about-section");
@@ -270,12 +275,15 @@ function activateTab(targetId) {
     const isSealEncyclopedia = targetId === "seal-encyclopedia-section";
     const isSuitEncyclopedia = targetId === "suit-encyclopedia-section";
     const isTypeChart = targetId === "type-chart-section";
+    const isTraining = targetId === "training-section";
     const isAccount = targetId === "account-section";
     const isAbout = targetId === "about-section";
     const mainTarget = isAbout
         ? "about"
         : isAccount
             ? "account"
+            : isTraining
+                ? "training"
             : isTypeChart
                 ? "type-chart"
                 : isLookup || isSealEncyclopedia || isSuitEncyclopedia
@@ -290,6 +298,8 @@ function activateTab(targetId) {
     suitEncyclopediaSection.hidden = !isSuitEncyclopedia;
     if (isSuitEncyclopedia) seerSuits.load();
     if (typeChartSection) typeChartSection.hidden = !isTypeChart;
+    trainingSection.hidden = !isTraining;
+    if (isTraining) seerTraining.load();
     accountSection.hidden = !isAccount;
     aboutSection.hidden = !isAbout;
     votingSubTabs.hidden = mainTarget !== "voting";
