@@ -142,7 +142,7 @@ function setSeerLookupMode(mode) {
         seerLookupIdInput.required = true;
         seerSkinCategoryFilter.hidden = true;
     }
-    seerLookupTitle.textContent = isSkinMode ? "皮膚查詢" : "精靈查詢";
+    seerLookupTitle.textContent = isSkinMode ? "皮膚圖鑑" : "精靈圖鑑";
     if (!isSkinMode) {
         seerLookupDescription.textContent = "輸入精靈 ID 或中文名稱，即可瀏覽相關結果。";
         seerLookupInputLabel.textContent = "精靈 ID／名稱";

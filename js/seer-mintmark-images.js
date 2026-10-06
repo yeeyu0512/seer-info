@@ -50,7 +50,7 @@ export class MintmarkImageQueue {
 
 let runtime;
 let player;
-function loadRuntime() {
+export function loadRuffleRuntime() {
     if (!runtime) runtime = new Promise((resolve, reject) => {
         window.RufflePlayer = window.RufflePlayer || {};
         window.RufflePlayer.config = { ...window.RufflePlayer.config, polyfills: false };
@@ -90,7 +90,7 @@ async function downloadSwf(id, signal) {
 }
 
 async function convert(id) {
-    const engine = await loadRuntime();
+    const engine = await loadRuffleRuntime();
     // Keep the player in the document so it renders, but never show its controls.
     if (!player) {
         player = engine.createPlayer();

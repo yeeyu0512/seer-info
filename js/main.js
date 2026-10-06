@@ -4,6 +4,7 @@ import { supabaseClient } from "./supabase.js";
 import { initSeerLookup } from "./seer-lookup.js";
 import { initSeerTypeCalculator } from "./seer-type-calculator.js";
 import { initSeerMintmarks } from "./seer-mintmarks.js";
+import { initSeerSuits } from "./seer-suits.js";
 import { getSeerServerSettings } from "./seer-server-settings.js";
 import { preloadSeerIcons } from "./seer-icons.js";
 import { getActivePool, getPoolCharacters } from "./pool.js";
@@ -59,6 +60,7 @@ const voteSubTabs = Array.from(votingSubTabs.querySelectorAll("[data-tab-target]
 const encyclopediaModeTabs = Array.from(encyclopediaSubTabs.querySelectorAll("[data-lookup-mode]"));
 const seerLookupSection = document.getElementById("seer-lookup-section");
 const sealEncyclopediaSection = document.getElementById("seal-encyclopedia-section");
+const suitEncyclopediaSection = document.getElementById("suit-encyclopedia-section");
 const typeChartSection = document.getElementById("type-chart-section");
 const competitivePoolSection = document.getElementById("competitive-pool-section");
 const competitivePoolPeriod = document.getElementById("competitive-pool-period");
@@ -149,6 +151,7 @@ const seerLookup = initSeerLookup({
 });
 const seerTypeCalculator = initSeerTypeCalculator("#type-chart-section");
 const seerMintmarks = initSeerMintmarks(sealEncyclopediaSection, { fetchSeerJson, convertToTraditionalChinese, getSeerServerSettings });
+const seerSuits = initSeerSuits(suitEncyclopediaSection, { fetchSeerJson, convertToTraditionalChinese });
 preloadSeerIcons();
 
 loginTrigger.addEventListener("click", openLoginModal);
@@ -186,6 +189,10 @@ encyclopediaModeTabs.forEach((tab) => {
     tab.addEventListener("click", () => {
         if (tab.dataset.lookupMode === "seal") {
             activateTab("seal-encyclopedia-section");
+            return;
+        }
+        if (tab.dataset.lookupMode === "suit") {
+            activateTab("suit-encyclopedia-section");
             return;
         }
         seerLookup.setMode(tab.dataset.lookupMode);
@@ -261,6 +268,7 @@ function activateTab(targetId) {
     if (!isAdministrator && votePanels.has(targetId)) targetId = "seer-lookup-section";
     const isLookup = targetId === "seer-lookup-section";
     const isSealEncyclopedia = targetId === "seal-encyclopedia-section";
+    const isSuitEncyclopedia = targetId === "suit-encyclopedia-section";
     const isTypeChart = targetId === "type-chart-section";
     const isAccount = targetId === "account-section";
     const isAbout = targetId === "about-section";
@@ -270,7 +278,7 @@ function activateTab(targetId) {
             ? "account"
             : isTypeChart
                 ? "type-chart"
-                : isLookup || isSealEncyclopedia
+                : isLookup || isSealEncyclopedia || isSuitEncyclopedia
                     ? "encyclopedia"
                     : "voting";
     if (!isLookup && !isAccount && !isTypeChart && votePanels.has(targetId)) currentVotePanelId = targetId;
@@ -279,6 +287,8 @@ function activateTab(targetId) {
     seerLookupSection.hidden = !isLookup;
     sealEncyclopediaSection.hidden = !isSealEncyclopedia;
     if (isSealEncyclopedia) seerMintmarks.load();
+    suitEncyclopediaSection.hidden = !isSuitEncyclopedia;
+    if (isSuitEncyclopedia) seerSuits.load();
     if (typeChartSection) typeChartSection.hidden = !isTypeChart;
     accountSection.hidden = !isAccount;
     aboutSection.hidden = !isAbout;
@@ -302,7 +312,9 @@ function activateTab(targetId) {
         const isActive = mainTarget === "encyclopedia" && (
             isSealEncyclopedia
                 ? tab.dataset.lookupMode === "seal"
-                : tab.dataset.lookupMode === seerLookup.getMode()
+                : isSuitEncyclopedia
+                    ? tab.dataset.lookupMode === "suit"
+                    : tab.dataset.lookupMode === seerLookup.getMode()
         );
         tab.classList.toggle("is-active", isActive);
         tab.setAttribute("aria-selected", String(isActive));

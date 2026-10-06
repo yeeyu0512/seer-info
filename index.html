@@ -349,9 +349,10 @@
     </section>
 
         <nav id="encyclopedia-sub-tabs" class="main-tabs view-sub-tabs encyclopedia-sub-tabs" aria-label="圖鑑種類" role="tablist">
-            <button class="main-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="seer-lookup-section" data-lookup-mode="pet">精靈查詢</button>
-            <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="seer-lookup-section" data-lookup-mode="skin">皮膚查詢</button>
+            <button class="main-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="seer-lookup-section" data-lookup-mode="pet">精靈圖鑑</button>
+            <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="seer-lookup-section" data-lookup-mode="skin">皮膚圖鑑</button>
             <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="seal-encyclopedia-section" data-lookup-mode="seal">刻印圖鑑</button>
+            <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="suit-encyclopedia-section" data-lookup-mode="suit">套裝圖鑑</button>
         </nav>
 
         <div id="seer-lookup-section" class="seer-lookup-layout">
@@ -359,7 +360,7 @@
                 <div class="panel-header">
                     <div>
                         <div class="seer-lookup-title-row">
-                            <h2 id="seer-lookup-title" class="panel-title">精靈查詢</h2>
+                            <h2 id="seer-lookup-title" class="panel-title">精靈圖鑑</h2>
                             <label class="seer-taiwan-progress-filter" title="依管理後台設定的台服最新精靈與皮膚編號篩選，並保留精靈 #5000">
                                 <input id="seer-taiwan-progress-only" type="checkbox" aria-label="只顯示台服進度，保留精靈 #5000">
                                 <span class="seer-taiwan-progress-filter-copy">
@@ -451,6 +452,17 @@
             </label>
             <div id="seal-encyclopedia-content"></div>
             <p class="seal-technical-note"><small>資料來源：<a href="https://api.seerapi.com/" target="_blank" rel="noopener noreferrer">SeerAPI</a>。圖片由 <a href="https://ruffle.rs/" target="_blank" rel="noopener noreferrer">Ruffle</a> 按需渲染官方 SWF，並暫存在目前頁面。</small></p>
+        </section>
+
+        <section id="suit-encyclopedia-section" class="panel" role="tabpanel" aria-labelledby="suit-encyclopedia-title" hidden>
+            <div class="panel-header">
+                <div>
+                    <h2 id="suit-encyclopedia-title" class="panel-title">套裝圖鑑</h2>
+                    <p class="panel-description">圖片首次載入可能較久。</p>
+                </div>
+            </div>
+            <div id="suit-encyclopedia-content"></div>
+            <p class="seal-technical-note"><small>資料來源：<a href="https://api.seerapi.com/" target="_blank" rel="noopener noreferrer">SeerAPI</a>。圖片由 <a href="https://ruffle.rs/" target="_blank" rel="noopener noreferrer">Ruffle</a> 按需渲染官方部件並組裝，暫存在目前頁面；部分特殊套裝可能無法預覽。</small></p>
         </section>
 
         <nav id="type-chart-sub-tabs" class="main-tabs view-sub-tabs" role="tablist" aria-label="屬性克制功能" hidden>
