@@ -1,5 +1,5 @@
 import { TRAINING_STATS as STATS, zeroStats, calculateTraining, trainingModes } from "./seer-training-core.js";
-import { fetchMintmarkCatalog, fetchMintmarkSeries, mintmarkCornerCount } from "./seer-mintmarks.js";
+import { fetchMintmarkCatalog, fetchMintmarkSeries, mintmarkCornerCount } from "./data/mintmark-catalog.js";
 import { observeMintmarkImage, unobserveMintmarkImages } from "./seer-mintmark-images.js";
 import { initTrainingSelectors, skinImageId } from "./seer-training-selectors.js";
 import { mintmarkFinalStats } from "./seer-mintmark-stats.js";

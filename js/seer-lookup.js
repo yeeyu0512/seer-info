@@ -1,6 +1,6 @@
 import { getSeerServerSettings } from "./seer-server-settings.js";
 import { SEER_TYPE_DATA } from "./seer-type-data.js";
-import { getRelatedTypeOptions } from "./seer-type-calculator.js";
+import { getRelatedTypeOptions } from "./shared/type-options.js";
 
 let openTypeLookup = null;
 

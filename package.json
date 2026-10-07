@@ -1,0 +1,10 @@
+{
+  "name": "seervote",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "check": "node tools/check-modules.mjs"
+  },
+  "engines": { "node": ">=22" }
+}
