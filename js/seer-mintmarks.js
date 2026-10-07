@@ -1,5 +1,6 @@
 import { observeMintmarkImage, unobserveMintmarkImages } from "./seer-mintmark-images.js";
 import { downloadMintmarkWorkbook } from "./seer-mintmark-export.js";
+import { mintmarkFinalStats } from "./seer-mintmark-stats.js";
 
 const API = "https://api.seerapi.com/v1/mintmark";
 const TYPES = { 0: "能力刻印", 1: "技能刻印", 3: "全能刻印" };
@@ -8,7 +9,7 @@ const PAGE_SIZE = 24;
 
 export function mintmarkCornerCount(record) {
     if (![0, 3].includes(Number(record.type?.id)) || !record.max_attr_value) return null;
-    const count = STATS.filter(([key]) => Number(record.max_attr_value[key]) > 0).length;
+    const count = STATS.filter(([key]) => mintmarkFinalStats(record)[key] > 0).length;
     return count || null;
 }
 
@@ -23,7 +24,7 @@ export function selectMintmarks(records, { query = "", type = "3", sort = "id", 
             || !(record.pet?.length || /專屬|专属/.test(`${record.name} ${record.searchName || ""}`)))
         && (!key || String(record.id).includes(key) || record.name.toLocaleLowerCase().includes(key) || record.searchName?.toLocaleLowerCase().includes(key)))
         .sort((a, b) => sort === "id" ? b.id - a.id
-            : (Number(b.max_attr_value?.[sort]) || 0) - (Number(a.max_attr_value?.[sort]) || 0) || b.id - a.id);
+            : (Number(mintmarkFinalStats(b)?.[sort]) || 0) - (Number(mintmarkFinalStats(a)?.[sort]) || 0) || b.id - a.id);
 }
 
 export async function fetchMintmarkSeries(fetchJson) {
@@ -162,7 +163,7 @@ export function initSeerMintmarks(root, { fetchSeerJson, convertToTraditionalChi
         observeMintmarkImage(slot, record.id);
         return slot;
     }
-    function stats(record, values = record.max_attr_value) {
+    function stats(record, values = mintmarkFinalStats(record)) {
         const list = document.createElement("dl");
         list.className = "seal-stats";
         STATS.forEach(([key, label]) => {
@@ -197,12 +198,12 @@ export function initSeerMintmarks(root, { fetchSeerJson, convertToTraditionalChi
         identity.append(title, meta);
         header.append(imageSlot(record), identity, close);
         dialog.append(header);
-        const columns = [["初始", record.base_attr_value], ["最大", record.max_attr_value], ["額外", record.extra_attr_value]].filter(([, values]) => values);
+        const columns = [["初始", record.base_attr_value], [record.extra_attr_value ? "最大" : "最終", record.max_attr_value], ["隱藏", record.extra_attr_value], ["最終", record.extra_attr_value ? mintmarkFinalStats(record) : null]].filter(([, values]) => values);
         if (columns.length) {
             const table = document.createElement("table");
             table.className = "seal-detail-table";
             const caption = table.createCaption();
-            caption.textContent = "能力值";
+            caption.textContent = "能力值（最終值已包含隱藏數值）";
             const head = table.createTHead().insertRow();
             ["能力", ...columns.map(([label]) => label)].forEach(label => {
                 const cell = document.createElement("th");
@@ -220,7 +221,7 @@ export function initSeerMintmarks(root, { fetchSeerJson, convertToTraditionalChi
                 columns.forEach(([columnLabel, values]) => {
                     const cell = row.insertCell();
                     cell.textContent = key === "total" && values.percent ? "—" : values[key] == null ? "—" : `${values[key]}${values.percent ? "%" : ""}`;
-                    if (columnLabel === "最大") cell.className = "seal-stat-max";
+                    if (columnLabel === "最終") cell.className = "seal-stat-max";
                 });
                 if (key === "total") row.className = "seal-stat-total";
             });

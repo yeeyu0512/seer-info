@@ -1,3 +1,4 @@
+import { mintmarkFinalStats } from "./seer-mintmark-stats.js";
 const EXCELJS_URL = "https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js";
 const STATS = ["atk", "sp_atk", "def", "sp_def", "spd", "hp"];
 let runtimePending;
@@ -52,7 +53,7 @@ export function buildMintmarkWorkbook(ExcelJS, records, seriesNames = new Map(),
     sheet.getCell("A2").font = { name: "Microsoft JhengHei", size: 10, color: { argb: "FF626779" } };
     sheet.getRow(2).height = 24;
     sheet.mergeCells("A3:I3");
-    sheet.getCell("A3").value = "資料來源：https://api.seerapi.com/v1/mintmark　數值為最大能力值，同系列合併儲存格。";
+    sheet.getCell("A3").value = "資料來源：https://api.seerapi.com/v1/mintmark　數值為最大能力值＋隱藏數值，同系列合併儲存格。";
     sheet.getCell("A3").font = { name: "Microsoft JhengHei", size: 10, color: { argb: "FF626779" } };
     sheet.getRow(3).height = 22;
     const header = sheet.getRow(4);
@@ -75,7 +76,7 @@ export function buildMintmarkWorkbook(ExcelJS, records, seriesNames = new Map(),
         const fill = groupIndex % 2 ? "FFF4F3F8" : "FFFFFFFF";
         group.records.forEach(record => {
             const row = sheet.getRow(rowNumber);
-            const attrs = record.max_attr_value;
+            const attrs = mintmarkFinalStats(record);
             const values = STATS.map(key => typeof attrs?.[key] === "number" && Number.isFinite(attrs[key]) ? attrs[key] : null);
             const total = attrs && !attrs.percent && values.every(value => value !== null)
                 ? { formula: `SUM(C${rowNumber}:H${rowNumber})`, result: values.reduce((sum, value) => sum + value, 0) } : null;
