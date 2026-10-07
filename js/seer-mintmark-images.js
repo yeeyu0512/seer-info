@@ -97,7 +97,8 @@ async function convert(id) {
                 const data = await downloadSwf(id, controller.signal);
                 const downloadMs = performance.now() - downloadStarted;
                 const renderStarted = performance.now();
-                await current.ruffle().load({ data, swfFileName: `${id}.swf`, wmode: "transparent", autoplay: "on", unmuteOverlay: "hidden", splashScreen: false, contextMenu: "off", allowScriptAccess: false, allowNetworking: "none", openUrlMode: "deny", preferredRenderer: "canvas" });
+                // Canvas omits SWF filters used to recolor the Saint War series.
+                await current.ruffle().load({ data, swfFileName: `${id}.swf`, wmode: "transparent", autoplay: "on", unmuteOverlay: "hidden", splashScreen: false, contextMenu: "off", allowScriptAccess: false, allowNetworking: "none", openUrlMode: "deny", preferredRenderer: "wgpu-webgl" });
                 const output = document.createElement("canvas");
                 output.width = output.height = OUTPUT_SIZE;
                 const context = output.getContext("2d", { willReadFrequently: true });
