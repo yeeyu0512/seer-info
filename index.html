@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 
-<title>賽爾號資訊站</title>
+    <title>賽爾號資訊站</title>
     <meta name="description" content="賽爾號玩家資訊站，提供精靈投票、即時排名、競技池，以及精靈與皮膚圖鑑查詢。">
     <link rel="canonical" href="https://yeeyu0512.github.io/seervote/">
     <meta property="og:type" content="website">
@@ -34,7 +34,7 @@
     </script>
 
     <link rel="icon" href="./favicon.ico" sizes="any">
-<link rel="stylesheet" href="./css/style.css?v=20261005_modal">
+    <link rel="stylesheet" href="./css/style.css?v=20261005_modal">
 
 
 </head>
@@ -42,318 +42,338 @@
 <body>
 
 
-<!-- ==================== -->
-<!-- Header -->
-<!-- ==================== -->
-
-<header class="site-header">
-
-    <div class="header-inner">
-
-        <a href="#" class="logo" aria-label="首頁">
-            <img class="logo-mark" src="./favicon.ico" alt="">
-            <span>賽爾號資訊站</span>
-        </a>
-
-        <nav class="main-tabs primary-main-tabs" aria-label="主要功能" role="tablist">
-            <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="vote-section" data-main-target="voting" hidden>投票</button>
-            <button class="main-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="seer-lookup-section" data-main-target="encyclopedia">圖鑑</button>
-            <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="type-chart-section" data-main-target="type-chart">屬性克制</button>
-            <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="training-section" data-main-target="training">模擬培養</button>
-            <button id="account-tab" class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="account-section" data-main-target="account" hidden>帳號</button>
-            <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="about-section" data-main-target="about">關於本站</button>
-        </nav>
-
-        <div class="header-actions">
-
-            <a id="admin-link" class="admin-home-link" href="./admin.html" hidden>管理面板</a>
-
-            <button id="login-trigger" class="compact-button" type="button" hidden>登入</button>
-
-            <button id="logout-button" type="button" hidden>
-                登出
-            </button>
-
-        </div>
-
-    </div>
-
-</header>
-
-
-<main class="container">
-
-
     <!-- ==================== -->
-    <!-- Login -->
+    <!-- Header -->
     <!-- ==================== -->
 
-    <div id="login-modal" hidden>
-    <section id="login-section" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+    <header class="site-header">
 
-        <div class="auth-modal-topbar">
-            <span class="auth-modal-brand">賽爾號資訊站</span>
-            <button id="login-close" class="modal-close" type="button" aria-label="關閉登入視窗">×</button>
-        </div>
+        <div class="header-inner">
 
-        <h1 id="auth-title">登入投票</h1>
+            <a href="#" class="logo" aria-label="首頁">
+                <img class="logo-mark" src="./favicon.ico" alt="">
+                <span>賽爾號資訊站</span>
+            </a>
 
-        <p id="auth-description" class="panel-description">
-            本站目前暫停登入與新帳號註冊。
-        </p>
+            <nav class="main-tabs primary-main-tabs" aria-label="主要功能" role="tablist">
+                <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="vote-section"
+                    data-main-target="voting" hidden>投票</button>
+                <button class="main-tab is-active" type="button" role="tab" aria-selected="true"
+                    aria-controls="seer-lookup-section" data-main-target="encyclopedia">圖鑑</button>
+                <button class="main-tab" type="button" role="tab" aria-selected="false"
+                    aria-controls="type-chart-section" data-main-target="type-chart">屬性克制</button>
+                <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="training-section"
+                    data-main-target="training">模擬培養</button>
+                <button id="account-tab" class="main-tab" type="button" role="tab" aria-selected="false"
+                    aria-controls="account-section" data-main-target="account" hidden>帳號</button>
+                <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="about-section"
+                    data-main-target="about">關於本站</button>
+            </nav>
 
-        <label class="field-label" for="email">Email</label>
-        <input id="email" type="email" placeholder="name@example.com" autocomplete="email">
+            <div class="header-actions">
 
-        <label class="field-label" for="password">密碼</label>
-        <input id="password" type="password" placeholder="輸入密碼" autocomplete="current-password">
+                <a id="admin-link" class="admin-home-link" href="./admin.html" hidden>管理面板</a>
 
-        <div id="password-confirm-group" hidden>
-            <label class="field-label" for="password-confirm">確認密碼</label>
-            <input id="password-confirm" type="password" placeholder="再次輸入密碼" autocomplete="new-password">
-        </div>
+                <button id="login-trigger" class="compact-button" type="button" hidden>登入</button>
 
-        <div id="mimi-id-group" hidden>
-            <label class="field-label" for="mimi-id">米米號</label>
-            <input id="mimi-id" type="text" inputmode="numeric" pattern="[0-9]+" placeholder="請輸入純數字米米號" autocomplete="off">
-        </div>
-
-        <button id="login-button" type="button">
-            登入
-        </button>
-
-        <button id="register-button" class="secondary-button" type="button" hidden>
-            建立帳號
-        </button>
-
-        <p id="login-message"></p>
-
-        <p class="registration-closed-notice">目前暫停新帳號註冊</p>
-
-        <button id="auth-mode-toggle" class="text-button" type="button" hidden>
-            還沒有帳號？建立帳號
-        </button>
-
-    </section>
-    </div>
-
-
-    <!-- ==================== -->
-    <!-- Voting -->
-    <!-- ==================== -->
-
-    <section id="vote-section" hidden>
-
-
-        <!-- Pool Information -->
-
-        <div class="pool-info">
-
-            <div class="info-card">
-
-                <div class="info-label">
-                    Pool
-                </div>
-
-                <div id="pool-name" class="info-value">
-                    -
-                </div>
-
-            </div>
-
-
-            <div class="info-card">
-
-                <div class="info-label">
-                    Required Votes
-                </div>
-
-                <div id="vote-limit" class="info-value">
-                    -
-                </div>
-
-            </div>
-
-
-            <div class="info-card">
-
-                <div class="info-label">
-                    Status
-                </div>
-
-                <div class="info-value">
-
-                    <span id="pool-status" class="status-badge">
-                        Voting
-                    </span>
-
-                </div>
+                <button id="logout-button" type="button" hidden>
+                    登出
+                </button>
 
             </div>
 
         </div>
 
-        <nav id="voting-sub-tabs" class="main-tabs view-sub-tabs" aria-label="投票功能" role="tablist">
-            <button class="main-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="selection-panel" data-tab-target="selection-panel">限制池投票</button>
-            <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="ranking-section" data-tab-target="ranking-section">即時排名</button>
-            <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="competitive-pool-section" data-tab-target="competitive-pool-section">當前競技池</button>
-        </nav>
+    </header>
 
 
-        <!-- Character Selection -->
+    <main class="container">
 
-        <section id="selection-panel" class="panel">
 
-            <div class="panel-header">
+        <!-- ==================== -->
+        <!-- Login -->
+        <!-- ==================== -->
 
-                <div>
+        <div id="login-modal" hidden>
+            <section id="login-section" role="dialog" aria-modal="true" aria-labelledby="auth-title">
 
-                    <h2 class="panel-title">
-                        選擇角色
-                    </h2>
+                <div class="auth-modal-topbar">
+                    <span class="auth-modal-brand">賽爾號資訊站</span>
+                    <button id="login-close" class="modal-close" type="button" aria-label="關閉登入視窗">×</button>
+                </div>
 
-                    <p id="vote-rule" class="panel-description">請選擇指定數量的角色後提交。</p>
+                <h1 id="auth-title">登入投票</h1>
+
+                <p id="auth-description" class="panel-description">
+                    本站目前暫停登入與新帳號註冊。
+                </p>
+
+                <label class="field-label" for="email">Email</label>
+                <input id="email" type="email" placeholder="name@example.com" autocomplete="email">
+
+                <label class="field-label" for="password">密碼</label>
+                <input id="password" type="password" placeholder="輸入密碼" autocomplete="current-password">
+
+                <div id="password-confirm-group" hidden>
+                    <label class="field-label" for="password-confirm">確認密碼</label>
+                    <input id="password-confirm" type="password" placeholder="再次輸入密碼" autocomplete="new-password">
+                </div>
+
+                <div id="mimi-id-group" hidden>
+                    <label class="field-label" for="mimi-id">米米號</label>
+                    <input id="mimi-id" type="text" inputmode="numeric" pattern="[0-9]+" placeholder="請輸入純數字米米號"
+                        autocomplete="off">
+                </div>
+
+                <button id="login-button" type="button">
+                    登入
+                </button>
+
+                <button id="register-button" class="secondary-button" type="button" hidden>
+                    建立帳號
+                </button>
+
+                <p id="login-message"></p>
+
+                <p class="registration-closed-notice">目前暫停新帳號註冊</p>
+
+                <button id="auth-mode-toggle" class="text-button" type="button" hidden>
+                    還沒有帳號？建立帳號
+                </button>
+
+            </section>
+        </div>
+
+
+        <!-- ==================== -->
+        <!-- Voting -->
+        <!-- ==================== -->
+
+        <section id="vote-section" hidden>
+
+
+            <!-- Pool Information -->
+
+            <div class="pool-info">
+
+                <div class="info-card">
+
+                    <div class="info-label">
+                        Pool
+                    </div>
+
+                    <div id="pool-name" class="info-value">
+                        -
+                    </div>
 
                 </div>
 
-            </div>
 
-            <div id="character-pagination" class="character-pagination" hidden>
-                <button id="character-previous-page" class="secondary-button compact-button" type="button">上一頁</button>
-                <span id="character-page">第 1 / 1 頁</span>
-                <button id="character-next-page" class="secondary-button compact-button" type="button">下一頁</button>
-            </div>
+                <div class="info-card">
 
-            <div id="character-list">
-                <!-- main.js 會在這裡產生角色 -->
-            </div>
+                    <div class="info-label">
+                        Required Votes
+                    </div>
 
-            <div id="public-login-prompt" class="public-login-prompt" hidden>
-                <span>想參與本期投票？登入後即可選擇角色。</span>
-                <button id="public-login-button" class="compact-button" type="button">登入投票</button>
-            </div>
+                    <div id="vote-limit" class="info-value">
+                        -
+                    </div>
 
-            <div id="mimi-binding-prompt" class="public-login-prompt" hidden>
-                <span>綁定米米號後才能參與本期投票。</span>
-                <button id="mimi-binding-button" class="compact-button" type="button">前往綁定</button>
-            </div>
+                </div>
 
 
-            <!-- Selection / Submit -->
+                <div class="info-card">
 
-            <div id="selection-bar" class="selection-bar">
+                    <div class="info-label">
+                        Status
+                    </div>
 
-                <div>
+                    <div class="info-value">
 
-                    <div class="selection-count">
-
-                        已選擇
-
-                        <strong id="selection-count">
-                            0
-                        </strong>
-
-                        /
-
-                        <span id="selection-max">
-                            0
+                        <span id="pool-status" class="status-badge">
+                            Voting
                         </span>
 
                     </div>
 
-                    <div
-                        id="vote-message"
-                        class="vote-message"
-                    ></div>
-
                 </div>
-
-
-                <button
-                    id="submit-button"
-                    type="button"
-                >
-                    提交投票
-                </button>
 
             </div>
 
-            <!-- Already Voted -->
-            <section id="already-voted" hidden aria-live="polite">
-                <div class="already-voted">
-                    <strong>✓ 已完成投票</strong>
-                    <span id="already-voted-message">本期投票已成功提交。</span>
+            <nav id="voting-sub-tabs" class="main-tabs view-sub-tabs" aria-label="投票功能" role="tablist">
+                <button class="main-tab is-active" type="button" role="tab" aria-selected="true"
+                    aria-controls="selection-panel" data-tab-target="selection-panel">限制池投票</button>
+                <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="ranking-section"
+                    data-tab-target="ranking-section">即時排名</button>
+                <button class="main-tab" type="button" role="tab" aria-selected="false"
+                    aria-controls="competitive-pool-section" data-tab-target="competitive-pool-section">當前競技池</button>
+            </nav>
+
+
+            <!-- Character Selection -->
+
+            <section id="selection-panel" class="panel">
+
+                <div class="panel-header">
+
+                    <div>
+
+                        <h2 class="panel-title">
+                            選擇角色
+                        </h2>
+
+                        <p id="vote-rule" class="panel-description">請選擇指定數量的角色後提交。</p>
+
+                    </div>
+
                 </div>
+
+                <div id="character-pagination" class="character-pagination" hidden>
+                    <button id="character-previous-page" class="secondary-button compact-button"
+                        type="button">上一頁</button>
+                    <span id="character-page">第 1 / 1 頁</span>
+                    <button id="character-next-page" class="secondary-button compact-button" type="button">下一頁</button>
+                </div>
+
+                <div id="character-list">
+                    <!-- main.js 會在這裡產生角色 -->
+                </div>
+
+                <div id="public-login-prompt" class="public-login-prompt" hidden>
+                    <span>想參與本期投票？登入後即可選擇角色。</span>
+                    <button id="public-login-button" class="compact-button" type="button">登入投票</button>
+                </div>
+
+                <div id="mimi-binding-prompt" class="public-login-prompt" hidden>
+                    <span>綁定米米號後才能參與本期投票。</span>
+                    <button id="mimi-binding-button" class="compact-button" type="button">前往綁定</button>
+                </div>
+
+
+                <!-- Selection / Submit -->
+
+                <div id="selection-bar" class="selection-bar">
+
+                    <div>
+
+                        <div class="selection-count">
+
+                            已選擇
+
+                            <strong id="selection-count">
+                                0
+                            </strong>
+
+                            /
+
+                            <span id="selection-max">
+                                0
+                            </span>
+
+                        </div>
+
+                        <div id="vote-message" class="vote-message"></div>
+
+                    </div>
+
+
+                    <button id="submit-button" type="button">
+                        提交投票
+                    </button>
+
+                </div>
+
+                <!-- Already Voted -->
+                <section id="already-voted" hidden aria-live="polite">
+                    <div class="already-voted">
+                        <strong>✓ 已完成投票</strong>
+                        <span id="already-voted-message">本期投票已成功提交。</span>
+                    </div>
+                </section>
+
             </section>
 
-        </section>
+            <!-- ==================== -->
+            <!-- Ranking -->
+            <!-- ==================== -->
 
-        <!-- ==================== -->
-        <!-- Ranking -->
-        <!-- ==================== -->
+            <section id="ranking-section" class="panel" hidden>
 
-        <section id="ranking-section" class="panel" hidden>
+                <div class="panel-header">
 
-            <div class="panel-header">
+                    <div>
 
-                <div>
+                        <h2 class="panel-title">
+                            目前排名
+                        </h2>
 
-                    <h2 class="panel-title">
-                        目前排名
-                    </h2>
+                        <p class="panel-description">
+                            排名會即時更新。
+                        </p>
 
-                    <p class="panel-description">
-                        排名會即時更新。
-                    </p>
+                    </div>
+
+                    <span class="header-status">
+                        LIVE
+                    </span>
 
                 </div>
 
-                <span class="header-status">
-                    LIVE
-                </span>
 
-            </div>
-
-
-            <div id="ranking-list">
-                <!-- main.js 產生排名 -->
-            </div>
-            <div id="ranking-pagination" class="ranking-pagination" hidden>
-                <button id="ranking-previous-page" class="secondary-button compact-button" type="button">上一頁</button>
-                <span id="ranking-page">第 1 / 1 頁</span>
-                <button id="ranking-next-page" class="secondary-button compact-button" type="button">下一頁</button>
-            </div>
-
-        </section>
-
-        <section id="competitive-pool-section" class="panel competitive-pool-view" hidden>
-            <div class="panel-header">
-                <div>
-                    <h2 id="competitive-pool-message" class="panel-title competitive-pool-name" aria-live="polite">正在載入競技池資料…</h2>
-                    <p id="competitive-pool-period" class="panel-description"></p>
+                <div id="ranking-list">
+                    <!-- main.js 產生排名 -->
                 </div>
-                <button id="refresh-competitive-pool-button" class="secondary-button compact-button" type="button">重新整理</button>
-            </div>
-            <div id="competitive-pool-type-tabs" class="competitive-pool-type-tabs" role="tablist" aria-label="競技池種類" hidden>
-                <button id="competitive-pool-tab-banned" class="competitive-pool-type-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="competitive-pool-groups" data-pool-type="banned">
-                    <span>禁止池</span><span class="competitive-pool-type-count" data-pool-type-count>0</span>
-                </button>
-                <button id="competitive-pool-tab-restricted" class="competitive-pool-type-tab" type="button" role="tab" aria-selected="false" aria-controls="competitive-pool-groups" data-pool-type="restricted">
-                    <span>限制池</span><span class="competitive-pool-type-count" data-pool-type-count>0</span>
-                </button>
-                <button id="competitive-pool-tab-semi-restricted" class="competitive-pool-type-tab" type="button" role="tab" aria-selected="false" aria-controls="competitive-pool-groups" data-pool-type="semi_restricted">
-                    <span>準限制池</span><span class="competitive-pool-type-count" data-pool-type-count>0</span>
-                </button>
-            </div>
-            <div id="competitive-pool-groups" class="competitive-pool-pet-list" role="tabpanel" aria-labelledby="competitive-pool-tab-banned" hidden></div>
-        </section>
-    </section>
+                <div id="ranking-pagination" class="ranking-pagination" hidden>
+                    <button id="ranking-previous-page" class="secondary-button compact-button"
+                        type="button">上一頁</button>
+                    <span id="ranking-page">第 1 / 1 頁</span>
+                    <button id="ranking-next-page" class="secondary-button compact-button" type="button">下一頁</button>
+                </div>
 
-        <nav id="encyclopedia-sub-tabs" class="main-tabs view-sub-tabs encyclopedia-sub-tabs" aria-label="圖鑑種類" role="tablist">
-            <button class="main-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="seer-lookup-section" data-lookup-mode="pet">精靈圖鑑</button>
-            <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="seer-lookup-section" data-lookup-mode="skin">皮膚圖鑑</button>
-            <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="seal-encyclopedia-section" data-lookup-mode="seal">刻印圖鑑</button>
-            <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="suit-encyclopedia-section" data-lookup-mode="suit">套裝圖鑑</button>
+            </section>
+
+            <section id="competitive-pool-section" class="panel competitive-pool-view" hidden>
+                <div class="panel-header">
+                    <div>
+                        <h2 id="competitive-pool-message" class="panel-title competitive-pool-name" aria-live="polite">
+                            正在載入競技池資料…</h2>
+                        <p id="competitive-pool-period" class="panel-description"></p>
+                    </div>
+                    <button id="refresh-competitive-pool-button" class="secondary-button compact-button"
+                        type="button">重新整理</button>
+                </div>
+                <div id="competitive-pool-type-tabs" class="competitive-pool-type-tabs" role="tablist"
+                    aria-label="競技池種類" hidden>
+                    <button id="competitive-pool-tab-banned" class="competitive-pool-type-tab is-active" type="button"
+                        role="tab" aria-selected="true" aria-controls="competitive-pool-groups" data-pool-type="banned">
+                        <span>禁止池</span><span class="competitive-pool-type-count" data-pool-type-count>0</span>
+                    </button>
+                    <button id="competitive-pool-tab-restricted" class="competitive-pool-type-tab" type="button"
+                        role="tab" aria-selected="false" aria-controls="competitive-pool-groups"
+                        data-pool-type="restricted">
+                        <span>限制池</span><span class="competitive-pool-type-count" data-pool-type-count>0</span>
+                    </button>
+                    <button id="competitive-pool-tab-semi-restricted" class="competitive-pool-type-tab" type="button"
+                        role="tab" aria-selected="false" aria-controls="competitive-pool-groups"
+                        data-pool-type="semi_restricted">
+                        <span>準限制池</span><span class="competitive-pool-type-count" data-pool-type-count>0</span>
+                    </button>
+                </div>
+                <div id="competitive-pool-groups" class="competitive-pool-pet-list" role="tabpanel"
+                    aria-labelledby="competitive-pool-tab-banned" hidden></div>
+            </section>
+        </section>
+
+        <nav id="encyclopedia-sub-tabs" class="main-tabs view-sub-tabs encyclopedia-sub-tabs" aria-label="圖鑑種類"
+            role="tablist">
+            <button class="main-tab is-active" type="button" role="tab" aria-selected="true"
+                aria-controls="seer-lookup-section" data-lookup-mode="pet">精靈圖鑑</button>
+            <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="seer-lookup-section"
+                data-lookup-mode="skin">皮膚圖鑑</button>
+            <button class="main-tab" type="button" role="tab" aria-selected="false"
+                aria-controls="seal-encyclopedia-section" data-lookup-mode="seal">刻印圖鑑</button>
+            <button class="main-tab" type="button" role="tab" aria-selected="false"
+                aria-controls="suit-encyclopedia-section" data-lookup-mode="suit">套裝圖鑑</button>
         </nav>
 
         <div id="seer-lookup-section" class="seer-lookup-layout">
@@ -373,17 +393,24 @@
                         <p id="seer-lookup-description" class="panel-description">輸入精靈 ID 或中文名稱即可查找結果。</p>
                     </div>
                 </div>
-                <div id="seer-pet-search-method-tabs" class="seer-pet-search-method-tabs main-tabs view-sub-tabs" role="tablist" aria-label="精靈查詢方式">
-                    <button class="main-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="seer-lookup-form" data-pet-search-method="query">ID／名稱查詢</button>
-                    <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="seer-pet-type-filter" data-pet-search-method="type">屬性篩選</button>
+                <div id="seer-pet-search-method-tabs" class="seer-pet-search-method-tabs main-tabs view-sub-tabs"
+                    role="tablist" aria-label="精靈查詢方式">
+                    <button class="main-tab is-active" type="button" role="tab" aria-selected="true"
+                        aria-controls="seer-lookup-form" data-pet-search-method="query">ID／名稱查詢</button>
+                    <button class="main-tab" type="button" role="tab" aria-selected="false"
+                        aria-controls="seer-pet-type-filter" data-pet-search-method="type">屬性篩選</button>
                 </div>
                 <div id="seer-skin-search-tabs" class="seer-skin-search-tabs" role="tablist" aria-label="皮膚查詢方式" hidden>
-                    <button class="seer-skin-search-tab is-active" type="button" role="tab" aria-selected="true" data-skin-search-mode="skin">搜尋皮膚</button>
-                    <button class="seer-skin-search-tab" type="button" role="tab" aria-selected="false" data-skin-search-mode="pet">綁定精靈查詢</button>
-                    <button class="seer-skin-search-tab" type="button" role="tab" aria-selected="false" data-skin-search-mode="category">種類查詢</button>
+                    <button class="seer-skin-search-tab is-active" type="button" role="tab" aria-selected="true"
+                        data-skin-search-mode="skin">搜尋皮膚</button>
+                    <button class="seer-skin-search-tab" type="button" role="tab" aria-selected="false"
+                        data-skin-search-mode="pet">綁定精靈查詢</button>
+                    <button class="seer-skin-search-tab" type="button" role="tab" aria-selected="false"
+                        data-skin-search-mode="category">種類查詢</button>
                 </div>
                 <section id="seer-pet-type-filter" class="seer-pet-type-filter" aria-label="依屬性篩選精靈" hidden>
-                    <div class="seer-pet-type-trigger-card" role="button" tabindex="0" aria-haspopup="dialog" aria-label="開啟屬性選擇視窗">
+                    <div class="seer-pet-type-trigger-card" role="button" tabindex="0" aria-haspopup="dialog"
+                        aria-label="開啟屬性選擇視窗">
                         <div class="seer-pet-type-current-info">
                             <span class="seer-pet-type-trigger-label">當前篩選屬性</span>
                             <div class="seer-pet-type-current-badge">
@@ -391,7 +418,9 @@
                                 <span id="seer-pet-type-current-name">全部單屬性</span>
                             </div>
                         </div>
-                        <button id="seer-pet-type-open-modal" class="primary-button compact-button seer-pet-type-trigger-button" type="button" aria-haspopup="dialog">
+                        <button id="seer-pet-type-open-modal"
+                            class="primary-button compact-button seer-pet-type-trigger-button" type="button"
+                            aria-haspopup="dialog">
                             <span>選擇屬性</span>
                             <span aria-hidden="true">▾</span>
                         </button>
@@ -414,13 +443,21 @@
                         <div class="seer-pet-meta">
                             <span id="seer-lookup-id-result">#-</span>
                             <span id="seer-lookup-related-pet" hidden></span>
-                            <span class="seer-pet-type"><img id="seer-lookup-type-icon" class="seer-pet-type-icon" alt="" aria-hidden="true"><span id="seer-lookup-type-name">-</span></span>
+                            <span class="seer-pet-type"><img id="seer-lookup-type-icon" class="seer-pet-type-icon"
+                                    alt="" aria-hidden="true"><span id="seer-lookup-type-name">-</span></span>
                         </div>
-                        <img id="seer-lookup-skin-category-icon" class="seer-lookup-skin-category-icon" alt="皮膚種類" hidden>
+                        <img id="seer-lookup-skin-category-icon" class="seer-lookup-skin-category-icon" alt="皮膚種類"
+                            hidden>
                         <div class="seer-lookup-preview-actions">
-                            <button id="seer-pet-info-toggle" class="secondary-button compact-button seer-pet-info-toggle" type="button" aria-haspopup="dialog" hidden>精靈資訊</button>
-                            <button id="seer-lookup-pet-skins" class="secondary-button compact-button seer-lookup-more-info" type="button" hidden>查詢此精靈皮膚</button>
-                            <button id="seer-lookup-skin-more-info" class="secondary-button compact-button seer-lookup-more-info" type="button" hidden>前往百科</button>
+                            <button id="seer-pet-info-toggle"
+                                class="secondary-button compact-button seer-pet-info-toggle" type="button"
+                                aria-haspopup="dialog" hidden>精靈資訊</button>
+                            <button id="seer-lookup-pet-skins"
+                                class="secondary-button compact-button seer-lookup-more-info" type="button"
+                                hidden>查詢此精靈皮膚</button>
+                            <button id="seer-lookup-skin-more-info"
+                                class="secondary-button compact-button seer-lookup-more-info" type="button"
+                                hidden>前往百科</button>
                         </div>
                     </div>
                 </div>
@@ -429,9 +466,11 @@
                 <div class="seer-lookup-illustration-header">
                     <div>
                         <h3 id="seer-lookup-illustration-title" class="seer-lookup-illustration-title">立繪預覽</h3>
-                        <p id="seer-lookup-illustration-description" class="seer-lookup-illustration-description">先搜尋並選擇精靈，即可在此查看立繪。</p>
+                        <p id="seer-lookup-illustration-description" class="seer-lookup-illustration-description">
+                            先搜尋並選擇精靈，即可在此查看立繪。</p>
                     </div>
-                    <img id="seer-lookup-illustration-category-icon" class="seer-lookup-illustration-category-icon" alt="皮膚種類" hidden>
+                    <img id="seer-lookup-illustration-category-icon" class="seer-lookup-illustration-category-icon"
+                        alt="皮膚種類" hidden>
                 </div>
                 <div class="seer-lookup-illustration-stage">
                     <img id="seer-lookup-illustration-image" alt="精靈立繪" decoding="async" hidden>
@@ -439,7 +478,8 @@
             </aside>
         </div>
 
-        <section id="seal-encyclopedia-section" class="panel seal-encyclopedia-panel" role="tabpanel" aria-labelledby="seal-encyclopedia-title" hidden>
+        <section id="seal-encyclopedia-section" class="panel seal-encyclopedia-panel" role="tabpanel"
+            aria-labelledby="seal-encyclopedia-title" hidden>
             <div class="panel-header">
                 <div>
                     <h2 id="seal-encyclopedia-title" class="panel-title">刻印圖鑑</h2>
@@ -448,14 +488,18 @@
                 </div>
             </div>
             <label class="seer-taiwan-progress-filter seal-progress-toggle" title="依後台最新刻印編號篩選，部分合作刻印無法完全排除。">
-                <input id="seal-taiwan-progress-only" type="checkbox" aria-label="只顯示台服刻印進度" aria-description="依後台最新刻印編號篩選，部分合作刻印無法完全排除。">
+                <input id="seal-taiwan-progress-only" type="checkbox" aria-label="只顯示台服刻印進度"
+                    aria-description="依後台最新刻印編號篩選，部分合作刻印無法完全排除。">
                 <span>僅顯示台服進度</span>
             </label>
             <div id="seal-encyclopedia-content"></div>
-            <p class="seal-technical-note"><small>資料來源：<a href="https://api.seerapi.com/" target="_blank" rel="noopener noreferrer">SeerAPI</a>。圖片由 <a href="https://ruffle.rs/" target="_blank" rel="noopener noreferrer">Ruffle</a> 按需渲染官方 SWF，並暫存在目前頁面。</small></p>
+            <p class="seal-technical-note"><small>資料來源：<a href="https://api.seerapi.com/" target="_blank"
+                        rel="noopener noreferrer">SeerAPI</a>。圖片由 <a href="https://ruffle.rs/" target="_blank"
+                        rel="noopener noreferrer">Ruffle</a> 按需渲染官方 SWF，並暫存在目前頁面。</small></p>
         </section>
 
-        <section id="suit-encyclopedia-section" class="panel" role="tabpanel" aria-labelledby="suit-encyclopedia-title" hidden>
+        <section id="suit-encyclopedia-section" class="panel" role="tabpanel" aria-labelledby="suit-encyclopedia-title"
+            hidden>
             <div class="panel-header">
                 <div>
                     <h2 id="suit-encyclopedia-title" class="panel-title">套裝圖鑑</h2>
@@ -463,18 +507,24 @@
                 </div>
             </div>
             <div id="suit-encyclopedia-content"></div>
-            <p class="seal-technical-note"><small>資料來源：<a href="https://api.seerapi.com/" target="_blank" rel="noopener noreferrer">SeerAPI</a>。圖片由 <a href="https://ruffle.rs/" target="_blank" rel="noopener noreferrer">Ruffle</a> 按需渲染官方部件並組裝，暫存在目前頁面；部分特殊套裝可能無法預覽。</small></p>
+            <p class="seal-technical-note"><small>資料來源：<a href="https://api.seerapi.com/" target="_blank"
+                        rel="noopener noreferrer">SeerAPI</a>。圖片由 <a href="https://ruffle.rs/" target="_blank"
+                        rel="noopener noreferrer">Ruffle</a> 按需渲染官方部件並組裝，暫存在目前頁面；部分特殊套裝可能無法預覽。</small></p>
         </section>
 
         <nav id="type-chart-sub-tabs" class="main-tabs view-sub-tabs" role="tablist" aria-label="屬性克制功能" hidden>
-            <button id="type-calc-tab-lookup" class="main-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="type-calc-view-lookup" data-calc-feature="lookup">屬性倍率查詢</button>
-            <button id="type-calc-tab-vs" class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="type-calc-view-vs" data-calc-feature="vs">對局屬性助手</button>
+            <button id="type-calc-tab-lookup" class="main-tab is-active" type="button" role="tab" aria-selected="true"
+                aria-controls="type-calc-view-lookup" data-calc-feature="lookup">屬性倍率查詢</button>
+            <button id="type-calc-tab-vs" class="main-tab" type="button" role="tab" aria-selected="false"
+                aria-controls="type-calc-view-vs" data-calc-feature="vs">對局屬性助手</button>
         </nav>
 
-        <section id="type-chart-section" class="panel type-calculator-panel" role="tabpanel" aria-label="屬性克制計算機" hidden>
+        <section id="type-chart-section" class="panel type-calculator-panel" role="tabpanel" aria-label="屬性克制計算機"
+            hidden>
         </section>
 
-        <section id="training-section" class="panel training-panel" role="tabpanel" aria-label="精靈模擬培養" hidden></section>
+        <section id="training-section" class="panel training-panel" role="tabpanel" aria-label="精靈模擬培養" hidden>
+        </section>
 
         <section id="about-section" class="panel about-panel" role="tabpanel" hidden>
             <div class="about-hero">
@@ -486,7 +536,8 @@
             <div class="about-detail-grid">
                 <section class="about-detail-card about-author-card" aria-labelledby="about-author-title">
                     <div class="about-author-heading">
-                        <img class="about-author-avatar" src="./assets/site/author-avatar.png" alt="作者選用的精靈頭像" width="54" height="54" loading="lazy" decoding="async">
+                        <img class="about-author-avatar" src="./assets/site/author-avatar.png" alt="作者選用的精靈頭像"
+                            width="54" height="54" loading="lazy" decoding="async">
                         <div>
                             <span class="about-detail-kicker">ABOUT THE AUTHOR</span>
                             <h2 id="about-author-title">澪伍</h2>
@@ -501,12 +552,17 @@
                 <section class="about-detail-card">
                     <span class="about-detail-kicker">DATA &amp; REFERENCES</span>
                     <h2>資料來源</h2>
-                    <p>精靈與皮膚資料由 <a href="https://github.com/SeerAPI/" data-external-link target="_blank" rel="noopener noreferrer">SeerAPI</a> 提供；部分補充資料參考 <a href="https://wiki.biligame.com/seer/" data-external-link target="_blank" rel="noopener noreferrer">bilibili 遊戲百科</a>。資料可能有延遲或缺漏，請以遊戲內資訊為準。</p>
+                    <p>精靈與皮膚資料由 <a href="https://github.com/SeerAPI/" data-external-link target="_blank"
+                            rel="noopener noreferrer">SeerAPI</a> 提供；部分補充資料參考 <a href="https://wiki.biligame.com/seer/"
+                            data-external-link target="_blank" rel="noopener noreferrer">bilibili
+                            遊戲百科</a>。資料可能有延遲或缺漏，請以遊戲內資訊為準。</p>
                 </section>
                 <section class="about-detail-card about-disclaimer-card">
                     <span class="about-detail-kicker">DISCLAIMER</span>
                     <h2>免責聲明</h2>
-                    <p>本站由玩家自發維護，與賽爾號官方及遊戲營運方沒有隸屬或合作關係。遊戲名稱、角色與相關素材的權利歸其各自權利人所有。<br><br><a href="https://www.61.com.tw/seer_df/" data-external-link target="_blank" rel="noopener noreferrer">賽爾號巔峰之戰官網</a></p>
+                    <p>本站由玩家自發維護，與賽爾號官方及遊戲營運方沒有隸屬或合作關係。遊戲名稱、角色與相關素材的權利歸其各自權利人所有。<br><br><a
+                            href="https://www.61.com.tw/seer_df/" data-external-link target="_blank"
+                            rel="noopener noreferrer">賽爾號巔峰之戰官網</a></p>
                 </section>
             </div>
         </section>
@@ -524,7 +580,8 @@
                 <form id="game-account-form" class="game-account-form">
                     <label class="field-label" for="game-account-input">米米號</label>
                     <div class="game-account-controls">
-                        <input id="game-account-input" type="text" inputmode="numeric" pattern="[0-9]+" autocomplete="off" placeholder="請輸入純數字米米號" required>
+                        <input id="game-account-input" type="text" inputmode="numeric" pattern="[0-9]+"
+                            autocomplete="off" placeholder="請輸入純數字米米號" required>
                         <button id="bind-game-account-button" class="compact-button" type="submit">綁定</button>
                     </div>
                 </form>
@@ -539,134 +596,174 @@
 
         </section>
 
-</main>
+        <div id="known-issues-modal" class="admin-confirm-modal" role="presentation" hidden>
+            <section class="admin-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="known-issues-title"
+                aria-describedby="known-issues-description">
+                <h2 id="known-issues-title">⚠️ 已知問題</h2>
 
-<div id="seer-external-link-modal" class="admin-confirm-modal" role="presentation" hidden>
-    <section class="admin-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="seer-external-link-title" aria-describedby="seer-external-link-description">
-        <h2 id="seer-external-link-title">即將前往站外連結</h2>
-        <p id="seer-external-link-description">你即將前往外部網站，請留意網站內容與個人資料安全。</p>
-        <div class="admin-confirm-actions">
-            <button id="seer-external-link-cancel" class="secondary-button" type="button">取消</button>
-            <a id="seer-external-link-open" class="primary-button compact-button" target="_blank" rel="noopener noreferrer">繼續</a>
+                <div id="known-issues-description">
+                    <p>您好，目前網站存在以下已知問題：</p>
+                    <ul id="known-issues-list">
+                        <li>聖戰系列相關刻印顏色渲染錯誤</li>
+                    </ul>
+                    <p>目前正在排查中，相關錯誤還希望您多多包涵！</p>
+                </div>
+
+                <div class="admin-confirm-actions">
+                    <button id="known-issues-close" class="compact-button" type="button">
+                        關閉
+                    </button>
+                </div>
+            </section>
         </div>
-    </section>
-</div>
 
-<div id="seer-pet-info-modal" class="admin-confirm-modal seer-pet-info-modal" role="presentation" hidden>
-    <section class="admin-confirm-dialog seer-pet-info-dialog" role="dialog" aria-modal="true" aria-labelledby="seer-pet-info-title">
-        <header class="seer-pet-info-modal-header">
-            <div class="seer-pet-info-identity">
-                <img id="seer-pet-info-avatar" class="seer-pet-info-avatar" alt="" hidden>
-                <div class="seer-pet-info-identity-copy">
-                    <h2 id="seer-pet-info-title">精靈資訊</h2>
-                    <div id="seer-pet-info-meta" class="seer-pet-info-meta"></div>
+    </main>
+
+    <div id="seer-external-link-modal" class="admin-confirm-modal" role="presentation" hidden>
+        <section class="admin-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="seer-external-link-title"
+            aria-describedby="seer-external-link-description">
+            <h2 id="seer-external-link-title">即將前往站外連結</h2>
+            <p id="seer-external-link-description">你即將前往外部網站，請留意網站內容與個人資料安全。</p>
+            <div class="admin-confirm-actions">
+                <button id="seer-external-link-cancel" class="secondary-button" type="button">取消</button>
+                <a id="seer-external-link-open" class="primary-button compact-button" target="_blank"
+                    rel="noopener noreferrer">繼續</a>
+            </div>
+        </section>
+    </div>
+
+    <div id="seer-pet-info-modal" class="admin-confirm-modal seer-pet-info-modal" role="presentation" hidden>
+        <section class="admin-confirm-dialog seer-pet-info-dialog" role="dialog" aria-modal="true"
+            aria-labelledby="seer-pet-info-title">
+            <header class="seer-pet-info-modal-header">
+                <div class="seer-pet-info-identity">
+                    <img id="seer-pet-info-avatar" class="seer-pet-info-avatar" alt="" hidden>
+                    <div class="seer-pet-info-identity-copy">
+                        <h2 id="seer-pet-info-title">精靈資訊</h2>
+                        <div id="seer-pet-info-meta" class="seer-pet-info-meta"></div>
+                    </div>
+                </div>
+                <div class="seer-pet-info-header-actions">
+                    <button id="seer-pet-info-skins" class="secondary-button compact-button seer-pet-info-wiki-button"
+                        type="button">關聯皮膚</button>
+                    <button id="seer-lookup-more-info" class="secondary-button compact-button seer-pet-info-wiki-button"
+                        type="button" hidden>前往百科</button>
+                    <button id="seer-pet-info-close" class="seer-pet-info-close" type="button"
+                        aria-label="關閉精靈資訊">×</button>
+                </div>
+            </header>
+            <div id="seer-pet-info" class="seer-pet-info" aria-live="polite"></div>
+            <div class="seer-pet-info-modal-actions">
+                <button id="seer-pet-info-retry" class="secondary-button compact-button" type="button"
+                    hidden>重試載入</button>
+            </div>
+        </section>
+    </div>
+
+    <div id="seer-related-skins-modal" class="admin-confirm-modal seer-related-skins-modal" role="presentation" hidden>
+        <section class="admin-confirm-dialog seer-related-skins-dialog" role="dialog" aria-modal="true"
+            aria-labelledby="seer-related-skins-title" aria-describedby="seer-related-skins-message">
+            <header class="seer-related-skins-header">
+                <div>
+                    <h2 id="seer-related-skins-title">關聯皮膚</h2>
+                    <p id="seer-related-skins-message" class="seer-pet-info-message" aria-live="polite">正在載入皮膚…</p>
+                </div>
+                <button id="seer-related-skins-close" class="seer-pet-info-close" type="button"
+                    aria-label="關閉關聯皮膚">×</button>
+            </header>
+            <div id="seer-related-skins-results" class="seer-related-skins-results" aria-label="關聯皮膚搜尋結果"></div>
+        </section>
+    </div>
+
+    <div id="seer-pet-type-modal" class="admin-confirm-modal seer-pet-type-modal type-related-picker"
+        role="presentation" hidden>
+        <section class="admin-confirm-dialog seer-pet-type-dialog" role="dialog" aria-modal="true"
+            aria-labelledby="seer-pet-type-modal-title">
+            <header class="seer-related-skins-header seer-pet-type-modal-header">
+                <div>
+                    <h2 id="seer-pet-type-modal-title">選擇精靈屬性</h2>
+                    <p class="seer-pet-info-message">點選單屬性，查看相關組合。</p>
+                </div>
+                <button id="seer-pet-type-close" class="seer-pet-info-close" type="button"
+                    aria-label="關閉屬性選擇">×</button>
+            </header>
+            <div class="seer-pet-type-modal-body">
+                <div class="type-picker-search-row">
+                    <label class="field-label" for="seer-pet-type-search">搜尋屬性</label>
+                    <input id="seer-pet-type-search" class="type-calc-picker-search-input type-picker-search"
+                        type="search" placeholder="輸入屬性名稱，例如：聖靈超能" autocomplete="off">
+                </div>
+                <div class="type-calc-picker-layout">
+                    <section class="type-calc-picker-column" aria-labelledby="seer-pet-type-base-title">
+                        <h3 id="seer-pet-type-base-title">單屬性</h3>
+                        <div class="type-picker-all-options" role="group" aria-label="全部屬性篩選">
+                            <button type="button" data-pet-type-category="single">全部單屬性</button>
+                            <button type="button" data-pet-type-category="double">全部雙屬性</button>
+                        </div>
+                        <div id="seer-pet-type-bases" class="seer-pet-type-options type-picker-bases" role="group"
+                            aria-label="單屬性分類"></div>
+                    </section>
+                    <section class="type-calc-picker-column">
+                        <h3 id="seer-pet-type-options-title">相關屬性</h3>
+                        <div id="seer-pet-type-options" class="seer-pet-type-options type-picker-options" role="group"
+                            aria-label="屬性選項"></div>
+                    </section>
                 </div>
             </div>
-            <div class="seer-pet-info-header-actions">
-                <button id="seer-pet-info-skins" class="secondary-button compact-button seer-pet-info-wiki-button" type="button">關聯皮膚</button>
-                <button id="seer-lookup-more-info" class="secondary-button compact-button seer-pet-info-wiki-button" type="button" hidden>前往百科</button>
-                <button id="seer-pet-info-close" class="seer-pet-info-close" type="button" aria-label="關閉精靈資訊">×</button>
+        </section>
+    </div>
+
+    <div id="type-calc-modal" class="admin-confirm-modal seer-pet-type-modal type-related-picker" role="presentation"
+        hidden>
+        <section class="admin-confirm-dialog seer-pet-type-dialog" role="dialog" aria-modal="true"
+            aria-labelledby="type-calc-modal-title">
+            <header class="seer-related-skins-header seer-pet-type-modal-header">
+                <div>
+                    <h2 id="type-calc-modal-title">選擇計算屬性</h2>
+                    <p class="seer-pet-info-message">點選屬性後立即計算克制與受擊倍率</p>
+                </div>
+                <button id="type-calc-modal-close" class="seer-pet-info-close" type="button"
+                    aria-label="關閉屬性選擇">×</button>
+            </header>
+            <div class="seer-pet-type-modal-body">
+                <div id="type-calc-picker-search-row" class="type-picker-search-row">
+                    <label class="field-label" for="type-calc-picker-search">搜尋屬性</label>
+                    <input id="type-calc-picker-search" class="type-calc-picker-search-input type-picker-search"
+                        type="search" placeholder="輸入屬性名稱，例如：聖靈超能" autocomplete="off">
+                </div>
+                <div class="type-calc-picker-layout">
+                    <section id="type-calc-picker-base-panel" class="type-calc-picker-column"
+                        aria-labelledby="type-calc-picker-base-title">
+                        <h3 id="type-calc-picker-base-title">單屬性</h3>
+                        <div id="type-calc-picker-bases" class="seer-pet-type-options type-picker-bases" role="group"
+                            aria-label="單屬性分類"></div>
+                    </section>
+                    <section class="type-calc-picker-column">
+                        <h3 id="type-calc-picker-options-title">選擇屬性</h3>
+                        <div id="type-calc-modal-options" class="seer-pet-type-options type-picker-options" role="group"
+                            aria-label="計算屬性選項"></div>
+                    </section>
+                </div>
             </div>
-        </header>
-        <div id="seer-pet-info" class="seer-pet-info" aria-live="polite"></div>
-        <div class="seer-pet-info-modal-actions">
-            <button id="seer-pet-info-retry" class="secondary-button compact-button" type="button" hidden>重試載入</button>
-        </div>
-    </section>
-</div>
+        </section>
+    </div>
 
-<div id="seer-related-skins-modal" class="admin-confirm-modal seer-related-skins-modal" role="presentation" hidden>
-    <section class="admin-confirm-dialog seer-related-skins-dialog" role="dialog" aria-modal="true" aria-labelledby="seer-related-skins-title" aria-describedby="seer-related-skins-message">
-        <header class="seer-related-skins-header">
-            <div>
-                <h2 id="seer-related-skins-title">關聯皮膚</h2>
-                <p id="seer-related-skins-message" class="seer-pet-info-message" aria-live="polite">正在載入皮膚…</p>
-            </div>
-            <button id="seer-related-skins-close" class="seer-pet-info-close" type="button" aria-label="關閉關聯皮膚">×</button>
-        </header>
-        <div id="seer-related-skins-results" class="seer-related-skins-results" aria-label="關聯皮膚搜尋結果"></div>
-    </section>
-</div>
+    <!-- ==================== -->
+    <!-- Footer -->
+    <!-- ==================== -->
 
-<div id="seer-pet-type-modal" class="admin-confirm-modal seer-pet-type-modal type-related-picker" role="presentation" hidden>
-    <section class="admin-confirm-dialog seer-pet-type-dialog" role="dialog" aria-modal="true" aria-labelledby="seer-pet-type-modal-title">
-        <header class="seer-related-skins-header seer-pet-type-modal-header">
-            <div>
-                <h2 id="seer-pet-type-modal-title">選擇精靈屬性</h2>
-                <p class="seer-pet-info-message">點選單屬性，查看相關組合。</p>
-            </div>
-            <button id="seer-pet-type-close" class="seer-pet-info-close" type="button" aria-label="關閉屬性選擇">×</button>
-        </header>
-        <div class="seer-pet-type-modal-body">
-            <div class="type-picker-search-row">
-                <label class="field-label" for="seer-pet-type-search">搜尋屬性</label>
-                <input id="seer-pet-type-search" class="type-calc-picker-search-input type-picker-search" type="search" placeholder="輸入屬性名稱，例如：聖靈超能" autocomplete="off">
-            </div>
-            <div class="type-calc-picker-layout">
-                <section class="type-calc-picker-column" aria-labelledby="seer-pet-type-base-title">
-                    <h3 id="seer-pet-type-base-title">單屬性</h3>
-                    <div class="type-picker-all-options" role="group" aria-label="全部屬性篩選">
-                        <button type="button" data-pet-type-category="single">全部單屬性</button>
-                        <button type="button" data-pet-type-category="double">全部雙屬性</button>
-                    </div>
-                    <div id="seer-pet-type-bases" class="seer-pet-type-options type-picker-bases" role="group" aria-label="單屬性分類"></div>
-                </section>
-                <section class="type-calc-picker-column">
-                    <h3 id="seer-pet-type-options-title">相關屬性</h3>
-                    <div id="seer-pet-type-options" class="seer-pet-type-options type-picker-options" role="group" aria-label="屬性選項"></div>
-                </section>
-            </div>
-        </div>
-    </section>
-</div>
-
-<div id="type-calc-modal" class="admin-confirm-modal seer-pet-type-modal type-related-picker" role="presentation" hidden>
-    <section class="admin-confirm-dialog seer-pet-type-dialog" role="dialog" aria-modal="true" aria-labelledby="type-calc-modal-title">
-        <header class="seer-related-skins-header seer-pet-type-modal-header">
-            <div>
-                <h2 id="type-calc-modal-title">選擇計算屬性</h2>
-                <p class="seer-pet-info-message">點選屬性後立即計算克制與受擊倍率</p>
-            </div>
-            <button id="type-calc-modal-close" class="seer-pet-info-close" type="button" aria-label="關閉屬性選擇">×</button>
-        </header>
-        <div class="seer-pet-type-modal-body">
-            <div id="type-calc-picker-search-row" class="type-picker-search-row">
-                <label class="field-label" for="type-calc-picker-search">搜尋屬性</label>
-                <input id="type-calc-picker-search" class="type-calc-picker-search-input type-picker-search" type="search" placeholder="輸入屬性名稱，例如：聖靈超能" autocomplete="off">
-            </div>
-            <div class="type-calc-picker-layout">
-                <section id="type-calc-picker-base-panel" class="type-calc-picker-column" aria-labelledby="type-calc-picker-base-title">
-                    <h3 id="type-calc-picker-base-title">單屬性</h3>
-                    <div id="type-calc-picker-bases" class="seer-pet-type-options type-picker-bases" role="group" aria-label="單屬性分類"></div>
-                </section>
-                <section class="type-calc-picker-column">
-                    <h3 id="type-calc-picker-options-title">選擇屬性</h3>
-                    <div id="type-calc-modal-options" class="seer-pet-type-options type-picker-options" role="group" aria-label="計算屬性選項"></div>
-                </section>
-            </div>
-        </div>
-    </section>
-</div>
-
-<!-- ==================== -->
-<!-- Footer -->
-<!-- ==================== -->
-
-<footer class="site-footer">
-    賽爾號資訊站 · 本平台目前與官方沒有任何聯繫，僅為玩家自發性質的資訊服務。
-</footer>
+    <footer class="site-footer">
+        賽爾號資訊站 · 本平台目前與官方沒有任何聯繫，僅為玩家自發性質的資訊服務。
+    </footer>
 
 
-<!-- Supabase -->
+    <!-- Supabase -->
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- Application -->
+    <!-- Application -->
 
-<script
-    type="module"
-    src="./js/main.js"
-></script>
+    <script type="module" src="./js/main.js"></script>
 
 </body>
 

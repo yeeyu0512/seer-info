@@ -206,3 +206,33 @@ const { initializeAuthenticatedPage, initializePublicPage, showAuthenticatedView
 preloadSeerIcons();
 
 checkSession();
+
+const knownIssuesModal = document.getElementById("known-issues-modal");
+const knownIssuesClose = document.getElementById("known-issues-close");
+
+function openKnownIssuesModal() {
+    knownIssuesModal.hidden = false;
+    document.body.classList.add("has-admin-confirm-modal");
+    knownIssuesClose.focus();
+}
+
+function closeKnownIssuesModal() {
+    if (
+        knownIssuesModal.hidden ||
+        knownIssuesModal.classList.contains("is-closing")
+    ) {
+        return;
+    }
+
+    knownIssuesModal.classList.add("is-closing");
+
+    window.setTimeout(() => {
+        knownIssuesModal.hidden = true;
+        knownIssuesModal.classList.remove("is-closing");
+        document.body.classList.remove("has-admin-confirm-modal");
+    }, 180);
+}
+
+knownIssuesClose.addEventListener("click", closeKnownIssuesModal);
+
+window.addEventListener("DOMContentLoaded", openKnownIssuesModal);

@@ -58,7 +58,7 @@ export async function downloadTrainingImage(data) {
     text(data.petName,176,178,44,"#fff",976);
     text(`#${data.petId} · Lv.100 · ${data.appearance}`,176,223,24,"#a6adc7",976);
     text(`個性：${data.nature}　個體值：${data.iv}　${data.raceVersion}`,48,272,24);
-    text(`體力上限培養：${data.hpTraining} / 20　年費加成：${data.year ? "全能力 +10" : "未勾選"}`,48,315,24);
+    text(`體力上限培養：${data.hpTraining} / 20　年費加成：${data.year ? "全屬性 +10" : "未勾選"}`,48,315,24);
     TRAINING_STATS.forEach(([key,label],index) => {
         const x=48+(index%2)*568, y=350+Math.floor(index/2)*120;
         panel(x,y,536,100);
