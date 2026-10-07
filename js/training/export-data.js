@@ -9,6 +9,7 @@ export function createTrainingExportData({pet, selected, query, name, resultMode
             stats:Object.fromEntries(STATS.map(([key])=>[key,query(`[data-result="${key}"]`).textContent])),
             ev:vector(query("[data-ev]")),team:vector(query("[data-extra]")),
             portrait:query(".training-pet img").src,
+            art:query("[data-training-art]").hidden ? null : query("[data-training-art]").src,
             mintmarks:[0,1,2].map(i=>({id:selected.get(`mint${i}`)?.id,
                 name:selected.has(`mint${i}`) ? name(selected.get(`mint${i}`)) : "未選擇",
                 image:query(`[data-mint-slot="${i}"] img`)?.src})),

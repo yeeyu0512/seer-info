@@ -1,11 +1,13 @@
 import { TRAINING_STATS as STATS } from "../seer-training-core.js";
-import { fetchMintmarkCatalog, fetchMintmarkSeries, mintmarkCornerCount } from "../data/mintmark-catalog.js";
+import { fetchMintmarkCatalog, fetchMintmarkSeries, mintmarkCornerCount, selectMintmarks } from "../data/mintmark-catalog.js";
 import { observeMintmarkImage, unobserveMintmarkImages } from "../seer-mintmark-images.js";
 import { mintmarkFinalStats } from "../seer-mintmark-stats.js";
+import { canEquipMintmark } from "./mintmark-limit.js";
 export function createTrainingMintmarkPicker({root, query, selected, name, traditional, simplified, fetchCached, choose, recalculate}) {
     const mintDialog = query(".training-mint-dialog"), mintGrid = query(".training-dialog-grid");
     let mintCatalog = [], mintPending, mintSlot = 0, mintPage = 1, mintReady = false, slotInvoker;
     const mintSearch = mintDialog.querySelector("input"), mintCorners = mintDialog.querySelector('[aria-label="刻印角數"]'), mintSeries = mintDialog.querySelector('[aria-label="刻印系列"]');
+    const mintSort = mintDialog.querySelector('[aria-label="刻印排序"]');
     function renderMintSlot(index) {
         const slot = query(`[data-mint-slot="${index}"]`), record = selected.get(`mint${index}`);
         unobserveMintmarkImages(slot);
@@ -19,11 +21,10 @@ export function createTrainingMintmarkPicker({root, query, selected, name, tradi
     function renderMintChoices() {
         if (!mintReady || !mintDialog.open) return;
         const key = simplified(mintSearch.value.trim()).toLocaleLowerCase(), pet = selected.get("pet");
-        const filtered = mintCatalog.filter(record => [0,3].includes(Number(record.type?.id)) && !record.is_hidden
-            && (!record.pet?.length || (pet && record.pet.some(item => Number(item.id ?? item) === pet.id)))
-            && (!key || String(record.id).includes(key) || record.name.toLocaleLowerCase().includes(key))
-            && (mintCorners.value === "all" || mintmarkCornerCount(record) === Number(mintCorners.value))
-            && (mintSeries.value === "all" || String(record.mintmark_class?.id) === mintSeries.value)).sort((a,b) => b.id-a.id);
+        const eligible = mintCatalog.filter(record => [0,3].includes(Number(record.type?.id))
+            && (!record.pet?.length || (pet && record.pet.some(item => Number(item.id ?? item) === pet.id))));
+        const filtered = selectMintmarks(eligible, {query:key, type:"all", showExclusive:true,
+            corners:mintCorners.value, series:mintSeries.value, sort:mintSort.value});
         const pages = Math.max(1,Math.ceil(filtered.length/12)); mintPage = Math.min(mintPage,pages);
         unobserveMintmarkImages(mintGrid); mintGrid.replaceChildren();
         query("[data-mint-dialog-status]").textContent = `${filtered.length} 個可選刻印${pet ? " · 已排除其他精靈的專屬刻印" : " · 先選精靈可查看對應專屬刻印"}`;
@@ -35,7 +36,18 @@ export function createTrainingMintmarkPicker({root, query, selected, name, tradi
             const finalStats = mintmarkFinalStats(record);
             stats.textContent = STATS.filter(([key]) => finalStats?.[key]).map(([key,label]) => `${label} ${finalStats[key]}`).join(" / ");
             info.append(title,meta,stats); button.append(icon,info); mintGrid.append(button); observeMintmarkImage(icon,record.id);
-            button.addEventListener("click",() => { choose(`mint${mintSlot}`,record); mintDialog.close(); });
+            if (!canEquipMintmark(selected,`mint${mintSlot}`,record)) {
+                button.disabled = true;
+                const limit = document.createElement("small"); limit.className = "training-mint-limit";
+                limit.textContent = "同系列已裝滿（最多 2 個）"; info.append(limit);
+            }
+            button.addEventListener("click",() => {
+                if (!canEquipMintmark(selected,`mint${mintSlot}`,record)) {
+                    query("[data-mint-dialog-status]").textContent = "每隻精靈最多裝備 2 個同系列刻印，請改選其他系列。";
+                    return;
+                }
+                choose(`mint${mintSlot}`,record); mintDialog.close();
+            });
         }
         query(".training-dialog-pagination span").textContent = `${mintPage} / ${pages}`;
         query("[data-mint-prev]").disabled = mintPage === 1; query("[data-mint-next]").disabled = mintPage === pages;
@@ -61,7 +73,7 @@ export function createTrainingMintmarkPicker({root, query, selected, name, tradi
     });
     query("[data-mint-dialog-close]").addEventListener("click",() => mintDialog.close());
     mintDialog.addEventListener("close",() => { unobserveMintmarkImages(mintGrid); mintGrid.replaceChildren(); slotInvoker?.focus({preventScroll:true}); });
-    for (const element of [mintSearch,mintCorners,mintSeries]) element.addEventListener(element === mintSearch ? "input" : "change",() => { mintPage = 1; renderMintChoices(); });
+    for (const element of [mintSearch,mintCorners,mintSeries,mintSort]) element.addEventListener(element === mintSearch ? "input" : "change",() => { mintPage = 1; renderMintChoices(); });
     query("[data-mint-prev]").addEventListener("click",() => { mintPage--; renderMintChoices(); });
     query("[data-mint-next]").addEventListener("click",() => { mintPage++; renderMintChoices(); });
     query("[data-mint-dialog-retry]").addEventListener("click",loadMintChoices);

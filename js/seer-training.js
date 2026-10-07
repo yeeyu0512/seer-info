@@ -1,4 +1,5 @@
 import {trainingDescription as description, trainingSource} from "./training/model.js";
+import { fillLearningEffort } from "./training/learning-effort.js";
 import {initTrainingSearchPickers} from "./training/search-picker.js";
 import {trainingTemplate, teamLimits} from "./training/template.js";
 import {createTrainingMintmarkPicker} from "./training/mintmark-picker.js";
@@ -132,6 +133,11 @@ export function initSeerTraining(root, { fetchSeerJson, convertToTraditionalChin
         for (const [id,record] of records) if (id !== "eye" || !included) choose(id,record);
     }});
     query("[data-ev-clear]").addEventListener("click", () => { query("[data-ev]").querySelectorAll("input").forEach(input => input.value = 0); recalculate(); });
+    for (const button of root.querySelectorAll("[data-ev-fill]")) button.addEventListener("click", () => {
+        const key = button.dataset.evFill;
+        query(`[data-ev] input[data-stat="${key}"]`).value = fillLearningEffort(vector(query("[data-ev]")), key);
+        recalculate();
+    });
     query("[data-race-mode]").addEventListener("change", () => { renderRace(); recalculate(); });
     query("[data-race-retry]").addEventListener("click", () => { const pet = selected.get("pet"); if (pet?.advance) loadAdvance(pet); });
     root.addEventListener("input", event => {

@@ -54,9 +54,15 @@
 .training-ability-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 22px; }
 .training-card .training-ability { display:grid; grid-template-columns:30px minmax(0,1fr) 58px; align-items:center; gap:10px; padding:12px 0; border-bottom:1px solid #303249; }
 .training-ability output { text-align:right; font-size:25px; font-weight:700; color:#c6baff; font-variant-numeric:tabular-nums; }
+.training-ability > span:first-child { font-size:12px; color:#a4aac0; white-space:nowrap; }
 .training-results[data-mode="PVE"] output { color:#8adeca; }
 .training-results[data-mode="base"] output { color:#d5d8e5; }
 .training-card .training-ability input { min-height:34px; padding:5px 6px; text-align:center; color:#8bd6ed; }
+.training-ev-control { display:grid; gap:4px; min-width:0; }
+.training-card .training-ev-control button { min-height:26px; padding:3px 4px; font-size:11px; white-space:nowrap; background:#25233a; border:1px solid #50496f; color:#c6baff; }
+.training-card .training-ev-control button:hover:not(:disabled) { background:#35304f; }
+.training-card .training-ev-control button:disabled { opacity:.4; cursor:default; }
+.training-dialog-mint .training-mint-limit { color:#f1b1bc; }
 .training-ability[data-ability="atk"] { order:1; }
 .training-ability[data-ability="def"] { order:2; }
 .training-ability[data-ability="sp_atk"] { order:3; }
@@ -132,7 +138,7 @@
 .training-dialog-heading h3 { margin:0; font-size:21px; }
 .training-dialog-heading p { margin:6px 0 0; color:#9fa6be; font-size:12px; }
 .training-dialog-heading .seer-pet-info-close { box-shadow:none; }
-.training-dialog-filters { display:grid; grid-template-columns:minmax(0,1fr) 130px 180px; gap:10px; }
+.training-dialog-filters { display:grid; grid-template-columns:minmax(0,1fr) 110px 150px 170px; gap:10px; }
 .training-dialog-filters input,.training-dialog-filters select { margin:0; min-width:0; width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:#111525; color:var(--text); font-size:13px; }
 .training-mint-dialog [data-mint-dialog-status] { margin:0; font-size:12px; color:#a4aac0; }
 .training-dialog-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; overflow-y:auto; min-height:100px; }
@@ -162,6 +168,7 @@
     .training-equipment > div + div { padding:16px 0 0; border-left:0; border-top:1px solid #303249; }
     .training-dialog-filters { grid-template-columns:1fr 1fr; }
     .training-dialog-filters input { grid-column:1/-1; }
+    .training-dialog-filters [aria-label="刻印排序"] { grid-column:1/-1; }
     .training-dialog-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 @media(max-width:500px) {

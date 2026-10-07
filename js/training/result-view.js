@@ -1,4 +1,6 @@
 import { mintmarkFinalStats } from "../seer-mintmark-stats.js";
+import { fillLearningEffort } from "./learning-effort.js";
+import { canEquipMintmark } from "./mintmark-limit.js";
 import { TRAINING_STATS as STATS, calculateTraining, trainingModes } from "../seer-training-core.js";
 export function createTrainingResultView({query, vector, selected, name, source, description, activeRace, getNatures, getAdvancedStats, getResultMode, getEyeState = () => "free"}) {
 function recalculate() {
@@ -6,6 +8,11 @@ function recalculate() {
         const total = STATS.reduce((sum,[key]) => sum + (ev[key] || 0), 0);
         query("[data-ev-total]").textContent = `${total} / 510`;
         query("[data-ev-total]").classList.toggle("is-invalid", total > 510);
+        query("[data-ev-remaining]").textContent = total > 510 ? "總學習力已超過上限，請先減少分配。" : `剩餘 ${510 - total} 點；點擊「補滿」分配至該項，單項最多 255。`;
+        for (const button of query("[data-ev]").querySelectorAll("[data-ev-fill]")) {
+            const key = button.dataset.evFill;
+            button.disabled = !(fillLearningEffort(ev, key) > ev[key]);
+        }
         const pet = selected.get("pet");
         const sources = [0,1,2].filter(i => selected.has(`mint${i}`)).map(i => ({label:`刻印 ${i+1} · ${name(selected.get(`mint${i}`))}`,stats:mintmarkFinalStats(selected.get(`mint${i}`)),modes:["PVE","PVP"]}));
         for (const kind of ["eye","title"]) { const record = selected.get(kind); if (record) { const added = source(record, kind); if (added) sources.push(added); } }
@@ -31,6 +38,7 @@ function recalculate() {
                 if (getResultMode() !== "base" && ["pending","unknown"].includes(getEyeState())) throw new Error(getEyeState() === "pending" ? "正在檢查套裝目鏡部件…" : "套裝部件尚未確認，請重新檢查。");
                 for (const id of ["mint0","mint1","mint2"]) {
                     const record = selected.get(id);
+                    if (record && !canEquipMintmark(selected,id,record)) throw new Error("每隻精靈最多裝備 2 個同系列刻印，請更換或卸下其中一個。");
                     if (record?.pet?.length && !record.pet.some(item => Number(item.id ?? item) === pet.id)) throw new Error(`${name(record)}為專屬刻印，所選精靈不符合使用限制。`);
                 }
                 for (const added of sources) for (const [key] of STATS) if (!Number.isInteger(added.stats[key]) || added.stats[key] < 0 || added.stats[key] > 9999) throw new Error("加成能力值需為 0～9999 的整數。");
