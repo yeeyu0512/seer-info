@@ -18,6 +18,7 @@ test("PNG export includes the selected portrait and all three cached mintmark im
     };
     const link={click(){clicked=true;},remove(){}};
     const ctx={fillRect(){},fillText(value){texts.push(value);},drawImage(...args){drawn.push(args);},
+        measureText(value){return {width:String(value).length*12};},
         beginPath(){},roundRect(){},fill(){},stroke(){},moveTo(){},lineTo(){},
         createLinearGradient(){return {addColorStop(){}};}};
     globalThis.document={body:{append(){}},createElement(tag){
@@ -31,5 +32,5 @@ test("PNG export includes the selected portrait and all three cached mintmark im
     assert.ok(images.some(url=>url.startsWith("https://wsrv.nl/")));
     assert.equal(created,1);assert.ok(clicked);
     assert.equal(link.download,"角色_測試-PVP-培養.png");
-    for (const expected of ["角色/測試","PVP 能力值","個性  開朗","個體值  31 / 31","體力上限培養  20 / 20","年費  全屬性 +10","戰隊加成","套裝","目鏡","稱號","刻印1","刻印2","刻印3"]) assert.ok(texts.includes(expected),expected);
+    for (const expected of ["角色/測試","PVP 能力值","個性","開朗","天賦","31","體力上限","20 / 20","年費加成","開（全屬性+10）","戰隊加成","套裝","目鏡","稱號","刻印1","刻印2","刻印3"]) assert.ok(texts.includes(expected),expected);
 });

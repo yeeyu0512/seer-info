@@ -1,11 +1,13 @@
 import { TRAINING_STATS as STATS } from "../seer-training-core.js";
-export function createTrainingExportData({pet, selected, query, name, resultMode, selectedSkin, advancedStats, vector}) {
+export function createTrainingExportData({pet, selected, query, name, resultMode, selectedSkin, advancedStats, vector, natureAttributes = {}}) {
         return {petName:name(pet),petId:pet.id,mode:resultMode === "base" ? "基礎" : resultMode,
             appearance:selectedSkin ? name(selectedSkin) : "原始外觀",
-            nature:query("[data-nature]").selectedOptions[0].textContent.split(" · ")[0],
+            nature:query("[data-nature]").selectedOptions[0].textContent.split(" · ")[0].replace(/\s*[（(]\s*無修正\s*[）)]\s*/g, "").trim(),
+            natureEffect:query("[data-nature]").value === "" ? "" : STATS.filter(([key])=>Number(natureAttributes[key])).map(([key,label])=>`${label}${Number(natureAttributes[key]) > 0 ? "+" : "−"}${Math.abs(Number(natureAttributes[key]))}%`).join("／") || "平衡發展",
             iv:query("[data-iv]").value,hpTraining:query("[data-hp-training]").value,
             year:query("[data-year-bonus]").checked,
             raceVersion:advancedStats && query("[data-race-mode]").value === "advance" ? "神諭覺醒" : "一般種族值",
+            awakened:Boolean(pet.advance?.id && advancedStats && query("[data-race-mode]").value === "advance"),
             stats:Object.fromEntries(STATS.map(([key])=>[key,query(`[data-result="${key}"]`).textContent])),
             ev:vector(query("[data-ev]")),team:vector(query("[data-extra]")),
             portrait:query(".training-pet img").src,

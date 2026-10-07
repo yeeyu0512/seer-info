@@ -13,6 +13,13 @@ function recalculate() {
             const key = button.dataset.evFill;
             button.disabled = !(fillLearningEffort(ev, key) > ev[key]);
         }
+        const teamButton = query("[data-team-fill-all]");
+        if (teamButton) {
+            const inputs = [...query("[data-extra]").querySelectorAll("input[data-stat]")];
+            const full = inputs.length === STATS.length && inputs.every(input => input.value !== "" && Number(input.value) === Number(input.max));
+            teamButton.textContent = full ? "全部清空" : "全部填滿";
+            teamButton.setAttribute("aria-label",full ? "清空全部戰隊加成" : "填滿全部戰隊加成");
+        }
         const pet = selected.get("pet");
         const sources = [0,1,2].filter(i => selected.has(`mint${i}`)).map(i => ({label:`刻印 ${i+1} · ${name(selected.get(`mint${i}`))}`,stats:mintmarkFinalStats(selected.get(`mint${i}`)),modes:["PVE","PVP"]}));
         for (const kind of ["eye","title"]) { const record = selected.get(kind); if (record) { const added = source(record, kind); if (added) sources.push(added); } }
@@ -31,10 +38,12 @@ function recalculate() {
         const hpTraining = query("[data-hp-training]").value === "" ? NaN : Number(query("[data-hp-training]").value);
         if (hpTraining > 0) { const p = document.createElement("p"); p.textContent = `體力上限培養：體力 +${hpTraining}（PVE／PVP；於套裝加成後加入）`; breakdown.append(p); }
         let result;
-        query("[data-result-name]").textContent = pet ? `${name(pet)}${getAdvancedStats() ? ` · ${query("[data-race-mode]").value === "advance" ? "神諭覺醒" : "覺醒前"}` : ""}` : "尚未選擇精靈";
+        query("[data-result-name]").textContent = pet ? `${name(pet)}${getAdvancedStats() ? ` ｜ ${query("[data-race-mode]").value === "advance" ? "神諭覺醒" : "覺醒前"}` : ""}` : "尚未選擇精靈";
         query("[data-error]").textContent = "";
         if (pet) {
             try {
+                const nature = getNatures().find(item => String(item.id) === query("[data-nature]").value);
+                if (!nature) throw new Error("請先選擇個性。");
                 if (getResultMode() !== "base" && ["pending","unknown"].includes(getEyeState())) throw new Error(getEyeState() === "pending" ? "正在檢查套裝目鏡部件…" : "套裝部件尚未確認，請重新檢查。");
                 for (const id of ["mint0","mint1","mint2"]) {
                     const record = selected.get(id);
@@ -42,8 +51,8 @@ function recalculate() {
                     if (record?.pet?.length && !record.pet.some(item => Number(item.id ?? item) === pet.id)) throw new Error(`${name(record)}為專屬刻印，所選精靈不符合使用限制。`);
                 }
                 for (const added of sources) for (const [key] of STATS) if (!Number.isInteger(added.stats[key]) || added.stats[key] < 0 || added.stats[key] > 9999) throw new Error("加成能力值需為 0～9999 的整數。");
-                if (selected.get("title")?.attr_bonus?.percent || selected.get("eye")?.bonus?.attribute?.percent) throw new Error("此稱號或目鏡含百分比能力加成，Beta 版尚未支援其結算方式，請改選或清除。");
-                result = calculateTraining({race:activeRace(),ev,iv:query("[data-iv]").value === "" ? NaN : Number(query("[data-iv]").value),nature:getNatures().find(item => String(item.id) === query("[data-nature]").value)?.attributes || {},sources,suit,hpTraining});
+                if (selected.get("title")?.attr_bonus?.percent || selected.get("eye")?.bonus?.attribute?.percent) throw new Error("此稱號或目鏡含百分比能力加成，目前尚未支援其結算方式，請改選或清除。");
+                result = calculateTraining({race:activeRace(),ev,iv:query("[data-iv]").value === "" ? NaN : Number(query("[data-iv]").value),nature:nature.attributes || {},sources,suit,hpTraining});
             } catch(error) { query("[data-error]").textContent = error.message; }
         }
         for (const [key] of STATS) query(`[data-result="${key}"]`).textContent = result ? result[getResultMode()][key] : "—";

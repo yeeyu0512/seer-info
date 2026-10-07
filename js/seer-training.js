@@ -63,10 +63,15 @@ export function initSeerTraining(root, { fetchSeerJson, convertToTraditionalChin
     function renderRace() {
         const pet = selected.get("pet"), race = activeRace();
         query(".training-race-stats").replaceChildren();
-        if (!pet) return;
         for (const [key,label] of STATS) {
-            const item = document.createElement("span"); item.textContent = `${label} ${race?.[key] ?? "—"}`; query(".training-race-stats").append(item);
+            const item = document.createElement("span"), value = document.createElement("strong");
+            item.dataset.raceStat = key; item.append(document.createTextNode(label));
+            value.textContent = race?.[key] ?? "—"; item.append(value); query(".training-race-stats").append(item);
         }
+        const toggle = query("[data-race-picker]");
+        toggle.hidden = !advancedStats;
+        toggle.textContent = query("[data-race-mode]").value === "advance" ? "切換為覺醒前" : "切換為覺醒後";
+        if (!pet) return;
         query(".training-pet p").textContent = `#${pet.id} · 種族值總和 ${race?.total ?? "—"}${advancedStats ? ` · ${query("[data-race-mode]").value === "advance" ? "神諭覺醒" : "覺醒前"}` : ""}`;
     }
     async function loadAdvance(pet) {
@@ -78,6 +83,7 @@ export function initSeerTraining(root, { fetchSeerJson, convertToTraditionalChin
             if (version !== petVersion || selected.get("pet") !== pet) return;
             if (!STATS.every(([key]) => Number.isFinite(advance.base_stats?.[key]))) throw new Error("覺醒種族值不完整");
             advancedStats = advance.base_stats;
+            query("[data-race-mode]").value = "advance";
             query("[data-race-picker]").hidden = false;
             query("[data-race-status]").textContent = "";
             renderRace(); recalculate();
@@ -122,7 +128,7 @@ export function initSeerTraining(root, { fetchSeerJson, convertToTraditionalChin
     query("[data-skin-select]").addEventListener("click",event => choiceWindows.open("skin",event.currentTarget));
     query("[data-suit-remove]").addEventListener("click",() => { selected.delete("suit"); suitEyeVersion++; eyeState = "free"; equipmentPickers.setAvailability("eye",true,""); query("[data-suit-select]").textContent = "選擇套裝 ›"; query("[data-suit-remove]").hidden = true; query('[data-effect="suit"]').textContent = ""; recalculate(); });
     const {renderMintSlot} = createTrainingMintmarkPicker({root, query, selected, name, traditional, simplified, fetchCached, choose, recalculate});
-    const clearPet = () => { query("[data-pet-select]").hidden = true; petVersion++; advancedStats = null; selectedSkin = null; query("[data-skin-select]").disabled = true; query("[data-appearance-name]").textContent = "原始外觀"; query(".training-pet").hidden = true; query(".training-race").hidden = true; query("[data-race-mode]").value = "normal"; images.clear(query("[data-training-art]")); images.clear(query(".training-pet img")); query("[data-art-placeholder]").hidden = false; query("[data-art-placeholder] p").innerHTML = "選擇一隻精靈<br>開始模擬培養"; };
+    const clearPet = () => { query("[data-pet-select]").hidden = true; petVersion++; advancedStats = null; selectedSkin = null; query("[data-skin-select]").disabled = true; query("[data-appearance-name]").textContent = "原始外觀"; query(".training-pet").hidden = true; query("[data-race-picker]").hidden = true; query("[data-race-status]").textContent = ""; query("[data-race-retry]").hidden = true; query("[data-race-mode]").value = "normal"; images.clear(query("[data-training-art]")); images.clear(query(".training-pet img")); query("[data-art-placeholder]").hidden = false; query("[data-art-placeholder] p").innerHTML = "選擇一隻精靈<br>開始模擬培養"; renderRace(); };
     query("[data-pet-clear]").addEventListener("click",() => { selected.delete("pet"); clearPet(); recalculate(); });
     const petPicker = initTrainingPetPicker(petDialog,{fetchSeerJson,fetchCached,traditional,simplified,onChoose:record => choose("pet",record)});
     const equipmentPickers = initTrainingSearchPickers({root, query, selected, name, simplified, fetchCached, choose, recalculate, description:(record,id) => traditional(description(record,id))});
@@ -133,10 +139,26 @@ export function initSeerTraining(root, { fetchSeerJson, convertToTraditionalChin
         for (const [id,record] of records) if (id !== "eye" || !included) choose(id,record);
     }});
     query("[data-ev-clear]").addEventListener("click", () => { query("[data-ev]").querySelectorAll("input").forEach(input => input.value = 0); recalculate(); });
+    query("[data-team-fill-all]").addEventListener("click", () => {
+        const inputs = [...query("[data-extra]").querySelectorAll("input[data-stat]")];
+        const full = inputs.every(input => input.value !== "" && Number(input.value) === teamLimits[input.dataset.stat]);
+        for (const input of inputs) input.value = full ? 0 : teamLimits[input.dataset.stat];
+        recalculate();
+    });
+    for (const button of root.querySelectorAll("[data-team-fill]")) button.addEventListener("click", () => {
+        const key = button.dataset.teamFill;
+        query(`[data-extra] input[data-stat="${key}"]`).value = teamLimits[key];
+        recalculate();
+    });
     for (const button of root.querySelectorAll("[data-ev-fill]")) button.addEventListener("click", () => {
         const key = button.dataset.evFill;
         query(`[data-ev] input[data-stat="${key}"]`).value = fillLearningEffort(vector(query("[data-ev]")), key);
         recalculate();
+    });
+    query("[data-race-picker]").addEventListener("click", () => {
+        if (!advancedStats) return;
+        query("[data-race-mode]").value = query("[data-race-mode]").value === "advance" ? "normal" : "advance";
+        renderRace(); recalculate();
     });
     query("[data-race-mode]").addEventListener("change", () => { renderRace(); recalculate(); });
     query("[data-race-retry]").addEventListener("click", () => { const pet = selected.get("pet"); if (pet?.advance) loadAdvance(pet); });
@@ -155,7 +177,7 @@ export function initSeerTraining(root, { fetchSeerJson, convertToTraditionalChin
         if (!pet || STATS.some(([key])=>query(`[data-result="${key}"]`).textContent === "—")) {
             feedback.textContent="請先選擇精靈並完成有效的培養設定。"; return;
         }
-        const data=createTrainingExportData({pet, selected, query, name, resultMode, selectedSkin, advancedStats, vector});
+        const data=createTrainingExportData({pet, selected, query, name, resultMode, selectedSkin, advancedStats, vector, natureAttributes:natures.find(item => String(item.id) === query("[data-nature]").value)?.attributes || {}});
         button.disabled=true; feedback.textContent="正在產生圖片…";
         try { await downloadTrainingImage(data); feedback.textContent="已產生 PNG 圖片。"; }
         catch(error) { feedback.textContent=error.message || "圖片匯出失敗，請再試一次。"; }
@@ -177,14 +199,19 @@ export function initSeerTraining(root, { fetchSeerJson, convertToTraditionalChin
     }
     query("[data-nature]").addEventListener("change", () => {
         const nature = natures.find(item => String(item.id) === query("[data-nature]").value);
-        query(".training-nature-note").textContent = nature ? traditional(nature.des2 || nature.des) : "個性不影響體力。";
+        query(".training-nature-note").textContent = nature ? traditional(nature.des2 || nature.des) : "請先選擇個性；個性不影響體力。";
         recalculate();
     });
+    renderRace();
     return { async load() {
         if (!naturePending) naturePending = fetchCached(`${API}nature?limit=200&expand=true`).then(data => {
             natures = data.results || []; const select = query("[data-nature]");
-            for (const item of natures) select.append(new Option(`${name(item)} · ${traditional(item.des)}`,item.id));
-        }).catch(() => { naturePending = null; query(".training-nature-note").textContent = "個性載入失敗，重新進入頁籤可重試。目前使用無修正個性。"; });
+            if (!natures.some(item => Number(item.id) === 1)) throw new Error("固執個性資料缺失");
+            const current = select.value;
+            select.replaceChildren(...natures.map(item => new Option(`${name(item)} · ${traditional(item.des)}`,item.id)));
+            select.value = current || "1";
+            select.dispatchEvent(new Event("change"));
+        }).catch(() => { naturePending = null; query(".training-nature-note").textContent = "個性載入失敗，重新進入頁籤可重試。"; });
         await naturePending;
     } };
 }
