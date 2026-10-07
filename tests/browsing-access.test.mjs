@@ -1,40 +1,34 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import vm from "node:vm";
+import { createSessionController } from "../js/app/session-controller.js";
 
-const source = readFileSync(new URL("../js/main.js", import.meta.url), "utf8");
-function functionSource(name) {
-    const start = source.search(new RegExp(`^(?:async )?function ${name}\\(`, "m"));
-    assert.notEqual(start, -1);
-    const end = source.indexOf("\n}", start) + 2;
-    return source.slice(start, end);
+function element() {
+    return { hidden: true, value: "", classList: {remove(){}, add(){}}, addEventListener(){} };
 }
-
 function createContext(authenticated, adminResult) {
     const calls = [];
     const votingTab = { dataset: { mainTarget: "voting" }, hidden: true };
-    const context = vm.createContext({
-        isAuthenticated: authenticated, isAdministrator: false,
-        isAdmin: async () => {
-            if (adminResult instanceof Error) throw adminResult;
-            return adminResult;
-        },
-        primaryMainTabs: [votingTab], adminLink: {}, accountTab: {},
-        selectionPanel: {}, selectionBar: {}, publicLoginPrompt: {},
-        alreadyVoted: {}, submitButton: {}, voteMessage: {}, mimiBindingPrompt: {},
-        selectionCount: {}, selectionMax: {},
-        activateTab: (target) => calls.push(target),
+    const dependencies = Object.fromEntries(["accountTab","publicLoginPrompt","selectionPanel","selectionBar",
+        "alreadyVoted","submitButton","voteMessage","mimiBindingPrompt","selectionCount","selectionMax",
+        "logoutButton","loginModal","loginTrigger","accountSection","adminLink","emailInput","passwordInput",
+        "passwordConfirmInput","mimiIdInput","loginMessage"].map(name => [name,element()]));
+    Object.assign(dependencies, {
+        primaryMainTabs: [votingTab],
+        isAdmin: async () => { if (adminResult instanceof Error) throw adminResult; return adminResult; },
+        activateTab: target => calls.push(target),
         stopRankingRefresh: () => calls.push("stop"),
         startRankingRefresh: () => calls.push("refresh"),
         loadGameAccount: async () => calls.push("account"),
         loadPool: async () => calls.push("pool"),
         loadRanking: async () => calls.push("ranking"),
-        console: { error() {} },
+        supabaseClient: {auth:{onAuthStateChange(){}}},
+        resetPool(){}, renderGameAccount(){}, setAuthMode(){}
     });
-    for (const name of ["syncAdminLink", "initializeAuthenticatedPage", "initializePublicPage"])
-        vm.runInContext(functionSource(name), context);
-    return { context, calls, votingTab };
+    const controller = createSessionController(dependencies);
+    if (authenticated) controller.showAuthenticatedView();
+    const context = {...dependencies,...controller};
+    Object.defineProperty(context,"isAdministrator",{get: controller.getIsAdministrator});
+    return {context,calls,votingTab};
 }
 
 test("guests open the encyclopedia without fetching voting data or starting polling", async () => {
