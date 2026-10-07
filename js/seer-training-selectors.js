@@ -1,5 +1,5 @@
 const API = "https://api.seerapi.com/v1/";
-const COMMON_SUITS = new Set([447,462,365,448,428,474]);
+import { COMMON_SUIT_IDS as COMMON_SUITS } from "./data/suit-catalog.js";
 
 export function skinImageId(skin) {
     return Number(skin.id) === 840 ? 1400812 : Number(skin.resource_id) || Number(`1400${skin.id}`);

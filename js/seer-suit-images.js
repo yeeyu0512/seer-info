@@ -1,4 +1,4 @@
-import { loadRuffleRuntime } from "./seer-mintmark-images.js";
+import { loadRuffleRuntime } from "./shared/ruffle-runtime.js";
 
 const SIZE = 1000; // 500 game units at 2 pixels/unit, including wide wings and weapons.
 const PART_CACHE_LIMIT = 12;

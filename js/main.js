@@ -1,3 +1,5 @@
+import { createChineseConverters } from "./shared/chinese.js";
+import { fetchSeerJson } from "./shared/http.js";
 import { Converter } from "https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/esm/full.js";
 import { login, logout, getSession, register } from "./auth.js";
 import { supabaseClient } from "./supabase.js";
@@ -114,8 +116,7 @@ let selectedCompetitivePoolType = "banned";
 const TYPE_ICON_REQUEST_LIMIT = 4;
 const RANKINGS_PER_PAGE = 10;
 const CHARACTERS_PER_PAGE = 28;
-const s2tConverter = Converter({ from: "cn", to: "tw" });
-const t2sConverter = Converter({ from: "tw", to: "cn" });
+const { convertToTraditionalChinese, convertToSimplifiedChinese } = createChineseConverters(Converter);
 const LOGIN_ENABLED = false;
 const REGISTRATION_ENABLED = false;
 
@@ -958,30 +959,11 @@ async function fetchCharacterTypeIconUrl(characterId) {
     return `./seer_icons/${resolvedTypeId}.png`;
 }
 
-async function fetchSeerJson(url, options = {}) {
-    const response = await fetch(url, { headers: { Accept: "application/json" }, ...options });
-    if (!response.ok) throw new Error(`SeerAPI 請求失敗（${response.status}）`);
-    return response.json();
-}
 
-function convertToTraditionalChinese(value) {
-    if (!value) return "";
-    try {
-        return value.split(/([岳杰托里背])/).map((part) => "岳杰托里背".includes(part) ? part : s2tConverter(part)).join("");
-    } catch (error) {
-        console.warn("Simplified-to-traditional conversion failed:", error);
-        return value;
-    }
-}
 
-function convertToSimplifiedChinese(value) {
-    try {
-        return value.split(/([岳杰托里])/).map((part) => "岳杰托里".includes(part) ? part : t2sConverter(part)).join("");
-    } catch (error) {
-        console.warn("Traditional-to-simplified conversion failed:", error);
-        return value;
-    }
-}
+
+
+
 
 function renderPoolMeta(pool) {
     document.getElementById("pool-name").textContent = pool.name;

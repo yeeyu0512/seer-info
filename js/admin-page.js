@@ -1,3 +1,8 @@
+import { mapWithConcurrency } from "./shared/concurrency.js";
+import { toCsvCell } from "./shared/csv.js";
+import { parseImportedCharacters, parseCompetitivePoolPetIds } from "./admin/import-parsers.js";
+import { createChineseConverters } from "./shared/chinese.js";
+import { fetchAdminJson as fetchJson } from "./shared/http.js";
 import { Converter } from "https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/esm/full.js";
 import { getSession, login, logout } from "./auth.js";
 import { getPoolCharacters } from "./pool.js";
@@ -1401,35 +1406,7 @@ async function addSelectedCompetitivePet(event) {
     }
 }
 
-function parseCompetitivePoolPetIds(value) {
-    const ids = [];
-    const invalidLines = new Set();
-    const seenIds = new Set();
-    let duplicateCount = 0;
 
-    value.split(/\r?\n/).forEach((line, index) => {
-        const tokens = line.trim().split(/[,\s，]+/).filter(Boolean);
-        tokens.forEach((token) => {
-            if (!/^\d+$/.test(token)) {
-                invalidLines.add(index + 1);
-                return;
-            }
-            const id = Number(token);
-            if (!Number.isSafeInteger(id) || id <= 0) {
-                invalidLines.add(index + 1);
-                return;
-            }
-            if (seenIds.has(id)) {
-                duplicateCount += 1;
-                return;
-            }
-            seenIds.add(id);
-            ids.push({ id, lineNumber: index + 1 });
-        });
-    });
-
-    return { ids, invalidLines: [...invalidLines], duplicateCount };
-}
 
 function updateCompetitivePoolImportCount() {
     competitivePoolImportProgress.hidden = true;
@@ -1617,45 +1594,11 @@ function showCreatePoolEditor() {
     editor.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-const s2tConverter = Converter({ from: "cn", to: "tw" });
+const { toTraditionalChinese } = createChineseConverters(Converter);
 
-function toTraditionalChinese(value) {
-    if (value === null || value === undefined) return "";
-    const text = String(value).trim();
-    if (!text) return "";
-    try {
-        return text.split(/([岳杰托里背])/).map((part) => "岳杰托里背".includes(part) ? part : s2tConverter(part)).join("");
-    } catch (error) {
-        console.warn("Simplified-to-traditional conversion failed:", error);
-        return text;
-    }
-}
 
-async function fetchJson(url) {
-    const response = await fetch(url, {
-        headers: {
-            Accept: "application/json"
-        }
-    });
 
-    if (!response.ok) {
-        let message = `SeerAPI 請求失敗（${response.status}）`;
-        try {
-            const payload = await response.json();
-            if (payload && payload.message) {
-                message = payload.message;
-            }
-        } catch (error) {
-            // ignore JSON parse errors and fall back to the status text
-        }
-        const error = new Error(message);
-        error.status = response.status;
-        error.resource = new URL(url).pathname;
-        throw error;
-    }
 
-    return response.json();
-}
 
 function renderSeerPreview(preview) {
     if (!preview) {
@@ -1739,47 +1682,9 @@ async function lookupSeerPet() {
     }
 }
 
-function parseImportedCharacters(value) {
-    const characters = [];
-    const invalidLines = [];
-    const seenIds = new Set();
 
-    value.split(/\r?\n/).forEach((line, index) => {
-        const trimmed = line.trim();
-        if (!trimmed) return;
-        const match = trimmed.match(/^(\d+)(?:\s*[,\t]\s*(.+?))?$/);
-        const characterId = match ? Number(match[1]) : NaN;
-        if (!match || !Number.isSafeInteger(characterId) || seenIds.has(characterId) || (match[2] !== undefined && !match[2].trim())) {
-            invalidLines.push(index + 1);
-            return;
-        }
-        seenIds.add(characterId);
-        characters.push({
-            characterId,
-            characterName: match[2] ? match[2].trim() : "",
-            lookupName: match[2] === undefined,
-            lineNumber: index + 1
-        });
-    });
 
-    return { characters, invalidLines };
-}
 
-async function mapWithConcurrency(items, concurrency, mapper) {
-    const results = new Array(items.length);
-    let nextIndex = 0;
-    const workerCount = Math.min(concurrency, items.length);
-
-    await Promise.all(Array.from({ length: workerCount }, async () => {
-        while (nextIndex < items.length) {
-            const index = nextIndex;
-            nextIndex += 1;
-            results[index] = await mapper(items[index]);
-        }
-    }));
-
-    return results;
-}
 
 async function loadCharacters() {
     if (!selectedPool) return;
@@ -1986,12 +1891,7 @@ function exportCharacters() {
     showAdminNotification(`已匯出「${selectedPool.name}」的 ${poolCharacters.length} 位角色。`, "success");
 }
 
-function toCsvCell(value) {
-    const text = String(value ?? "");
-    // Prevent spreadsheet applications from treating imported text as formulas.
-    const safeText = /^[=+\-@]/.test(text) ? `'${text}` : text;
-    return `"${safeText.replace(/"/g, '""')}"`;
-}
+
 
 function renderVoteRecords() {
     voteRecordList.innerHTML = "";
