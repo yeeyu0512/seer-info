@@ -15,9 +15,9 @@ seer_icons 的數字圖示移至 assets/icons/types；common_pet_skin_icon_* 移
 
 ## 相容與待分類
 
-- 1400837.png：舊 Open Graph／Twitter 公開分享圖 URL 保留副本；新 metadata 指向 assets/site/about-artwork.png。
-- seer.png、seerhead.png，以及 assets/seer-base.png、assets/seer-head.png：保留既有可能對外使用的合成素材 URL，內部統一新路徑。
+- 1400837.png：依使用者要求刪除根目錄相容副本；關於頁裝飾與 Open Graph／Twitter metadata 均使用 assets/site/about-artwork.png。
+- seer.png、seerhead.png：依使用者要求刪除根目錄重複副本；正式網站使用 assets/seer/base.png、assets/seer/head.png，本機套裝測試頁已同步更新。assets/seer-base.png、assets/seer-head.png 仍保留相容副本。
 - favicon.ico 維持根目錄。
-- 42578.png 已檢視，為刻印樣式圖；尚無足夠證據判定原作者留檔用途，保留原位置。
+- 42578.png：刻印樣式的測試圖片，未被網站或工具引用，依使用者要求刪除。
 - 其他舊位置僅為原程式內部使用，本次更新全部已找到的引用；未建立靜態圖片 runtime redirect。
 - 遠端官方、Wiki、代理、blob／data URL 不納入搬移。
