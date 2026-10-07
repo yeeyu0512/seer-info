@@ -255,3 +255,12 @@
 .training-equipment-heading [data-equipment-presets] { margin:0; padding:7px 12px; font-size:12px; box-shadow:none; }
 .training-presets-dialog .training-choice-card { justify-content:space-between; }
 .training-preset-action { flex:none; color:#c6baff; font-size:12px; }
+
+.training-export-dialog { width:min(1100px,calc(100vw - 40px)); }
+.training-export-preview { min-height:0; overflow:auto; border-radius:10px; }
+.training-export-preview img { display:block; width:100%; height:auto; }
+.training-export-preview img[hidden] { display:none; }
+.training-export-dialog [data-export-preview-status] { margin:0; }
+.training-export-dialog [data-export-preview-status]:empty { display:none; }
+.training-export-actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:10px; flex-shrink:0; }
+.training-export-actions button { margin:0; font-size:13px; padding:9px 14px; }

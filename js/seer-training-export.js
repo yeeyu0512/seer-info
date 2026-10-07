@@ -27,7 +27,7 @@ async function loadPortrait(url) {
 }
 
 // Draw a standalone card so controls and page scroll positions do not affect export.
-export async function downloadTrainingImage(data) {
+export async function createTrainingImage(data) {
     const [portrait, art, ...marks] = await Promise.all([
         loadPortrait(data.portrait),
         data.art ? loadPortrait(data.art).catch(() => null) : null,
@@ -42,6 +42,22 @@ export async function downloadTrainingImage(data) {
     drawTrainingExport(canvas,data,{portrait,art,marks});
     const blob = await new Promise(resolve => canvas.toBlob(resolve,"image/png"));
     if (!blob) throw new Error("圖片產生失敗");
+    return blob;
+}
+
+export async function copyTrainingImage(data, blob) {
+    if (!globalThis.isSecureContext || !globalThis.navigator?.clipboard?.write || typeof ClipboardItem === "undefined" || (ClipboardItem.supports && !ClipboardItem.supports("image/png"))) {
+        throw new Error("此瀏覽器目前無法複製圖片，請改用下載圖片，或以 HTTPS 開啟網站。");
+    }
+    // Start the clipboard write during the click gesture, before image loading finishes.
+    const image = blob ? Promise.resolve(blob) : createTrainingImage(data);
+    // The browser may reject access before it consumes the image promise.
+    image.catch(() => {});
+    await navigator.clipboard.write([new ClipboardItem({"image/png":image})]);
+}
+
+export async function downloadTrainingImage(data, image) {
+    const blob = image || await createTrainingImage(data);
     const url = URL.createObjectURL(blob), link = document.createElement("a");
     link.href=url; link.download=`${data.petName.replace(/[<>:"/\\|?*]/g,"_")}-${data.mode}-培養.png`;
     document.body.append(link); link.click(); link.remove();

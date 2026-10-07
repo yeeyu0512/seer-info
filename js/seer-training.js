@@ -7,7 +7,7 @@ import {createTrainingResultView} from "./training/result-view.js";
 import {createTrainingExportData} from "./training/export-data.js";
 import { TRAINING_STATS as STATS } from "./seer-training-core.js";
 import { initTrainingSelectors, skinImageId } from "./seer-training-selectors.js";
-import { downloadTrainingImage } from "./seer-training-export.js";
+import { initTrainingExportPreview } from "./training/export-preview.js";
 import { initTrainingPetPicker } from "./training/pet-picker.js";
 import { createTrainingImages } from "./training/images.js";
 import { initEquipmentPresets } from "./training/equipment-presets.js";
@@ -170,18 +170,17 @@ export function initSeerTraining(root, { fetchSeerJson, convertToTraditionalChin
         if (input.matches("[data-hp-training]") && input.value !== "") input.value = Math.max(0,Math.min(20,Math.trunc(Number(input.value))));
         recalculate();
     });
-    query("[data-export-image]").addEventListener("click",async event => {
-        const feedback = query("[data-export-status]"), button=event.currentTarget;
-        recalculate(); feedback.hidden=false;
+    const exportPreview = initTrainingExportPreview(root);
+    query("[data-export-image]").addEventListener("click", () => {
+        const feedback = query("[data-export-status]");
+        recalculate();
         const pet=selected.get("pet");
         if (!pet || STATS.some(([key])=>query(`[data-result="${key}"]`).textContent === "—")) {
-            feedback.textContent="請先選擇精靈並完成有效的培養設定。"; return;
+            feedback.hidden=false; feedback.textContent="請先選擇精靈並完成有效的培養設定。"; return;
         }
+        feedback.hidden=true;
         const data=createTrainingExportData({pet, selected, query, name, resultMode, selectedSkin, advancedStats, vector, natureAttributes:natures.find(item => String(item.id) === query("[data-nature]").value)?.attributes || {}});
-        button.disabled=true; feedback.textContent="正在產生圖片…";
-        try { await downloadTrainingImage(data); feedback.textContent="已產生 PNG 圖片。"; }
-        catch(error) { feedback.textContent=error.message || "圖片匯出失敗，請再試一次。"; }
-        finally { button.disabled=false; }
+        exportPreview.open(data);
     });
     query("[data-year-bonus]").addEventListener("change",recalculate);
     for (const tab of root.querySelectorAll("[data-result-mode]")) {
