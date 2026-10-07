@@ -1,5 +1,16 @@
+export function createCompetitiveView({
+    getCurrentCompetitivePool,
+    clearObservedTypeIcons,
+    createCharacterTypeIcon,
+    seerLookup
+}) {
+    const competitivePoolPeriod = document.getElementById("competitive-pool-period");
+    const competitivePoolMessage = document.getElementById("competitive-pool-message");
+    const competitivePoolGroups = document.getElementById("competitive-pool-groups");
+    const competitivePoolTypeTabs = document.getElementById("competitive-pool-type-tabs");
+    const competitivePoolTypeTabButtons = Array.from(document.querySelectorAll(".competitive-pool-type-tab"));
+    const refreshCompetitivePoolButton = document.getElementById("refresh-competitive-pool-button");
 
-export function createCompetitiveView({ refreshCompetitivePoolButton, competitivePoolTypeTabButtons, competitivePoolMessage, competitivePoolPeriod, competitivePoolTypeTabs, competitivePoolGroups, getCurrentCompetitivePool, clearObservedTypeIcons, createCharacterTypeIcon, seerLookup }) {
     let competitivePoolRequestId = 0;
 
     let currentCompetitivePoolCharacters = [];

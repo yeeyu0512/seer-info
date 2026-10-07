@@ -1,5 +1,17 @@
+export function createRankingController({
+    clearObservedTypeIcons,
+    rankingPagination,
+    getPoolRanking,
+    createCharacterTypeIcon,
+    seerLookup,
+    getCurrentPool,
+    getCharacters,
+    getIsAdministrator
+}) {
+    const rankingPreviousPageButton = document.getElementById("ranking-previous-page");
+    const rankingNextPageButton = document.getElementById("ranking-next-page");
+    const rankingPageLabel = document.getElementById("ranking-page");
 
-export function createRankingController({ rankingPreviousPageButton, rankingNextPageButton, clearObservedTypeIcons, rankingPagination, getPoolRanking, rankingPageLabel, createCharacterTypeIcon, seerLookup, getCurrentPool, getCharacters, getIsAdministrator }) {
     let rankingTimer = null;
 
     let currentRanking = [];

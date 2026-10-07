@@ -1,5 +1,17 @@
+export function createGameAccountController({
+    bindGameAccount,
+    loadPool,
+    getMyGameAccount,
+    getIsAuthenticated
+}) {
+    const gameAccountForm = document.getElementById("game-account-form");
+    const gameAccountInput = document.getElementById("game-account-input");
+    const bindGameAccountButton = document.getElementById("bind-game-account-button");
+    const gameAccountMessage = document.getElementById("game-account-message");
+    const gameAccountUnbound = document.getElementById("game-account-unbound");
+    const gameAccountBound = document.getElementById("game-account-bound");
+    const boundGameAccount = document.getElementById("bound-game-account");
 
-export function createGameAccountController({ gameAccountForm, gameAccountInput, gameAccountMessage, bindGameAccountButton, bindGameAccount, loadPool, getMyGameAccount, gameAccountUnbound, gameAccountBound, boundGameAccount, getIsAuthenticated }) {
     let hasMiMiBinding = false;
 
     gameAccountForm.addEventListener("submit", async (event) => {

@@ -1,5 +1,28 @@
+export function createAuthView({
+    loginTrigger,
+    activateTab,
+    loginModal,
+    emailInput,
+    loginMessage,
+    passwordInput,
+    login,
+    showAuthenticatedView,
+    initializeAuthenticatedPage,
+    passwordConfirmInput,
+    mimiIdInput,
+    register
+}) {
+    const loginButton = document.getElementById("login-button");
+    const authTitle = document.getElementById("auth-title");
+    const authDescription = document.getElementById("auth-description");
+    const passwordConfirmGroup = document.getElementById("password-confirm-group");
+    const mimiIdGroup = document.getElementById("mimi-id-group");
+    const registerButton = document.getElementById("register-button");
+    const authModeToggle = document.getElementById("auth-mode-toggle");
+    const loginClose = document.getElementById("login-close");
+    const publicLoginButton = document.getElementById("public-login-button");
+    const mimiBindingButton = document.getElementById("mimi-binding-button");
 
-export function createAuthView({ loginTrigger, publicLoginButton, mimiBindingButton, activateTab, loginClose, loginModal, emailInput, loginMessage, loginButton, passwordInput, login, showAuthenticatedView, initializeAuthenticatedPage, registerButton, passwordConfirmInput, mimiIdInput, register, authModeToggle, passwordConfirmGroup, mimiIdGroup, authTitle, authDescription }) {
     let isRegisterMode = false;
 
     let modalPointerStartedOnBackdrop = false;

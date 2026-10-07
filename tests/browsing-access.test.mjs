@@ -13,6 +13,10 @@ function createContext(authenticated, adminResult) {
         "logoutButton","loginModal","loginTrigger","accountSection","adminLink","emailInput","passwordInput",
         "passwordConfirmInput","mimiIdInput","loginMessage"].map(name => [name,element()]));
     Object.assign(dependencies, {
+        document: {getElementById(id) {
+            const key = id.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+            return dependencies[key] || element();
+        }},
         primaryMainTabs: [votingTab],
         isAdmin: async () => { if (adminResult instanceof Error) throw adminResult; return adminResult; },
         activateTab: target => calls.push(target),

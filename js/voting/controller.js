@@ -1,5 +1,35 @@
+export function createVotingController({
+    publicLoginPrompt,
+    mimiBindingPrompt,
+    selectionBar,
+    alreadyVoted,
+    submitButton,
+    getActivePool,
+    getPoolCharacters,
+    hasVoted,
+    getMyVote,
+    voteMessage,
+    clearObservedTypeIcons,
+    seerLookup,
+    createCharacterTypeIcon,
+    resetRanking,
+    rankingPagination,
+    selectionCount,
+    selectionMax,
+    submitVote,
+    loadRanking,
+    getIsAuthenticated,
+    getIsAdministrator,
+    getHasMiMiBinding
+}) {
+    const characterList = document.getElementById("character-list");
+    const characterPagination = document.getElementById("character-pagination");
+    const characterPreviousPageButton = document.getElementById("character-previous-page");
+    const characterNextPageButton = document.getElementById("character-next-page");
+    const characterPageLabel = document.getElementById("character-page");
+    const alreadyVotedMessage = document.getElementById("already-voted-message");
+    const poolStatus = document.getElementById("pool-status");
 
-export function createVotingController({ characterPreviousPageButton, characterNextPageButton, publicLoginPrompt, mimiBindingPrompt, selectionBar, alreadyVoted, submitButton, getActivePool, getPoolCharacters, hasVoted, getMyVote, alreadyVotedMessage, voteMessage, clearObservedTypeIcons, characterList, seerLookup, characterPageLabel, characterPagination, createCharacterTypeIcon, poolStatus, resetRanking, rankingPagination, selectionCount, selectionMax, submitVote, loadRanking, getIsAuthenticated, getIsAdministrator, getHasMiMiBinding }) {
     let currentPool = null;
 
     let currentCharacters = [];

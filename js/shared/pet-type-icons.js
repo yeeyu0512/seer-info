@@ -1,5 +1,7 @@
+export function createPetTypeIcons({
+    fetchSeerJson
+}) {
 
-export function createPetTypeIcons({ fetchSeerJson }) {
     const characterTypeIconCache = new Map();
 
     const elementTypeIconCache = new Map();

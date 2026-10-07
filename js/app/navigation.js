@@ -1,5 +1,26 @@
+export function createNavigation({
+    primaryMainTabs,
+    seerLookup,
+    votePanels,
+    sealEncyclopediaSection,
+    seerMintmarks,
+    suitEncyclopediaSection,
+    seerSuits,
+    typeChartSection,
+    trainingSection,
+    seerTraining,
+    accountSection,
+    votingSubTabs,
+    encyclopediaSubTabs,
+    loadCurrentCompetitivePool,
+    getIsAdministrator
+}) {
+    const voteSection = document.getElementById("vote-section");
+    const aboutSection = document.getElementById("about-section");
+    const voteSubTabs = Array.from(votingSubTabs.querySelectorAll("[data-tab-target]"));
+    const encyclopediaModeTabs = Array.from(encyclopediaSubTabs.querySelectorAll("[data-lookup-mode]"));
+    const seerLookupSection = document.getElementById("seer-lookup-section");
 
-export function createNavigation({ primaryMainTabs, voteSubTabs, encyclopediaModeTabs, seerLookup, votePanels, voteSection, seerLookupSection, sealEncyclopediaSection, seerMintmarks, suitEncyclopediaSection, seerSuits, typeChartSection, trainingSection, seerTraining, accountSection, aboutSection, votingSubTabs, encyclopediaSubTabs, loadCurrentCompetitivePool, getIsAdministrator }) {
     let currentVotePanelId = "selection-panel";
 
     primaryMainTabs.forEach((tab) => {

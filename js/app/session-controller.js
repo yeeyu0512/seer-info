@@ -1,5 +1,41 @@
+export function createSessionController({
+    document = globalThis.document,
+    publicLoginPrompt,
+    stopRankingRefresh,
+    activateTab,
+    loadGameAccount,
+    selectionPanel,
+    selectionBar,
+    loadPool,
+    loadRanking,
+    startRankingRefresh,
+    alreadyVoted,
+    submitButton,
+    voteMessage,
+    mimiBindingPrompt,
+    selectionCount,
+    selectionMax,
+    logout,
+    loginModal,
+    loginTrigger,
+    primaryMainTabs,
+    accountSection,
+    resetPool,
+    renderGameAccount,
+    emailInput,
+    passwordInput,
+    passwordConfirmInput,
+    mimiIdInput,
+    setAuthMode,
+    loginMessage,
+    isAdmin,
+    supabaseClient,
+    getSession
+}) {
+    const logoutButton = document.getElementById("logout-button");
+    const adminLink = document.getElementById("admin-link");
+    const accountTab = document.getElementById("account-tab");
 
-export function createSessionController({ accountTab, publicLoginPrompt, stopRankingRefresh, activateTab, loadGameAccount, selectionPanel, selectionBar, loadPool, loadRanking, startRankingRefresh, alreadyVoted, submitButton, voteMessage, mimiBindingPrompt, selectionCount, selectionMax, logoutButton, logout, loginModal, loginTrigger, primaryMainTabs, accountSection, resetPool, adminLink, renderGameAccount, emailInput, passwordInput, passwordConfirmInput, mimiIdInput, setAuthMode, loginMessage, isAdmin, supabaseClient, getSession }) {
     let isAuthenticated = false;
 
     let isAdministrator = false;
