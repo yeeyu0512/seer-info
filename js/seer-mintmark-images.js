@@ -141,6 +141,10 @@ async function convert(id) {
 }
 
 const queue = new MintmarkImageQueue(convert);
+// Export only explicitly selected marks, reusing both cached and pending renders.
+export function getMintmarkImage(id) {
+    return queue.get(id);
+}
 let observer;
 const waiting = new Set();
 export function observeMintmarkImage(slot, id) {

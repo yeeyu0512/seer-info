@@ -7053,8 +7053,11 @@ body.has-competitive-pool-preview {
 .training-heading { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:24px; }
 .training-heading h2 { margin:0 0 8px; font-size:24px; }
 .training-heading p { margin:0; color:#a4aac0; font-size:14px; }
+.training-heading .training-ui-notice { margin-top:8px; color:#c6baff; font-size:12px; }
 .training-beta,.training-level { font-size:12px; color:#c6baff; border:1px solid #50496f; border-radius:8px; padding:4px 8px; vertical-align:middle; }
 .training-level { white-space:nowrap; }
+.training-heading-actions { display:flex; align-items:center; justify-content:flex-end; gap:10px; flex-wrap:wrap; }
+.training-heading-actions button { white-space:nowrap; margin:0; }
 .training-layout { display:grid; grid-template-columns:minmax(0,1.45fr) minmax(320px,1fr); gap:20px; align-items:start; }
 .training-editor { display:grid; gap:16px; min-width:0; }
 .training-card { background:#101423; border:1px solid #303249; border-radius:16px; padding:20px; min-width:0; }

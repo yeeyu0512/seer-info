@@ -3,6 +3,7 @@ import { fetchMintmarkCatalog, fetchMintmarkSeries, mintmarkCornerCount } from "
 import { observeMintmarkImage, unobserveMintmarkImages } from "./seer-mintmark-images.js";
 import { initTrainingSelectors, skinImageId } from "./seer-training-selectors.js";
 import { mintmarkFinalStats } from "./seer-mintmark-stats.js";
+import { downloadTrainingImage } from "./seer-training-export.js";
 
 const API = "https://api.seerapi.com/v1/";
 
@@ -11,7 +12,7 @@ export function initSeerTraining(root, { fetchSeerJson, convertToTraditionalChin
     let natures = [], naturePending, advancedStats = null, petVersion = 0, resultMode = "PVP", selectedSkin = null;
     const teamLimits = {atk:15,sp_atk:15,def:15,sp_def:15,spd:10,hp:30};
     const statsInputs = (prefix, max, value = 0) => STATS.map(([key, label]) => `<label>${label}${typeof max === "object" ? '<span class="training-bounded-input">' : ""}<input aria-label="${prefix}${label}" data-stat="${key}" type="number" min="0" max="${typeof max === "object" ? max[key] : max}" step="1" value="${value}"${typeof max === "object" ? ` aria-describedby="training-team-limit-${key}"` : ""}>${typeof max === "object" ? `<span id="training-team-limit-${key}" class="training-input-limit"><span aria-hidden="true">/ </span><span class="sr-only">上限 </span>${max[key]}</span></span>` : ""}</label>`).join("");
-    root.innerHTML = `<div class="training-heading"><div><h2>精靈模擬培養 <span class="training-beta">Beta 版</span></h2><p>調整培養與裝備，即時比較 PVE／PVP 能力值。</p></div><span class="training-level">Lv.100</span></div>
+    root.innerHTML = `<div class="training-heading"><div><h2>精靈模擬培養 <span class="training-beta">Beta 版</span></h2><p>調整培養與裝備，即時比較 PVE／PVP 能力值。</p><p class="training-ui-notice">本頁面 UI 尚未調整完成，後續將持續改善排版與操作體驗。</p></div><div class="training-heading-actions"><span class="training-level">Lv.100</span><button type="button" data-export-image>匯出圖片</button></div></div><p data-export-status class="training-hint" role="status" hidden></p>
         <div class="training-layout"><section class="training-stage training-card" aria-label="精靈立繪與刻印"><div class="training-stagebar"><span data-appearance-name>原始外觀</span><div class="training-stage-actions"><button type="button" data-pet-select hidden>更換精靈</button><button type="button" data-skin-select disabled>關聯皮膚</button></div></div><div class="training-art"><img data-training-art hidden alt=""><button type="button" data-art-placeholder aria-label="選擇精靈"><span>＋</span><p>選擇一隻精靈<br>開始模擬培養</p></button></div><div class="training-mintmarks">${[0,1,2].map(i => `<div class="training-mintmark"><button type="button" class="training-mint-slot" data-mint-slot="${i}" aria-label="選擇刻印 ${i+1}"><span class="training-mint-icon">＋</span><strong>選擇刻印</strong><small>刻印 ${i+1}</small></button><button type="button" data-mint-clear="${i}" hidden>卸下</button></div>`).join("")}</div><p class="training-hint training-mint-hint">刻印數值已包含隱藏加成；點擊刻印槽選擇。</p>${[0,1,2].map(i => `<details class="training-mint-adjust" data-mint-values="${i}" hidden><summary>刻印 ${i+1} · 調整能力值</summary><div class="training-stat-inputs">${statsInputs(`刻印${i+1}`,9999)}</div><button type="button" data-mint-max="${i}">還原最終值</button></details>`).join("")}</section><div class="training-editor">
             <section class="training-card training-profile">
                 <div class="training-pet" hidden><img width="58" height="58" alt=""><div><strong></strong><p></p></div><button type="button" data-pet-clear aria-label="清除精靈">×</button></div>
@@ -260,7 +261,35 @@ export function initSeerTraining(root, { fetchSeerJson, convertToTraditionalChin
         if (!input.matches('input[type="number"]')) return;
         if (input.closest("[data-ev]") && input.value !== "") input.value = Math.max(0,Math.min(255,Math.trunc(Number(input.value))));
         if (input.closest("[data-extra]") && input.value !== "") input.value = Math.max(0,Math.min(teamLimits[input.dataset.stat],Math.trunc(Number(input.value))));
+        if (input.matches("[data-hp-training]") && input.value !== "") input.value = Math.max(0,Math.min(20,Math.trunc(Number(input.value))));
         recalculate();
+    });
+    query("[data-export-image]").addEventListener("click",async event => {
+        const feedback = query("[data-export-status]"), button=event.currentTarget;
+        recalculate(); feedback.hidden=false;
+        const pet=selected.get("pet");
+        if (!pet || STATS.some(([key])=>query(`[data-result="${key}"]`).textContent === "—")) {
+            feedback.textContent="請先選擇精靈並完成有效的培養設定。"; return;
+        }
+        const data={petName:name(pet),petId:pet.id,mode:resultMode === "base" ? "基礎" : resultMode,
+            appearance:selectedSkin ? name(selectedSkin) : "原始外觀",
+            nature:query("[data-nature]").selectedOptions[0].textContent.split(" · ")[0],
+            iv:query("[data-iv]").value,hpTraining:query("[data-hp-training]").value,
+            year:query("[data-year-bonus]").checked,
+            raceVersion:advancedStats && query("[data-race-mode]").value === "advance" ? "神諭覺醒" : "一般種族值",
+            stats:Object.fromEntries(STATS.map(([key])=>[key,query(`[data-result="${key}"]`).textContent])),
+            ev:vector(query("[data-ev]")),team:vector(query("[data-extra]")),
+            portrait:query(".training-pet img").src,
+            mintmarks:[0,1,2].map(i=>({id:selected.get(`mint${i}`)?.id,
+                name:selected.has(`mint${i}`) ? name(selected.get(`mint${i}`)) : "未選擇",
+                image:query(`[data-mint-slot="${i}"] img`)?.src})),
+            suit:selected.has("suit") ? name(selected.get("suit")) : "未選擇",
+            eye:selected.has("eye") ? name(selected.get("eye")) : "未選擇",
+            title:selected.has("title") ? name(selected.get("title")) : "未選擇"};
+        button.disabled=true; feedback.textContent="正在產生圖片…";
+        try { await downloadTrainingImage(data); feedback.textContent="已產生 PNG 圖片。"; }
+        catch(error) { feedback.textContent=error.message || "圖片匯出失敗，請再試一次。"; }
+        finally { button.disabled=false; }
     });
     query("[data-year-bonus]").addEventListener("change",recalculate);
     for (const tab of root.querySelectorAll("[data-result-mode]")) {
