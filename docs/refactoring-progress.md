@@ -42,3 +42,11 @@
 - 保留原 CRUD／RPC、草稿限制、日期格式、批次匯入及 CSV；未操作正式資料庫。
 - 63 項 Node 測試通過。Chrome 固定授權／資料 fixture 比較基準與重構版，1440px／390px 的前台導航與詳情、後台導航與草稿角色清單文字和尺寸一致，無 pageerror。
 - 此次瀏覽器驗證禁止資料寫入，並不代表正式 CRUD 或官方 SWF 的端到端驗證已完成。
+
+## 批次 6：培養與屬性 UI
+
+- 培養模板、刻印彈窗及其 catalog／分頁狀態、搜尋 picker 與請求版本、裝備來源 model、結果 view、匯出資料 snapshot 分離。
+- 計算公式仍由既有 training core 負責。第一階段維持 DOM 讀值與匯出 snapshot 契約，不同時改寫資料流。
+- 屬性模板、名稱／圖示 view 與 picker 方法分離，保留 controller 公開 prototype 方法及原測試斷言。
+- 63 項測試通過；Chrome 1440px／390px 比較屬性彈窗、選擇精靈／刻印、學習力、體力培養、年費、基礎／PVE／PVP 結果，與基準相同且無 pageerror。
+- PNG 的 Canvas／圖片失敗備援依原測試驗收；真實跨來源圖片與正式 SWF 仍需外部服務可用時另驗。

@@ -1,3 +1,6 @@
+import {createTypeLabel, renderAttackTitle} from "./types/labels.js";
+import { typePickerMethods } from "./types/picker-view.js";
+import { TYPE_CALCULATOR_TEMPLATE } from "./types/template.js";
 import { getSkillStoneMatchupAnalysis, calculateTypeMultiplier, getTypeMatchupAnalysis, formatMultiplier, formatCardMultiplier, getTypeEffectLabel, getTypeEffectClass } from "./types/core.js";
 export { getSkillStoneMatchupAnalysis, calculateTypeMultiplier, getTypeMatchupAnalysis, formatMultiplier, formatCardMultiplier, getTypeEffectLabel, getTypeEffectClass } from "./types/core.js";
 import { getRelatedTypeOptions } from "./shared/type-options.js";
@@ -9,22 +12,9 @@ const { singleTypes, combinations } = SEER_TYPE_DATA;
 // 建立 ID 快速對照索引
 const combinationsById = new Map(combinations.map((item) => [item.id, item]));
 
-function createTypeLabel(type, text = type.name) {
-    const label = document.createElement("span");
-    label.className = "type-vs-inline-type";
-    const icon = document.createElement("img");
-    icon.src = `./seer_icons/${type.id}.png`;
-    icon.alt = "";
-    label.append(icon, text);
-    return label;
-}
 
-function renderAttackTitle(title, attacker, defender, attackerText = attacker.name) {
-    const action = document.createElement("span");
-    action.className = "type-vs-attack-label";
-    action.textContent = "攻擊";
-    title.replaceChildren(createTypeLabel(attacker, attackerText), action, createTypeLabel(defender));
-}
+
+
 
 // ==========================================
 // UI 元件與控制器
@@ -53,127 +43,7 @@ export class SeerTypeCalculatorController {
     }
 
     initDOMElements() {
-        this.container.innerHTML = `
-            <div class="type-calc-wrapper">
-                <!-- 功能一：屬性倍率查詢 -->
-                <div id="type-calc-view-lookup" class="type-calc-view-section">
-                    <!-- 頂部屬性卡片：使用與精靈篩選相同的 trigger-card 樣式 -->
-                    <div id="type-calc-trigger-card" class="seer-pet-type-trigger-card" role="button" tabindex="0" aria-haspopup="dialog" aria-label="開啟屬性選擇視窗">
-                        <div class="seer-pet-type-current-info">
-                            <span class="seer-pet-type-trigger-label">當前計算屬性</span>
-                            <div class="seer-pet-type-current-badge">
-                                <img id="type-calc-current-icon" class="seer-pet-type-current-icon" alt="" hidden>
-                                <span id="type-calc-current-name">尚未選擇</span>
-                                <span id="type-calc-current-tag" class="type-calc-tag" hidden></span>
-                            </div>
-                        </div>
-                        <button id="type-calc-open-modal-button" class="primary-button compact-button seer-pet-type-trigger-button" type="button" aria-haspopup="dialog">
-                            <span>選擇屬性</span>
-                            <span aria-hidden="true">▾</span>
-                        </button>
-                    </div>
-
-                    <!-- 模式切換與搜尋列 -->
-                    <div class="type-calc-controls-bar">
-                        <div class="type-calc-mode-tabs" role="tablist" aria-label="計算模式切換">
-                            <button id="type-calc-mode-attack" class="type-calc-mode-tab is-active" type="button" role="tab" aria-selected="true" data-mode="attack">
-                                ⚔️ 攻擊效果
-                            </button>
-                            <button id="type-calc-mode-defense" class="type-calc-mode-tab" type="button" role="tab" aria-selected="false" data-mode="defense">
-                                🛡️ 被攻擊效果
-                            </button>
-                        </div>
-
-                        <!-- 搜尋目標屬性 -->
-                        <div class="type-calc-search-box">
-                            <input id="type-calc-target-search" class="text-input type-calc-search-input" type="search" placeholder="搜尋目標屬性名稱…" autocomplete="off">
-                        </div>
-                    </div>
-
-                    <!-- 統計與快速篩選標籤 (採用遊戲官方正統術語：克制、普通、微弱、無效) -->
-                    <div class="type-calc-stats-bar">
-                        <div class="type-calc-filter-pills" role="toolbar" aria-label="倍率篩選">
-                            <button class="type-calc-pill is-active" type="button" data-filter="all">全部 (<span id="type-count-all">138</span>)</button>
-                            <button class="type-calc-pill" type="button" data-filter="counter">克制 (<span id="type-count-counter">0</span>)</button>
-                            <button class="type-calc-pill" type="button" data-filter="normal">普通 (<span id="type-count-normal">0</span>)</button>
-                            <button class="type-calc-pill" type="button" data-filter="weak">微弱 (<span id="type-count-weak">0</span>)</button>
-                            <button class="type-calc-pill" type="button" data-filter="zero">無效 (<span id="type-count-zero">0</span>)</button>
-                        </div>
-                    </div>
-
-                    <!-- 結果展示區塊 -->
-                    <div class="type-calc-results-section">
-                        <div id="type-calc-card-grid" class="type-card-grid" aria-live="polite">
-                            <!-- 屬性卡片網格 -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 功能二：對局屬性助手 -->
-                <div id="type-calc-view-vs" class="type-calc-view-section type-vs-container" hidden>
-                    <!-- 雙方屬性選擇器 -->
-                    <div class="type-vs-selector-row">
-                        <!-- 我方屬性 A -->
-                        <div id="type-vs-trigger-a" class="type-vs-picker-card" role="button" tabindex="0" aria-label="選擇我方屬性">
-                            <span class="type-vs-picker-role">我方屬性</span>
-                            <div class="type-vs-picker-content">
-                                <img id="type-vs-icon-a" class="type-vs-picker-icon" alt="" hidden>
-                                <div class="type-vs-picker-meta">
-                                    <span id="type-vs-name-a" class="type-vs-picker-name">尚未選擇</span>
-                                </div>
-                            </div>
-                            <button id="type-vs-btn-a" class="primary-button compact-button type-vs-change-btn" type="button">更換屬性 ▾</button>
-                        </div>
-
-                        <!-- 互換按鈕 -->
-                        <button id="type-vs-swap-btn" class="type-vs-swap-button" type="button" title="互換雙方屬性" aria-label="互換雙方屬性">
-                            <span class="type-vs-swap-icon">⇄</span>
-                        </button>
-
-                        <!-- 對方屬性 B -->
-                        <div id="type-vs-trigger-b" class="type-vs-picker-card" role="button" tabindex="0" aria-label="選擇對方屬性">
-                            <span class="type-vs-picker-role is-opponent">對方屬性</span>
-                            <div class="type-vs-picker-content">
-                                <img id="type-vs-icon-b" class="type-vs-picker-icon" alt="" hidden>
-                                <div class="type-vs-picker-meta">
-                                    <span id="type-vs-name-b" class="type-vs-picker-name">尚未選擇</span>
-                                </div>
-                            </div>
-                            <button id="type-vs-btn-b" class="primary-button compact-button type-vs-change-btn" type="button">更換屬性 ▾</button>
-                        </div>
-                    </div>
-
-                    <div class="type-vs-stone-selection">
-                        <span>我方技能石</span>
-                        <button id="type-vs-stone-select" class="secondary-button compact-button" type="button" aria-haspopup="dialog">不攜帶 ▾</button>
-                    </div>
-                    <p id="type-vs-empty" class="panel-description" role="status">請選擇我方與對方屬性。</p>
-                    <div class="type-vs-results-grid" aria-live="polite" aria-label="攻擊倍率" hidden>
-                        <div class="type-vs-result-card">
-                            <span id="type-vs-card-title-a" class="type-vs-result-title"></span>
-                            <div class="type-vs-stat-val-group">
-                                <span id="type-vs-atk-mult-a" class="type-vs-stat-multiplier"></span>
-                                <span id="type-vs-atk-badge-a" class="type-vs-stat-tag"></span>
-                            </div>
-                        </div>
-                        <div class="type-vs-result-card">
-                            <span id="type-vs-card-title-b" class="type-vs-result-title"></span>
-                            <div class="type-vs-stat-val-group">
-                                <span id="type-vs-atk-mult-b" class="type-vs-stat-multiplier"></span>
-                                <span id="type-vs-atk-badge-b" class="type-vs-stat-tag"></span>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="type-vs-stone-result" class="type-vs-result-card" aria-live="polite" hidden>
-                        <span id="type-vs-stone-title" class="type-vs-result-title"></span>
-                        <div class="type-vs-stat-val-group">
-                            <span id="type-vs-stone-mult" class="type-vs-stat-multiplier"></span>
-                            <span id="type-vs-stone-badge" class="type-vs-stat-tag"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
+        this.container.innerHTML = TYPE_CALCULATOR_TEMPLATE;
 
         // Sub-tabs elements
         this.tabLookupBtn = document.getElementById("type-calc-tab-lookup");
@@ -416,61 +286,15 @@ export class SeerTypeCalculatorController {
         this.renderVs();
     }
 
-    openPickerForLookup(opener) {
-        this.currentPickerTarget = "lookup";
-        this.openPickerModal(opener, "選擇計算屬性");
-    }
+    
 
-    openPickerForVsA(opener) {
-        this.currentPickerTarget = "vsA";
-        this.openPickerModal(opener, "選擇我方屬性");
-    }
+    
 
-    openPickerForVsB(opener) {
-        this.currentPickerTarget = "vsB";
-        this.openPickerModal(opener, "選擇對方屬性");
-    }
+    
 
-    openPickerModal(opener = document.activeElement, titleText = "選擇屬性") {
-        if (!this.pickerModal.hidden) return;
-        this.pickerModalOpener = opener;
-        const modalTitle = document.getElementById("type-calc-modal-title");
-        if (modalTitle) modalTitle.textContent = titleText;
-        const isStone = this.currentPickerTarget === "stone";
-        this.pickerBasePanel.hidden = isStone;
-        this.pickerSearchRow.hidden = isStone;
-        this.pickerOptionsTitle.hidden = isStone;
-        this.pickerModal.classList.toggle("is-stone-picker", isStone);
-        this.pickerSearchQuery = "";
-        this.pickerSearchInput.value = "";
-        if (!isStone) {
-            const activeId = this.currentPickerTarget === "vsA" ? this.vsTypeAId
-                : this.currentPickerTarget === "vsB" ? this.vsTypeBId : this.selectedTypeId;
-            this.pickerBaseType = combinationsById.get(activeId)?.types[0] || null;
-            this.renderPickerBases();
-        }
-        this.pickerModal.querySelector(".seer-pet-info-message").textContent = isStone
-            ? "選擇一種技能石，或不攜帶。"
-            : "點選單屬性，查看相關組合。";
-        this.pickerModal.classList.remove("is-closing");
-        this.pickerModal.hidden = false;
-        this.renderPickerOptions();
-        this.pickerCloseBtn.focus();
-    }
+    
 
-    closePickerModal(restoreFocus = true) {
-        if (this.pickerModal.hidden || this.pickerModal.classList.contains("is-closing")) return;
-        this.pickerModal.classList.add("is-closing");
-        window.setTimeout(() => {
-            if (!this.pickerModal.classList.contains("is-closing")) return;
-            this.pickerModal.hidden = true;
-            this.pickerModal.classList.remove("is-closing");
-            if (restoreFocus && this.pickerModalOpener && this.pickerModalOpener.isConnected) {
-                this.pickerModalOpener.focus();
-            }
-            this.pickerModalOpener = null;
-        }, 180);
-    }
+    
 
     render() {
         if (this.currentFeature === "lookup") {
@@ -721,92 +545,12 @@ export class SeerTypeCalculatorController {
         });
     }
 
-    renderPickerBases() {
-        this.pickerBases.replaceChildren();
-        for (const type of combinations.filter(type => type.types.length === 1)) {
-            const button = document.createElement("button");
-            button.type = "button";
-            button.className = "seer-pet-type-option";
-            button.dataset.baseType = type.name;
-            button.append(createTypeLabel(type));
-            button.addEventListener("click", () => {
-                this.pickerBaseType = type.name;
-                this.pickerSearchQuery = "";
-                this.pickerSearchInput.value = "";
-                this.renderPickerOptions();
-                this.pickerOptionsContainer.scrollTop = 0;
-            });
-            this.pickerBases.append(button);
-        }
-    }
+    
 
-    renderPickerOptions() {
-        if (this.currentPickerTarget === "stone") {
-            this.pickerOptionsContainer.classList.remove("is-empty");
-            this.renderStonePicker();
-            return;
-        }
-        this.pickerOptionsContainer.replaceChildren();
-
-        const activeId =
-            this.currentPickerTarget === "vsA" ? this.vsTypeAId :
-            this.currentPickerTarget === "vsB" ? this.vsTypeBId :
-            this.selectedTypeId;
-
-        const filtered = getRelatedTypeOptions(this.pickerBaseType, this.pickerSearchQuery);
-        for (const button of this.pickerBases.querySelectorAll("[data-base-type]")) {
-            const active = button.dataset.baseType === this.pickerBaseType && !this.pickerSearchQuery.trim();
-            button.classList.toggle("is-active", active);
-            button.setAttribute("aria-pressed", String(active));
-        }
-        this.pickerOptionsTitle.textContent = this.pickerSearchQuery.trim() ? `搜尋結果（${filtered.length}）`
-            : this.pickerBaseType ? `${this.pickerBaseType}系相關屬性（${filtered.length}）` : "相關屬性";
-        this.pickerOptionsContainer.classList.toggle("is-empty", !filtered.length);
-        if (!filtered.length) {
-            const hint = document.createElement("p");
-            hint.className = "type-calc-picker-hint";
-            hint.textContent = this.pickerSearchQuery.trim() ? "找不到符合的屬性" : "選擇一個單屬性";
-            const detail = document.createElement("span");
-            detail.textContent = this.pickerSearchQuery.trim() ? "試試其他名稱或縮短關鍵字" : "相關雙屬性會顯示在這裡";
-            hint.append(detail);
-            this.pickerOptionsContainer.append(hint);
-        }
-
-        filtered.forEach((item) => {
-            const button = document.createElement("button");
-            button.type = "button";
-            button.className = "seer-pet-type-option";
-            const isSelected = item.id === activeId;
-            button.classList.toggle("is-active", isSelected);
-            button.setAttribute("aria-pressed", String(isSelected));
-            button.dataset.calcTypeId = String(item.id);
-
-            const icon = document.createElement("img");
-            icon.src = `./seer_icons/${item.id}.png`;
-            icon.alt = "";
-            icon.loading = "lazy";
-            icon.addEventListener("error", () => { icon.hidden = true; }, { once: true });
-
-            const name = document.createElement("span");
-            name.textContent = item.name;
-
-            button.append(icon, name);
-
-            button.addEventListener("click", () => {
-                if (this.currentPickerTarget === "vsA") {
-                    this.setVsTypeA(item.id);
-                } else if (this.currentPickerTarget === "vsB") {
-                    this.setVsTypeB(item.id);
-                } else {
-                    this.setSelectedType(item.id);
-                }
-                this.closePickerModal();
-            });
-
-            this.pickerOptionsContainer.append(button);
-        });
-    }
+    
 }
+
+Object.assign(SeerTypeCalculatorController.prototype, typePickerMethods);
 
 let typeCalculatorInstance = null;
 
