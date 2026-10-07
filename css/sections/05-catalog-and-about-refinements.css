@@ -283,6 +283,7 @@ html:has(.site-header .primary-main-tabs) { scroll-padding-top: 84px; }
 }
 
 .about-hero > p {
+    max-width: calc(100% - 240px);
     margin: 0;
     color: #aeb5d1;
     font-size: 15px;
@@ -1096,7 +1097,7 @@ html:has(.site-header .primary-main-tabs) { scroll-padding-top: 84px; }
     .about-hero > p {
         position: relative;
         z-index: 1;
-        max-width: 32em;
+        max-width: calc(100% - 88px);
         font-size: 14px;
     }
     .about-detail-grid {
