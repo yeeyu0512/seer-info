@@ -17,3 +17,12 @@
 - 套裝 catalog 與常用 ID 清單移出 UI；Ruffle runtime 獨立，兩種 SWF renderer 仍各自持有 player／佇列。
 - 新增工具契約測試；59 項測試通過。全部 35 個 JS 模組通過語法、相對 import 存在及循環依賴檢查。
 - 尚待驗證項目同上；不操作正式資料庫。
+
+## 批次 3：圖鑑 repository 與詳情 view
+
+- 資料請求與快取移至 lookup/repository；Wiki 圖片解析單獨保留，未限制原 HTTP adapter 的來源。
+- 精靈詳情與身分渲染移至 pet-info-view，回呼與 DOM ID／class 保留。
+- 圖鑑 DOM 查詢、observer、圖片 error listener 現在只在初始化時建立；再次初始化返回同一實例，避免重複綁定。
+- 63 項 Node 測試通過，新增完整／精簡資料分離、in-flight 去重、失敗重試、關聯排序及實例快取隔離測試。
+- 無頭 Chrome 使用固定 API／授權 fixture，於 1440px 與 390px 比較基準版和重構版：訪客導航、精靈詳情文字／面板尺寸相同，無 pageerror。
+- 真正官方 SWF 渲染及正式資料庫寫入仍未作為此批驗收，未宣稱完整外部服務端到端驗證。
