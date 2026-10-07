@@ -974,7 +974,8 @@
         max-height: 58vh;
     }
 
-    .seer-lookup-results .seer-lookup-result {
+    .seer-lookup-results .seer-lookup-result,
+.training-pet-dialog .training-options .seer-lookup-result {
         min-height: 54px;
         padding: 9px 11px;
     }
@@ -1158,7 +1159,8 @@
 }
 
 .seer-lookup-result:hover,
-.seer-lookup-result.is-selected {
+.seer-lookup-result.is-selected,
+.training-pet-dialog .training-options .seer-lookup-result:hover {
     border-color: rgba(147, 135, 255, .5);
     background: rgba(147, 135, 255, .12);
 }

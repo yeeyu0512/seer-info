@@ -1,3 +1,10 @@
+const sharedRepositories = new WeakMap();
+export function getSharedLookupRepository(dependencies) {
+    const key = dependencies.fetchSeerJson;
+    if (!sharedRepositories.has(key)) sharedRepositories.set(key,createLookupRepository(dependencies));
+    return sharedRepositories.get(key);
+}
+
 // Data caches belong to this instance; no UI or DOM dependency.
 export function createLookupRepository({ fetchSeerJson, convertToTraditionalChinese, convertToSimplifiedChinese }) {
     const elementTypeDetailsCache = new Map();
@@ -94,6 +101,7 @@ export function createLookupRepository({ fetchSeerJson, convertToTraditionalChin
         return {
             id,
             name: String(pet && pet.name || ""),
+            ...(pet.advance?.id != null ? {advance:pet.advance} : {}),
             typeId: Number.isSafeInteger(typeId) && typeId > 0 ? typeId : null
         };
     }

@@ -678,7 +678,8 @@
     flex-shrink: 0;
 }
 
-#seer-pet-type-current-name {
+#seer-pet-type-current-name,
+#training-pet-type-current-name {
     color: var(--text);
     font-size: 14px;
     font-weight: 700;

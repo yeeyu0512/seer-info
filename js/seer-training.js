@@ -6,8 +6,11 @@ import {createTrainingResultView} from "./training/result-view.js";
 import {createTrainingExportData} from "./training/export-data.js";
 import { TRAINING_STATS as STATS } from "./seer-training-core.js";
 import { initTrainingSelectors, skinImageId } from "./seer-training-selectors.js";
-import { mintmarkFinalStats } from "./seer-mintmark-stats.js";
 import { downloadTrainingImage } from "./seer-training-export.js";
+import { initTrainingPetPicker } from "./training/pet-picker.js";
+import { createTrainingImages } from "./training/images.js";
+import { initEquipmentPresets } from "./training/equipment-presets.js";
+import { createSuitEyeDetector } from "./training/suit-equipment.js";
 
 const API = "https://api.seerapi.com/v1/";
 
@@ -19,14 +22,33 @@ export function initSeerTraining(root, { fetchSeerJson, convertToTraditionalChin
     const vector = element => Object.fromEntries([...element.querySelectorAll("[data-stat]")].map(input => [input.dataset.stat, input.value === "" ? NaN : Number(input.value)]));
     const name = record => traditional(record.name);
     const source = (record, kind) => trainingSource(record, kind, name);
+    const images = createTrainingImages({fetchCached, simplified});
+    const suitHasEye = createSuitEyeDetector(fetchCached);
+    let eyeState = "free", suitEyeVersion = 0;
+    async function updateSuitEye(suit) {
+        const request = ++suitEyeVersion; eyeState = "pending";
+        equipmentPickers.setAvailability("eye",false,"正在檢查套裝是否含有目鏡…");
+        recalculate();
+        try {
+            const included = await suitHasEye(suit);
+            if (request !== suitEyeVersion || selected.get("suit") !== suit) return;
+            eyeState = included ? "included" : "free";
+            if (included) {selected.delete("eye"); query('[data-effect="eye"]').textContent = ""; equipmentPickers.sync("eye");}
+            equipmentPickers.setAvailability("eye",!included,included ? "套裝已包含目鏡，無法另外裝備目鏡。" : "");
+        } catch {
+            if (request !== suitEyeVersion || selected.get("suit") !== suit) return;
+            eyeState = "unknown"; equipmentPickers.setAvailability("eye",false,"無法確認套裝部件，請重新檢查。",() => updateSuitEye(suit));
+        }
+        recalculate();
+    }
     function updateAppearance() {
         const pet = selected.get("pet"); if (!pet) return;
         const imageId = selectedSkin ? skinImageId(selectedSkin) : pet.resource_id || pet.id;
         const art = query("[data-training-art]"); art.hidden = false; art.alt = selectedSkin ? name(selectedSkin) : name(pet);
-        art.src = `https://newseer.61.com/web/monster/body/${imageId}.png`;
+        images.set(art,{id:imageId,skin:selectedSkin,kind:"body",onUnavailable:() => { art.hidden = true; query("[data-art-placeholder]").hidden = false; query("[data-art-placeholder] p").textContent = "立繪暫時無法取得"; }});
         query("[data-art-placeholder]").hidden = true;
         query("[data-appearance-name]").textContent = selectedSkin ? name(selectedSkin) : "原始外觀";
-        query(".training-pet img").src = `https://newseer.61.com/web/monster/head/${imageId}.png`;
+        images.set(query(".training-pet img"),{id:imageId,skin:selectedSkin});
     }
     async function fetchCached(url) {
         if (!cache.has(url)) cache.set(url, fetchSeerJson(url, {signal: AbortSignal.timeout(20000)}).catch(error => { cache.delete(url); throw error; }));
@@ -64,7 +86,7 @@ export function initSeerTraining(root, { fetchSeerJson, convertToTraditionalChin
             query("[data-race-retry]").hidden = false;
         }
     }
-    const {recalculate} = createTrainingResultView({query, vector, selected, name, source, description, activeRace, getNatures:() => natures, getAdvancedStats:() => advancedStats, getResultMode:() => resultMode});
+    const {recalculate} = createTrainingResultView({query, vector, selected, name, source, description, activeRace, getNatures:() => natures, getAdvancedStats:() => advancedStats, getResultMode:() => resultMode,getEyeState:() => eyeState});
     function choose(id, record) {
         selected.set(id, record);
         if (id === "pet") {
@@ -79,34 +101,39 @@ export function initSeerTraining(root, { fetchSeerJson, convertToTraditionalChin
             renderRace();
             if (record.advance?.id != null) loadAdvance(record);
         } else if (id.startsWith("mint")) {
-            const section = query(`[data-mint-values="${id.slice(4)}"]`); section.hidden = false;
-            section.querySelectorAll("input").forEach(input => input.value = mintmarkFinalStats(record)?.[input.dataset.stat] || 0);
             renderMintSlot(Number(id.slice(4)));
-        } else { query(`[data-effect="${id}"]`).textContent = traditional(description(record, id)); if (id === "suit") { query("[data-suit-select]").textContent = `${name(record)} · #${record.id} ›`; query("[data-suit-remove]").hidden = false; } }
+        } else { query(`[data-effect="${id}"]`).textContent = traditional(description(record, id)); if (id === "suit") { query("[data-suit-select]").textContent = `${name(record)} · #${record.id} ›`; query("[data-suit-remove]").hidden = false; updateSuitEye(record); } else equipmentPickers.sync(id); }
         recalculate();
     }
     const petDialog = document.createElement("dialog");
     petDialog.className = "training-mint-dialog training-pet-dialog";
     petDialog.setAttribute("aria-labelledby","training-pet-dialog-title");
-    petDialog.innerHTML = `<div class="training-dialog-heading"><div><h3 id="training-pet-dialog-title">選擇精靈</h3><p>搜尋名稱或 ID，選擇要培養的精靈。</p></div><button type="button" data-pet-dialog-close aria-label="關閉精靈選擇">×</button></div><div data-picker="pet"></div>`;
+    petDialog.innerHTML = `<div class="training-dialog-heading"><div><h3 id="training-pet-dialog-title">選擇精靈</h3><p>搜尋名稱或 ID，選擇要培養的精靈。</p></div><button type="button" class="seer-pet-info-close" data-pet-dialog-close aria-label="關閉精靈選擇">×</button></div><div data-training-pet-picker></div>`;
     root.append(petDialog);
     let petInvoker;
-    const openPet = event => { petInvoker = event.currentTarget; petDialog.showModal(); petDialog.querySelector("input").focus(); };
+    const openPet = event => { petInvoker = event.currentTarget; petDialog.showModal(); petPicker.open(); petDialog.querySelector("input[type=search]").focus(); };
     query("[data-art-placeholder]").addEventListener("click",openPet);
     query("[data-pet-select]").addEventListener("click",openPet);
     query("[data-pet-dialog-close]").addEventListener("click",() => petDialog.close());
     petDialog.addEventListener("close",() => { const target = petInvoker?.hidden ? query("[data-pet-select]") : petInvoker; target?.focus({preventScroll:true}); });
-    const choiceWindows = initTrainingSelectors(root,{fetchJson:fetchCached,traditional,simplified,getPet:() => selected.get("pet"),onSuit:record => choose("suit",record),onSkin:skin => { selectedSkin = skin; updateAppearance(); }});
+    const choiceWindows = initTrainingSelectors(root,{fetchJson:fetchCached,traditional,simplified,getPet:() => selected.get("pet"),onSuit:record => choose("suit",record),onSkin:skin => { selectedSkin = skin; updateAppearance(); },images});
     query("[data-suit-select]").addEventListener("click",event => choiceWindows.open("suit",event.currentTarget));
     query("[data-skin-select]").addEventListener("click",event => choiceWindows.open("skin",event.currentTarget));
-    query("[data-suit-remove]").addEventListener("click",() => { selected.delete("suit"); query("[data-suit-select]").textContent = "選擇套裝 ›"; query("[data-suit-remove]").hidden = true; query('[data-effect="suit"]').textContent = ""; recalculate(); });
+    query("[data-suit-remove]").addEventListener("click",() => { selected.delete("suit"); suitEyeVersion++; eyeState = "free"; equipmentPickers.setAvailability("eye",true,""); query("[data-suit-select]").textContent = "選擇套裝 ›"; query("[data-suit-remove]").hidden = true; query('[data-effect="suit"]').textContent = ""; recalculate(); });
     const {renderMintSlot} = createTrainingMintmarkPicker({root, query, selected, name, traditional, simplified, fetchCached, choose, recalculate});
-    query("[data-training-art]").addEventListener("error",() => { query("[data-training-art]").hidden = true; query("[data-art-placeholder]").hidden = false; query("[data-art-placeholder] p").textContent = "立繪暫時無法取得"; });
-    initTrainingSearchPickers({root, query, selected, name, simplified, fetchCached, choose, recalculate, onPetChosen:() => petDialog.close(), onClearPet:() => { query("[data-pet-select]").hidden = true; petVersion++; advancedStats = null; selectedSkin = null; query("[data-skin-select]").disabled = true; query("[data-appearance-name]").textContent = "原始外觀"; query(".training-pet").hidden = true; query(".training-race").hidden = true; query("[data-race-mode]").value = "normal"; query("[data-training-art]").hidden = true; query("[data-training-art]").removeAttribute("src"); query("[data-art-placeholder]").hidden = false; query("[data-art-placeholder] p").innerHTML = "選擇一隻精靈<br>開始模擬培養"; }});
+    const clearPet = () => { query("[data-pet-select]").hidden = true; petVersion++; advancedStats = null; selectedSkin = null; query("[data-skin-select]").disabled = true; query("[data-appearance-name]").textContent = "原始外觀"; query(".training-pet").hidden = true; query(".training-race").hidden = true; query("[data-race-mode]").value = "normal"; images.clear(query("[data-training-art]")); images.clear(query(".training-pet img")); query("[data-art-placeholder]").hidden = false; query("[data-art-placeholder] p").innerHTML = "選擇一隻精靈<br>開始模擬培養"; };
+    query("[data-pet-clear]").addEventListener("click",() => { selected.delete("pet"); clearPet(); recalculate(); });
+    const petPicker = initTrainingPetPicker(petDialog,{fetchSeerJson,fetchCached,traditional,simplified,onChoose:record => choose("pet",record)});
+    const equipmentPickers = initTrainingSearchPickers({root, query, selected, name, simplified, fetchCached, choose, recalculate, description:(record,id) => traditional(description(record,id))});
+    initEquipmentPresets(root,{fetchCached,apply:async (records,active) => {
+        const suit = records.find(([id]) => id === "suit")?.[1];
+        const included = suit ? await suitHasEye(suit) : false;
+        if (!active()) return;
+        for (const [id,record] of records) if (id !== "eye" || !included) choose(id,record);
+    }});
     query("[data-ev-clear]").addEventListener("click", () => { query("[data-ev]").querySelectorAll("input").forEach(input => input.value = 0); recalculate(); });
     query("[data-race-mode]").addEventListener("change", () => { renderRace(); recalculate(); });
     query("[data-race-retry]").addEventListener("click", () => { const pet = selected.get("pet"); if (pet?.advance) loadAdvance(pet); });
-    for (const button of root.querySelectorAll("[data-mint-max]")) button.addEventListener("click", () => { const id = button.dataset.mintMax; const record = selected.get(`mint${id}`); if (record) choose(`mint${id}`,record); });
     root.addEventListener("input", event => {
         const input = event.target;
         if (!input.matches('input[type="number"]')) return;

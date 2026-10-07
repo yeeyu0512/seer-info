@@ -1,10 +1,11 @@
+import { createPetResultButton } from "./lookup/pet-result.js";
 import { createLookupBrowseController } from "./lookup/browse-controller.js";
 import { createLookupDialogs } from "./lookup/dialogs.js";
 import { typeIconUrl, skinCategoryIconUrl } from "./shared/assets.js";
 import { getSeerServerSettings } from "./seer-server-settings.js";
 import { SEER_TYPE_DATA } from "./seer-type-data.js";
 import { getRelatedTypeOptions } from "./shared/type-options.js";
-import { createLookupRepository } from "./lookup/repository.js";
+import { getSharedLookupRepository } from "./lookup/repository.js";
 import { createPetInfoView } from "./lookup/pet-info-view.js";
 import { createSoulmarkImageResolver } from "./lookup/wiki.js";
 
@@ -96,7 +97,7 @@ export function initSeerLookup(dependencies) {
 
     const { activateTab, convertToTraditionalChinese, convertToSimplifiedChinese, fetchSeerJson } = dependencies;
 
-    const { fetchSeerElementTypeCombinations, fetchSeerPetCatalog, fetchSeerSkinCatalog, fetchSeerPetDetails, fetchSeerPetsByName, fetchSeerElementTypeDetails, fetchSeerPetInfo, fetchSeerPetRelatedRecords, getElementTypeCombinations, getCachedElementTypeDetails } = createLookupRepository(dependencies);
+    const { fetchSeerElementTypeCombinations, fetchSeerPetCatalog, fetchSeerSkinCatalog, fetchSeerPetDetails, fetchSeerPetsByName, fetchSeerElementTypeDetails, fetchSeerPetInfo, fetchSeerPetRelatedRecords, getElementTypeCombinations, getCachedElementTypeDetails } = getSharedLookupRepository(dependencies);
     const resolveSeerWikiSoulmarkImage = createSoulmarkImageResolver(fetchSeerJson);
     const { startLatestSeerBrowse, startSeerPetTypeFilter, loadMoreSeerPetTypeFilterResults, loadMoreSeerBrowseResults, updateSeerBrowseLoadingProgress, loadSeerBrowsePage, updateSeerBrowseSentinel, clearSeerBrowseSentinel, getBrowseState, resetBrowseState } = createLookupBrowseController({
         seerLookupResults,
@@ -800,41 +801,7 @@ export function initSeerLookup(dependencies) {
     function renderSeerPetSearchResults(pets, typeDetailsById, append = false) {
         if (!append) seerLookupResults.replaceChildren();
         pets.forEach((pet) => {
-            const button = document.createElement("button");
-            button.className = "seer-lookup-result";
-            button.type = "button";
-            const content = document.createElement("span");
-            content.className = "seer-lookup-result-content";
-            const visual = document.createElement("span");
-            visual.className = "seer-lookup-result-thumbnail";
-            const thumbnail = document.createElement("img");
-            thumbnail.src = `https://newseer.61.com/web/monster/head/${encodeURIComponent(pet.id)}.png`;
-            thumbnail.alt = `${convertToTraditionalChinese(pet.name || "精靈")}頭像`;
-            thumbnail.loading = "lazy";
-            thumbnail.addEventListener("error", () => {
-                thumbnail.hidden = true;
-            });
-            visual.append(thumbnail);
-            const typeId = pet && pet.type && pet.type.id || pet && pet.typeId;
-            const typeDetails = typeId && typeDetailsById.get(String(typeId));
-            const type = document.createElement("span");
-            type.className = "seer-lookup-result-type";
-            if (typeDetails) {
-                const typeIcon = document.createElement("img");
-                typeIcon.src = typeIconUrl(typeDetails.id);
-                typeIcon.alt = typeDetails.name || "屬性";
-                type.append(typeIcon);
-            } else {
-                type.textContent = "-";
-            }
-            const name = document.createElement("strong");
-            name.className = "seer-lookup-result-name";
-            name.textContent = convertToTraditionalChinese(pet.name || "未命名精靈");
-            content.append(visual, type, name);
-            const id = document.createElement("span");
-            id.className = "seer-lookup-result-id";
-            id.textContent = `#${pet.id}`;
-            button.append(content, id);
+            const button = createPetResultButton(pet,typeDetailsById,convertToTraditionalChinese);
             button.addEventListener("click", async () => {
                 const isBrowsing = getBrowseState()
                     && getBrowseState().requestId === seerLookupRequestId

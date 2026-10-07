@@ -1,12 +1,13 @@
+import { mintmarkFinalStats } from "../seer-mintmark-stats.js";
 import { TRAINING_STATS as STATS, calculateTraining, trainingModes } from "../seer-training-core.js";
-export function createTrainingResultView({query, vector, selected, name, source, description, activeRace, getNatures, getAdvancedStats, getResultMode}) {
+export function createTrainingResultView({query, vector, selected, name, source, description, activeRace, getNatures, getAdvancedStats, getResultMode, getEyeState = () => "free"}) {
 function recalculate() {
         const ev = vector(query("[data-ev]"));
         const total = STATS.reduce((sum,[key]) => sum + (ev[key] || 0), 0);
         query("[data-ev-total]").textContent = `${total} / 510`;
         query("[data-ev-total]").classList.toggle("is-invalid", total > 510);
         const pet = selected.get("pet");
-        const sources = [0,1,2].filter(i => selected.has(`mint${i}`)).map(i => ({label:`刻印 ${i+1} · ${name(selected.get(`mint${i}`))}`,stats:vector(query(`[data-mint-values="${i}"]`)),modes:["PVE","PVP"]}));
+        const sources = [0,1,2].filter(i => selected.has(`mint${i}`)).map(i => ({label:`刻印 ${i+1} · ${name(selected.get(`mint${i}`))}`,stats:mintmarkFinalStats(selected.get(`mint${i}`)),modes:["PVE","PVP"]}));
         for (const kind of ["eye","title"]) { const record = selected.get(kind); if (record) { const added = source(record, kind); if (added) sources.push(added); } }
         sources.push({label:"戰隊加成", stats:vector(query("[data-extra]")),modes:["PVE","PVP"]});
         if (query("[data-year-bonus]").checked) sources.push({label:"年費加成",stats:Object.fromEntries(STATS.map(([key]) => [key,10])),modes:["PVE","PVP"]});
@@ -27,6 +28,7 @@ function recalculate() {
         query("[data-error]").textContent = "";
         if (pet) {
             try {
+                if (getResultMode() !== "base" && ["pending","unknown"].includes(getEyeState())) throw new Error(getEyeState() === "pending" ? "正在檢查套裝目鏡部件…" : "套裝部件尚未確認，請重新檢查。");
                 for (const id of ["mint0","mint1","mint2"]) {
                     const record = selected.get(id);
                     if (record?.pet?.length && !record.pet.some(item => Number(item.id ?? item) === pet.id)) throw new Error(`${name(record)}為專屬刻印，所選精靈不符合使用限制。`);

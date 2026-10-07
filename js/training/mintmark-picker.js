@@ -57,7 +57,7 @@ export function createTrainingMintmarkPicker({root, query, selected, name, tradi
         mintDialog.showModal(); mintSearch.focus(); loadMintChoices();
     });
     for (const button of root.querySelectorAll("[data-mint-clear]")) button.addEventListener("click",() => {
-        const index = Number(button.dataset.mintClear); selected.delete(`mint${index}`); query(`[data-mint-values="${index}"]`).hidden = true; renderMintSlot(index); recalculate();
+        const index = Number(button.dataset.mintClear); selected.delete(`mint${index}`); renderMintSlot(index); recalculate();
     });
     query("[data-mint-dialog-close]").addEventListener("click",() => mintDialog.close());
     mintDialog.addEventListener("close",() => { unobserveMintmarkImages(mintGrid); mintGrid.replaceChildren(); slotInvoker?.focus({preventScroll:true}); });

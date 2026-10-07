@@ -22,10 +22,10 @@ export async function fetchTrainingChoices(resource, fetchJson) {
     return [...records.values()];
 }
 
-export function initTrainingSelectors(root,{fetchJson,traditional,simplified,getPet,onSuit,onSkin}) {
+export function initTrainingSelectors(root,{fetchJson,traditional,simplified,getPet,onSuit,onSkin,images}) {
     const dialog = document.createElement("dialog"); dialog.className = "training-mint-dialog training-choice-dialog";
     dialog.setAttribute("aria-labelledby","training-choice-title");
-    dialog.innerHTML = `<div class="training-dialog-heading"><div><h3 id="training-choice-title"></h3><p data-choice-caption></p></div><button type="button" data-choice-close aria-label="關閉選擇視窗">×</button></div><div class="training-choice-filters"><input type="search" aria-label="搜尋選項" placeholder="名稱或 ID…"><select aria-label="套裝類型"><option value="all">全部套裝</option><option value="common">常用套裝</option><option value="bonus">能力套裝</option><option value="appearance">炫酷套裝</option></select></div><p data-choice-status role="status"></p><button type="button" data-choice-retry hidden>重新載入</button><div class="training-choice-grid"></div><nav class="training-dialog-pagination" aria-label="選擇分頁"><button type="button" data-choice-prev>上一頁</button><span></span><button type="button" data-choice-next>下一頁</button></nav>`;
+    dialog.innerHTML = `<div class="training-dialog-heading"><div><h3 id="training-choice-title"></h3><p data-choice-caption></p></div><button type="button" class="seer-pet-info-close" data-choice-close aria-label="關閉選擇視窗">×</button></div><div class="training-choice-filters"><input type="search" aria-label="搜尋選項" placeholder="名稱或 ID…"><select aria-label="套裝類型"><option value="all">全部套裝</option><option value="common">常用套裝</option><option value="bonus">能力套裝</option><option value="appearance">炫酷套裝</option></select></div><p data-choice-status role="status"></p><button type="button" data-choice-retry hidden>重新載入</button><div class="training-choice-grid"></div><nav class="training-dialog-pagination" aria-label="選擇分頁"><button type="button" data-choice-prev>上一頁</button><span></span><button type="button" data-choice-next>下一頁</button></nav>`;
     root.append(dialog);
     const query = selector => dialog.querySelector(selector), search = query("input"), type = query("select"), grid = query(".training-choice-grid");
     const catalogs = new Map(); let kind, page = 1, invoker, version = 0;
@@ -49,7 +49,7 @@ export function initTrainingSelectors(root,{fetchJson,traditional,simplified,get
             title.textContent = traditional(record.name); meta.textContent = `#${record.id}${kind === "suit" ? ` · ${record.bonus ? "能力套裝" : "炫酷套裝"}` : ""}`;
             info.append(title,meta);
             if (kind === "suit") { detail.textContent = traditional(record.bonus?.desc || "無能力加成"); info.append(detail); }
-            else { const image = document.createElement("img"); image.width = image.height = 64; image.loading = "lazy"; image.alt = ""; image.src = `https://newseer.61.com/web/monster/head/${skinImageId(record)}.png`; button.append(image); }
+            else { const image = document.createElement("img"); image.width = image.height = 64; image.loading = "lazy"; image.alt = ""; button.append(image); button.append(info); grid.append(button); images.set(image,{id:skinImageId(record),skin:record}); }
             button.append(info); grid.append(button);
             button.addEventListener("click",() => { if (kind === "suit") onSuit(record); else onSkin(record); dialog.close(); });
         }
