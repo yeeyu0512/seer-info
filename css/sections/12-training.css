@@ -1,0 +1,170 @@
+/* Independent training prototype */
+.training-panel { padding: 24px; }
+.training-heading { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:24px; }
+.training-heading h2 { margin:0 0 8px; font-size:24px; }
+.training-heading p { margin:0; color:#a4aac0; font-size:14px; }
+.training-heading .training-ui-notice { margin-top:8px; color:#c6baff; font-size:12px; }
+.training-beta,.training-level { font-size:12px; color:#c6baff; border:1px solid #50496f; border-radius:8px; padding:4px 8px; vertical-align:middle; }
+.training-level { white-space:nowrap; }
+.training-heading-actions { display:flex; align-items:center; justify-content:flex-end; gap:10px; flex-wrap:wrap; }
+.training-heading-actions button { white-space:nowrap; margin:0; }
+.training-layout { display:grid; grid-template-columns:minmax(0,1.45fr) minmax(320px,1fr); gap:20px; align-items:start; }
+.training-editor { display:grid; gap:16px; min-width:0; }
+.training-card { background:#101423; border:1px solid #303249; border-radius:16px; padding:20px; min-width:0; }
+.training-card h3 { margin:0 0 18px; font-size:17px; }
+.training-card h3 > span { font-size:12px; color:#a49ad4; margin-right:8px; }
+.training-card h4 { margin:0 0 10px; color:#c6baff; font-size:14px; }
+.training-card input,.training-card select { width:100%; box-sizing:border-box; min-height:40px; margin:0; padding:8px 10px; border:1px solid #35364d; border-radius:9px; background:#1a1d30; color:#f0eff8; font-size:14px; }
+.training-card button { margin:0; min-height:36px; padding:6px 12px; font-size:13px; border-radius:9px; }
+.training-card label { display:grid; gap:7px; color:#a4aac0; font-size:13px; }
+.training-search { display:flex; gap:8px; }
+.training-search input { min-width:0; }
+.training-search button { flex-shrink:0; }
+.training-selected { display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding:8px 10px; background:#27233f; border:1px solid #5c5284; border-radius:9px; font-size:14px; }
+.training-selected[hidden],.training-pet[hidden] { display:none; }
+.training-selected strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.training-selected button { background:none; padding:0 8px; }
+.training-options { display:flex; flex-wrap:wrap; gap:6px; }
+.training-options button { background:#25283e; border:1px solid #3c3e59; text-align:left; }
+.training-search-status,.training-effect,.training-nature-note,.training-hint,.training-limit,.training-breakdown p { font-size:12px; line-height:1.7; color:#a4aac0; margin:8px 0; }
+.training-search-status:empty,.training-effect:empty { display:none; }
+.training-pet { display:flex; gap:12px; align-items:center; margin:16px 0; }
+.training-pet img { object-fit:contain; border-radius:12px; background:#24263b; }
+.training-pet p { margin:6px 0 0; font-size:12px; color:#a4aac0; }
+.training-race-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px 12px; margin:12px 0; font-size:12px; color:#a4aac0; }
+.training-race [data-race-picker][hidden] { display:none; }
+.training-race [data-race-status]:empty { display:none; }
+.training-basic { display:grid; grid-template-columns:minmax(0,1fr) 90px 120px; gap:12px; margin-top:16px; }
+@media(max-width:600px) { .training-basic { grid-template-columns:repeat(2,minmax(0,1fr)); } .training-basic label:first-child { grid-column:1/-1; } }
+.training-section-heading { display:flex; gap:12px; align-items:center; margin:16px 0 12px; }
+.training-section-heading h3,.training-section-heading h4 { margin:0; }
+.training-section-heading span { margin-left:auto; font-size:12px; color:#a4aac0; }
+.training-section-heading .is-invalid,.training-result-error { color:#ff8d9e; }
+.training-stat-inputs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+.training-mintmarks { display:grid; gap:12px; }
+.training-mintmark { padding:14px; border:1px solid #303249; border-radius:12px; }
+.training-mintmark summary,.training-advanced summary,.training-breakdown summary { color:#c6baff; font-size:13px; cursor:pointer; }
+.training-mintmark details { margin-top:12px; }
+.training-mintmark details .training-stat-inputs { margin:12px 0; }
+.training-equipment { display:grid; gap:18px; }
+.training-advanced .training-stat-inputs { margin-top:14px; }
+.training-results { position:sticky; top:100px; min-width:0; }
+.training-results .training-section-heading { margin-top:0; }
+.training-table-wrap { overflow-x:auto; }
+.training-results table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; }
+.training-results th,.training-results td { padding:15px 8px; border-bottom:1px solid #303249; text-align:right; }
+.training-results th:first-child { text-align:left; }
+.training-results thead th { color:#a4aac0; font-size:12px; font-weight:500; }
+.training-results tbody th { font-size:14px; font-weight:500; }
+.training-results tbody td { font-size:21px; font-weight:700; }
+.training-results tbody td:first-of-type { font-size:15px; color:#a4aac0; font-weight:400; }
+.training-results tbody td:nth-of-type(2) { color:#8adeca; }
+.training-results tbody td:nth-of-type(3) { color:#c6baff; }
+.training-breakdown { margin-top:18px; padding-top:14px; border-top:1px solid #303249; }
+.training-limit { margin-top:20px; }
+.training-credit { margin:20px 0 0; color:#a4aac0; font-size:12px; }
+.training-credit a { color:inherit; }
+@media(max-width:900px) { .training-layout { grid-template-columns:1fr; } .training-results { position:static; grid-row:1; } }
+@media(max-width:500px) { .training-panel { padding:16px; } .training-card { padding:16px; } .training-heading h2 { font-size:20px; } .training-results tbody td { font-size:19px; } .training-results th,.training-results td { padding:9px 6px; } }
+.training-layout { grid-template-columns:minmax(0,1fr) minmax(0,1.15fr); gap:22px; }
+.training-stage { position:sticky; top:100px; padding:22px; background:radial-gradient(ellipse at 50% 40%,#29345477,transparent 68%),#101423; }
+.training-stagebar { display:flex; gap:12px; align-items:center; justify-content:space-between; color:#b8b6d1; font-size:13px; }
+.training-stagebar span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.training-stagebar button { flex-shrink:0; box-shadow:none; background:#28283f; }
+.training-stage-actions { display:flex; gap:8px; flex-shrink:0; }
+.training-bounded-input { display:flex; align-items:center; gap:10px; }
+.training-card .training-bounded-input input { min-width:0; flex:1; }
+.training-input-limit { flex-shrink:0; min-width:30px; color:#929ab4; font-size:13px; font-variant-numeric:tabular-nums; }
+.training-input-limit .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0; }
+.training-card button[data-art-placeholder] { background:none; border:0; box-shadow:none; padding:24px; color:#909ab7; font-size:15px; line-height:1.8; }
+.training-card button[data-art-placeholder]:hover { background:#ffffff05; color:#c6baff; }
+.training-pet-dialog { width:min(660px,calc(100vw - 40px)); }
+.training-pet-dialog .training-selected { display:none; }
+.training-pet-dialog .training-options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); max-height:50vh; overflow:auto; }
+.training-pet-dialog .training-options button { margin:0; padding:12px; min-width:0; }
+@media(max-width:500px) { .training-stagebar { flex-wrap:wrap; } .training-pet-dialog .training-options { grid-template-columns:1fr; } }
+.training-suit-selection { display:flex; gap:8px; }
+.training-card [data-suit-select] { flex:1; display:flex; justify-content:space-between; align-items:center; text-align:left; padding:12px; background:#25233c; border:1px solid #504769; box-shadow:none; }
+.training-choice-filters { display:flex; gap:10px; }
+.training-choice-filters input,.training-choice-filters select { margin:0; min-width:0; padding:10px 12px; border:1px solid #3c3d55; border-radius:10px; background:#101323; color:#dddff0; font-size:13px; }
+.training-choice-filters input { flex:1; }
+.training-choice-filters select { width:145px; }
+.training-choice-dialog [data-choice-status] { margin:0; color:#a4aac0; font-size:12px; }
+.training-choice-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; overflow:auto; min-height:80px; }
+.training-choice-card { display:flex; align-items:center; gap:12px; min-width:0; margin:0; padding:14px; text-align:left; background:#202338; border:1px solid #393a54; border-radius:12px; box-shadow:none; }
+.training-choice-card:hover { border-color:#a094dc; background:#2b2843; }
+.training-choice-card > span { display:grid; gap:6px; min-width:0; }
+.training-choice-card strong { font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.training-choice-card small,.training-choice-card p { color:#a4aac0; font-size:11px; margin:0; line-height:1.6; }
+.training-choice-card p { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.training-choice-card img { flex-shrink:0; object-fit:contain; }
+.training-original-skin { justify-content:center; color:#c6baff; min-height:92px; }
+@media(max-width:500px) { .training-choice-grid { grid-template-columns:1fr; } .training-choice-filters select { width:120px; } }
+.training-art { height:390px; display:grid; place-items:center; }
+.training-art img { width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 12px 24px #0005); }
+.training-art img[hidden],.training-art [hidden] { display:none; }
+[data-art-placeholder] { text-align:center; color:#909ab7; font-size:15px; line-height:1.8; }
+[data-art-placeholder] > span { display:inline-grid; place-items:center; width:64px; height:64px; border:1px solid #5c6386; border-radius:50%; color:#c6baff; font-size:30px; }
+.training-mintmarks { grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:20px; }
+.training-mintmark { padding:0; border:0; text-align:center; min-width:0; }
+.training-card .training-mint-slot { width:100%; display:grid; justify-items:center; gap:8px; padding:14px 6px; background:#202237; border:1px solid #42415f; min-height:140px; box-shadow:none; }
+.training-mint-slot:hover { border-color:#a59afa; background:#2b2945; }
+.training-mint-slot.has-mint { background:#2b2642; border-color:#716496; }
+.training-mint-slot strong { max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:12px; }
+.training-mint-slot small { color:#949bb4; font-size:11px; }
+.training-mint-icon { width:54px; height:54px; display:grid; place-items:center; border:1px solid #555473; border-radius:13px; color:#b3a7e1; font-size:25px; flex-shrink:0; }
+.training-mint-icon img { object-fit:contain; width:50px; height:50px; }
+.training-mint-hint { text-align:center; margin-top:12px; }
+.training-mint-adjust { margin-top:10px; padding-top:12px; border-top:1px solid #303249; }
+.training-mint-adjust summary { color:#c6baff; font-size:12px; cursor:pointer; }
+.training-mint-adjust .training-stat-inputs { margin:12px 0; }
+.training-profile .training-pet { margin:12px 0; }
+.training-pet > [data-pet-clear] { margin-left:auto; background:none; box-shadow:none; color:#a4aac0; font-size:20px; }
+.training-profile [data-picker="pet"] .training-selected { display:none; }
+.training-profile .training-race-stats { margin:8px 0; }
+.training-basic { grid-template-columns:minmax(0,1fr) 72px 108px; gap:10px; }
+.training-card .training-year { display:flex; gap:8px; align-items:center; color:#d6d6e9; margin-top:12px; }
+.training-card .training-year input { width:16px; height:16px; min-height:16px; padding:0; accent-color:#a89af3; }
+.training-year span { color:#aaa0d5; font-size:12px; margin-left:auto; }
+.training-results { position:static; grid-row:auto; }
+.training-mode-tabs { display:flex; gap:4px; padding:3px; background:#1c1f31; border-radius:10px; margin-left:auto; }
+.training-mode-tabs button { background:none; color:#a5acc3; border:0; min-height:30px; padding:4px 10px; }
+.training-mode-tabs button.is-active { background:#65568d; color:#fff; }
+.training-ability-caption { display:flex; justify-content:space-between; gap:12px; color:#989fb6; font-size:11px; margin:10px 0; }
+.training-ability-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px 18px; }
+.training-card .training-ability { display:grid; grid-template-columns:28px minmax(0,1fr) 58px; align-items:center; gap:6px; padding:8px 0; border-bottom:1px solid #303249; }
+.training-ability output { font-size:22px; font-weight:700; color:#c6baff; text-align:right; font-variant-numeric:tabular-nums; }
+.training-results[data-mode="PVE"] output { color:#8adeca; }
+.training-results[data-mode="base"] output { color:#d5d8e5; }
+.training-card .training-ability input { min-height:32px; padding:5px 6px; color:#8bd6ed; text-align:center; }
+.training-ability[data-ability="atk"] { order:1; }
+.training-ability[data-ability="def"] { order:2; }
+.training-ability[data-ability="sp_atk"] { order:3; }
+.training-ability[data-ability="sp_def"] { order:4; }
+.training-ability[data-ability="spd"] { order:5; }
+.training-ability[data-ability="hp"] { order:6; }
+.training-ev-footer { justify-content:space-between; margin-bottom:0; }
+.training-ev-footer span { margin-left:0; }
+.training-ev-footer b { margin-left:8px; font-weight:500; }
+.training-effect { max-height:100px; overflow:auto; }
+.training-mint-dialog { width:min(880px,calc(100vw - 40px)); max-height:85vh; box-sizing:border-box; padding:22px; border:1px solid #49455f; border-radius:20px; background:#151829; color:#eef0fa; box-shadow:0 24px 100px #0009; }
+.training-mint-dialog[open] { display:flex; flex-direction:column; gap:14px; }
+.training-mint-dialog::backdrop { background:#070913bb; backdrop-filter:blur(4px); }
+.training-dialog-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.training-dialog-heading h3 { margin:0; font-size:21px; }
+.training-dialog-heading p { margin:6px 0 0; color:#9fa6be; font-size:12px; }
+.training-dialog-heading button { margin:0; padding:0 12px; font-size:28px; }
+.training-dialog-filters { display:grid; grid-template-columns:minmax(0,1fr) 130px 180px; gap:10px; }
+.training-dialog-filters input,.training-dialog-filters select { margin:0; min-width:0; width:100%; padding:10px 12px; border-radius:10px; border:1px solid #3c3d55; background:#101323; color:#dddff0; font-size:13px; }
+.training-mint-dialog [data-mint-dialog-status] { margin:0; font-size:12px; color:#a4aac0; }
+.training-dialog-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; overflow-y:auto; min-height:100px; }
+.training-dialog-mint { display:flex; gap:10px; padding:12px; margin:0; text-align:left; background:#202338; border:1px solid #393a54; border-radius:12px; min-width:0; box-shadow:none; }
+.training-dialog-mint:hover { border-color:#a094dc; background:#2b2843; }
+.training-dialog-mint > span:last-child { display:grid; gap:5px; min-width:0; }
+.training-dialog-mint strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; }
+.training-dialog-mint small { font-size:10px; line-height:1.5; color:#a4aac0; }
+.training-dialog-pagination { display:flex; justify-content:center; align-items:center; gap:16px; font-size:13px; }
+.training-dialog-pagination button { padding:6px 12px; margin:0; font-size:13px; }
+@media(max-width:1050px) { .training-basic { grid-template-columns:1fr 1fr; } .training-basic label:first-child { grid-column:1/-1; } .training-ability-grid { gap:6px 10px; } .training-card .training-ability { grid-template-columns:26px minmax(0,1fr) 48px; } }
+@media(max-width:800px) { .training-layout { grid-template-columns:1fr; } .training-editor { display:contents; } .training-editor > * { order:4; } .training-editor > .training-profile { order:1; } .training-stage { position:static; order:2; } .training-art { height:280px; } .training-editor > .training-results { grid-row:auto; order:3; } .training-editor > .training-advanced { order:5; } .training-dialog-filters { grid-template-columns:1fr 1fr; } .training-dialog-filters input { grid-column:1/-1; } .training-dialog-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:500px) { .training-stage { padding:16px; } .training-art { height:240px; } .training-card .training-mint-slot { min-height:126px; padding:12px 4px; } .training-mint-dialog { width:calc(100vw - 20px); padding:16px; max-height:90vh; } .training-dialog-mint { flex-direction:column; padding:10px; } .training-ability output { font-size:19px; } .training-card .training-ability { grid-template-columns:24px minmax(0,1fr) 44px; gap:4px; } .training-mode-tabs button { padding:4px 8px; } }

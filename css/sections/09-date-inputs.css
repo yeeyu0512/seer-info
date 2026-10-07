@@ -1,0 +1,287 @@
+/* Dark Flatpickr theme for the Pool start/end date-time controls. */
+.admin-form .pool-date-field {
+    position: relative;
+}
+
+.pool-date-time-control {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 92px;
+    gap: 8px;
+}
+
+.admin-form .pool-date-field::after {
+    position: absolute;
+    right: 112px;
+    bottom: 12px;
+    width: 18px;
+    height: 18px;
+    opacity: .75;
+    background: center / contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23bdb8eb' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M16 3v4M8 3v4M3 10h18'/%3E%3Cpath d='M12 14v3l2 1'/%3E%3Ccircle cx='12' cy='15' r='3.5'/%3E%3C/svg%3E");
+    content: "";
+    pointer-events: none;
+}
+
+.admin-form .pool-date-field:focus-within::after {
+    opacity: 1;
+    filter: drop-shadow(0 0 5px rgba(177, 169, 255, .7));
+}
+
+.admin-form .pool-date-field .flatpickr-input,
+.admin-form .pool-date-field input.input {
+    padding-right: 44px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: .015em;
+}
+
+.pool-time-select {
+    width: 100%;
+    padding: 0 10px;
+    border: 1px solid rgba(196, 191, 255, .16);
+    border-radius: 11px;
+    outline: none;
+    color: var(--text);
+    background: rgba(4, 6, 18, .38);
+    font: inherit;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+.pool-time-select:focus {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(147, 135, 255, .13);
+}
+
+.pool-time-select:disabled {
+    cursor: not-allowed;
+    opacity: .55;
+}
+
+.admin-page .flatpickr-input[readonly],
+.admin-page .pool-date-field input.input[readonly] {
+    cursor: pointer;
+}
+
+.flatpickr-calendar {
+    border: 1px solid rgba(196, 191, 255, .22);
+    border-radius: 12px;
+    color: var(--text);
+    background: #14182e;
+    box-shadow: 0 18px 42px rgba(0, 0, 0, .45);
+}
+
+.flatpickr-calendar.open {
+    animation: flatpickr-pop .16s ease-out;
+}
+
+@keyframes flatpickr-pop {
+    from { opacity: 0; transform: translateY(-5px) scale(.985); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.flatpickr-calendar.arrowTop::before,
+.flatpickr-calendar.arrowTop::after {
+    border-bottom-color: #14182e;
+}
+
+.flatpickr-months .flatpickr-month,
+.flatpickr-current-month .flatpickr-monthDropdown-months,
+.flatpickr-current-month input.cur-year,
+.flatpickr-weekdays,
+.flatpickr-weekday,
+span.flatpickr-weekday {
+    color: var(--text);
+    fill: var(--text);
+    background: transparent;
+}
+
+.flatpickr-current-month {
+    padding-top: 8px;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months,
+.flatpickr-current-month input.cur-year {
+    font-weight: 700;
+}
+
+.flatpickr-months .flatpickr-prev-month,
+.flatpickr-months .flatpickr-next-month {
+    color: var(--text-secondary);
+    fill: var(--text-secondary);
+}
+
+.flatpickr-months .flatpickr-prev-month:hover svg,
+.flatpickr-months .flatpickr-next-month:hover svg {
+    fill: var(--primary-light);
+}
+
+.flatpickr-day {
+    border-radius: 8px;
+    border-color: transparent;
+    color: var(--text-secondary);
+}
+
+.flatpickr-day:hover,
+.flatpickr-day:focus {
+    border-color: rgba(168, 176, 255, .45);
+    background: rgba(147, 135, 255, .18);
+}
+
+.flatpickr-day.today {
+    border-color: var(--primary-light);
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.selected:hover {
+    border-color: var(--primary);
+    color: white;
+    background: var(--primary-dark);
+}
+
+.flatpickr-time {
+    display: flex;
+    align-items: center;
+    min-height: 46px;
+    border-top-color: rgba(196, 191, 255, .14);
+    background: rgba(4, 6, 18, .22);
+}
+
+.flatpickr-time input,
+.flatpickr-time .flatpickr-time-separator,
+.flatpickr-time .flatpickr-am-pm {
+    color: var(--text);
+}
+
+.flatpickr-time input:hover,
+.flatpickr-time .flatpickr-am-pm:hover {
+    background: rgba(147, 135, 255, .14);
+}
+
+.flatpickr-time input:focus {
+    color: white;
+    background: rgba(147, 135, 255, .22);
+}
+
+@media (max-width: 680px) {
+    .pool-date-time-control {
+        grid-template-columns: minmax(0, 1fr) 82px;
+    }
+
+    .admin-form .pool-date-field::after {
+        right: 99px;
+    }
+}
+
+.competitive-pool-view .competitive-pool-pet > img.character-portrait {
+    border-radius: 10px;
+}
+
+.competitive-pool-view .competitive-pool-pet .competitive-pool-limit-indicator {
+    top: 73.5px;
+    right: auto;
+    bottom: auto;
+    left: 13px;
+    z-index: 3;
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    width: 19px;
+    height: 19px;
+    padding: 0;
+    border: 2px solid #d9364f;
+    border-radius: 50%;
+    color: #ffe56b;
+    background: rgba(0, 0, 0, .94);
+    font-size: 11px;
+    line-height: 1;
+    text-align: center;
+    font-weight: 800;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .45);
+}
+
+.competitive-pool-view .competitive-pool-pet .competitive-pool-limit-indicator.is-banned {
+    border-color: #d9364f;
+    color: #ff596f;
+    background: rgba(0, 0, 0, .94);
+    padding-bottom: 1px;
+}
+
+.competitive-pool-view .competitive-pool-pet .competitive-pool-limit-indicator.is-restricted,
+.competitive-pool-view .competitive-pool-pet .competitive-pool-limit-indicator.is-semi-restricted {
+    border-color: #d9364f;
+    color: #ffe56b;
+    background: rgba(0, 0, 0, .94);
+    padding-bottom: 1px;
+}
+
+@media (max-width: 680px) {
+    .competitive-pool-view .competitive-pool-pet .competitive-pool-limit-indicator {
+        top: 72.5px;
+        left: 15px;
+    }
+}
+
+.competitive-pool-preview-dialog {
+    width: min(1120px, 100%);
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+}
+
+.competitive-pool-preview-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.competitive-pool-preview-header h2 {
+    margin: 0;
+    color: var(--text);
+    font-size: 20px;
+}
+
+.competitive-pool-preview-header p {
+    margin: 6px 0 0;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.competitive-pool-preview-view {
+    margin-top: 12px;
+}
+
+body.has-competitive-pool-preview {
+    overflow: hidden;
+}
+
+@media (max-width: 680px) {
+    .competitive-pool-preview-modal {
+        padding: 10px;
+    }
+
+    .competitive-pool-preview-dialog {
+        max-height: calc(100vh - 20px);
+        padding: 16px 12px;
+    }
+
+    .competitive-pool-preview-header {
+        align-items: flex-start;
+    }
+
+    .competitive-pool-preview-header h2 {
+        font-size: 17px;
+    }
+
+    .seer-lookup-panel > .seer-pet-search-method-tabs,
+    .seer-lookup-panel > .seer-skin-search-tabs {
+        margin-top: 16px;
+    }
+
+    .seer-pet-type-dialog {
+        width: min(100%, 100vw - 16px);
+        max-height: calc(100dvh - 24px);
+    }
+
+    .seer-pet-type-dialog .seer-pet-type-options {
+        grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    }
+}

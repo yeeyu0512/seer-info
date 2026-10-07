@@ -1,0 +1,118 @@
+/* Shared artwork background. The overlay keeps controls readable over the image. */
+body {
+    background:
+        linear-gradient(90deg, rgba(5, 7, 16, .66) 0%, rgba(6, 8, 18, .53) 44%, rgba(5, 7, 16, .45) 100%),
+        linear-gradient(180deg, rgba(6, 8, 18, .14), rgba(6, 8, 18, .62)),
+        url("../../assets/site/background.png") center center / cover fixed no-repeat;
+}
+
+@media (max-width: 680px) {
+    body {
+        background-position: 54% center;
+        background-attachment: scroll;
+    }
+}
+
+/* Permanent game-account binding */
+.account-panel {
+    max-width: 620px;
+}
+
+.game-account-form {
+    display: grid;
+    gap: 7px;
+}
+
+.game-account-form .field-label {
+    margin: 0;
+}
+
+.game-account-controls {
+    display: flex;
+    align-items: stretch;
+    gap: 9px;
+}
+
+.game-account-controls input,
+.seer-lookup-form > input {
+    min-width: 0;
+    width: calc(100% - 15px);
+    flex: 1;
+    margin: 0;
+    height: 36px;
+    padding: 0 11px;
+    line-height: 1;
+    border: 1px solid rgba(196, 191, 255, .16);
+    border-radius: 11px;
+    outline: none;
+    color: var(--text);
+    background: rgba(4, 6, 18, .38);
+    box-shadow: inset 0 1px rgba(255, 255, 255, .025);
+    transition: border-color .2s, box-shadow .2s, background .2s;
+}
+
+.game-account-controls input::placeholder,
+.seer-lookup-form > input::placeholder {
+    color: var(--text-muted);
+    opacity: 1;
+}
+
+.game-account-controls input:focus,
+.seer-lookup-form > input:focus {
+    border-color: var(--primary-light);
+    background: rgba(12, 14, 32, .68);
+    box-shadow: 0 0 0 3px rgba(147, 135, 255, .13), inset 0 1px rgba(255, 255, 255, .035);
+}
+
+.game-account-controls button {
+    height: 36px;
+    min-width: 64px;
+    min-height: 36px;
+    margin: 0;
+    padding: 0 12px;
+    border-radius: 9px;
+    font-size: 13px;
+    line-height: 1;
+}
+
+.game-account-bound {
+    display: grid;
+    gap: 5px;
+    padding: 13px 14px;
+    border: 1px solid rgba(105, 226, 182, .22);
+    border-radius: 12px;
+    background: rgba(46, 154, 119, .09);
+}
+
+.game-account-bound span {
+    color: #82e8bf;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .06em;
+}
+
+.game-account-bound strong {
+    font-size: 20px;
+    letter-spacing: .04em;
+}
+
+.game-account-bound p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+#game-account-message {
+    min-height: 18px;
+    margin: 7px 0 0;
+}
+
+@media (max-width: 680px) {
+    .game-account-controls {
+        flex-direction: column;
+    }
+
+    .game-account-controls button {
+        width: 100%;
+    }
+}
