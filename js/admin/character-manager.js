@@ -1,3 +1,4 @@
+import { typeIconUrl } from "../shared/assets.js";
 export function createCharacterManager({
     characterForm,
     showAdminNotification,
@@ -322,7 +323,7 @@ export function createCharacterManager({
                 typeId: resolvedTypeId,
                 typeName,
                 avatarUrl: `https://newseer.61.com/web/monster/head/${petId}.png`,
-                typeIconUrl: `./seer_icons/${resolvedTypeId}.png`
+                typeIconUrl: typeIconUrl(resolvedTypeId)
             };
 
             renderSeerPreview(preview);
@@ -598,7 +599,7 @@ export function createCharacterManager({
         if (!Number.isSafeInteger(resolvedTypeId) || resolvedTypeId <= 0) {
             throw new Error("SeerAPI 回傳的屬性 ID 無效。");
         }
-        return `./seer_icons/${resolvedTypeId}.png`;
+        return typeIconUrl(resolvedTypeId);
     }
     return { renderSeerPreview, clearSeerPreview, lookupSeerPet, loadCharacters, renderCharacters, deleteAllPoolCharacters, exportCharacters, renderCharacter, requestCharacterTypeIcon, processCharacterTypeMetadataQueue, fetchCharacterTypeIconUrl };
 }

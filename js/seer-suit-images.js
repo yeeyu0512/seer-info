@@ -1,9 +1,10 @@
+import { ASSETS } from "./shared/assets.js";
 import { loadRuffleRuntime } from "./shared/ruffle-runtime.js";
 
 const SIZE = 1000; // 500 game units at 2 pixels/unit, including wide wings and weapons.
 const PART_CACHE_LIMIT = 12;
 const MAX_BYTES = 2 * 1024 * 1024;
-const HEAD_URL = new URL("../assets/seer-head.png", import.meta.url).href;
+const HEAD_URL = ASSETS.seerHead;
 // Registration points in the game's front-facing ComposeMC, relative to (61, 88.45).
 export const SUIT_PARTS = {
     0: { name: "頭部", x: 0, y: -48, layer: 5 },

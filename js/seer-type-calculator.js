@@ -1,3 +1,4 @@
+import { typeIconUrl } from "./shared/assets.js";
 import {createTypeLabel, renderAttackTitle} from "./types/labels.js";
 import { typePickerMethods } from "./types/picker-view.js";
 import { TYPE_CALCULATOR_TEMPLATE } from "./types/template.js";
@@ -311,7 +312,7 @@ export class SeerTypeCalculatorController {
             }
 
             // 更新頂部卡片
-            this.currentIcon.src = `./seer_icons/${activeType.id}.png`;
+            this.currentIcon.src = typeIconUrl(activeType.id);
             this.currentName.textContent = activeType.name;
             this.currentTag.textContent = activeType.isDouble ? "雙屬性" : "單屬性";
             this.currentTag.className = `type-calc-tag ${activeType.isDouble ? "is-double" : "is-single"}`;
@@ -331,7 +332,7 @@ export class SeerTypeCalculatorController {
             [typeB, this.vsIconB, this.vsNameB, this.vsBtnB],
         ]) {
             icon.hidden = !type;
-            if (type) icon.src = `./seer_icons/${type.id}.png`;
+            if (type) icon.src = typeIconUrl(type.id);
             name.textContent = type?.name || "尚未選擇";
             button.textContent = type ? "更換屬性 ▾" : "選擇屬性 ▾";
         }
@@ -344,11 +345,11 @@ export class SeerTypeCalculatorController {
         if (!ready) return;
 
         // 屬性 A 更新
-        this.vsIconA.src = `./seer_icons/${typeA.id}.png`;
+        this.vsIconA.src = typeIconUrl(typeA.id);
         this.vsNameA.textContent = typeA.name;
 
         // 屬性 B 更新
-        this.vsIconB.src = `./seer_icons/${typeB.id}.png`;
+        this.vsIconB.src = typeIconUrl(typeB.id);
         this.vsNameB.textContent = typeB.name;
 
         // 倍率計算
@@ -414,7 +415,7 @@ export class SeerTypeCalculatorController {
             item.classList.toggle("is-active", type.id === this.selectedSkillStoneId);
             item.setAttribute("aria-pressed", String(type.id === this.selectedSkillStoneId));
             const icon = document.createElement("img");
-            icon.src = `./seer_icons/${type.id}.png`;
+            icon.src = typeIconUrl(type.id);
             icon.alt = "";
             const name = document.createElement("span");
             name.textContent = type.name;
@@ -507,7 +508,7 @@ export class SeerTypeCalculatorController {
 
             const icon = document.createElement("img");
             icon.className = "type-card-icon";
-            icon.src = `./seer_icons/${type.id}.png`;
+            icon.src = typeIconUrl(type.id);
             icon.alt = "";
             icon.loading = "lazy";
             icon.addEventListener("error", () => {

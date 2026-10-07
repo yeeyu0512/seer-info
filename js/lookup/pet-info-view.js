@@ -1,3 +1,4 @@
+import { typeIconUrl, genderIconUrl, ASSETS } from "../shared/assets.js";
 import { SEER_TYPE_DATA } from "../seer-type-data.js";
 
 export function createPetInfoView({ seerPetInfoPanel, seerPetInfoTitle, seerPetInfoAvatar, seerPetInfoMeta, convertToTraditionalChinese, openTypeLookup, closeSeerPetInfoModal, resolveSeerWikiSoulmarkImage }) {
@@ -154,8 +155,8 @@ export function createPetInfoView({ seerPetInfoPanel, seerPetInfoTitle, seerPetI
                         const typeIcon = document.createElement("img");
                         typeIcon.className = "seer-pet-skill-type-icon";
                         typeIcon.src = Number(record && record.category && record.category.id) === 4
-                            ? "./seer_icons/prop.png"
-                            : `./seer_icons/${typeId}.png`;
+                            ? ASSETS.attributeSkill
+                            : typeIconUrl(typeId);
                         typeIcon.alt = "";
                         typeIcon.setAttribute("aria-hidden", "true");
                         typeIcon.loading = "lazy";
@@ -464,9 +465,9 @@ export function createPetInfoView({ seerPetInfoPanel, seerPetInfoTitle, seerPetI
         addMeta("編號", `#${petId}`);
         const genderId = Number(pet.gender && pet.gender.id);
         const gender = {
-            0: ["無性", "./seer_icons/sex_sexless.png"],
-            1: ["雄性", "./seer_icons/sex_male.png"],
-            2: ["雌性", "./seer_icons/sex_female.png"]
+            0: ["無性", genderIconUrl("sexless")],
+            1: ["雄性", genderIconUrl("male")],
+            2: ["雌性", genderIconUrl("female")]
         }[genderId];
         addMeta("性別", gender ? gender[0] : "未知", gender && gender[1]);
         const typeId = typeDetails && typeDetails.id || pet.type && pet.type.id;
@@ -474,7 +475,7 @@ export function createPetInfoView({ seerPetInfoPanel, seerPetInfoTitle, seerPetI
         addMeta(
             "屬性",
             typeName || "",
-            typeId ? `./seer_icons/${encodeURIComponent(typeId)}.png` : "",
+            typeId ? typeIconUrl(encodeURIComponent(typeId)) : "",
             openTypeLookup && SEER_TYPE_DATA.combinations.some(type => type.id === Number(typeId))
                 ? () => {
                     closeSeerPetInfoModal(false);

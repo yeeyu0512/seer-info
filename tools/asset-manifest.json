@@ -1,0 +1,998 @@
+[
+  {
+    "old": "bg.png",
+    "next": "assets/site/background.png",
+    "bytes": 7632693,
+    "sha": "8749bdb95e97e2f812a1a76b88adf0d32c1bc193521893a27c8aba4115870f00"
+  },
+  {
+    "old": "1400523.png",
+    "next": "assets/site/author-avatar.png",
+    "bytes": 260975,
+    "sha": "595d4dabafd9477f6df7aba855bf2cc9f4fe9e9b3c4dec80b81519d7fcb73a3e"
+  },
+  {
+    "old": "1400837.png",
+    "next": "assets/site/about-artwork.png",
+    "bytes": 99358,
+    "sha": "0f19ecdab5eed6d565ca89ecb1b51fc18c7655906d62d67ab6bd3655b5c8347d"
+  },
+  {
+    "old": "1400867.png",
+    "next": "assets/site/admin-login-artwork.png",
+    "bytes": 107286,
+    "sha": "64128d9bcf670b1030e194d3afe566ec45d3417db3bb12cc25d8c1faf0a0b739"
+  },
+  {
+    "old": "assets/seer-base.png",
+    "next": "assets/seer/base.png",
+    "bytes": 57864,
+    "sha": "0434a93aa2eed060e9b8e7610a1e384eb4366e4ce824c5d795d7b21ea61f7d82"
+  },
+  {
+    "old": "assets/seer-head.png",
+    "next": "assets/seer/head.png",
+    "bytes": 22276,
+    "sha": "c5fb5d816958ce11f509471b3464ae04e4c72c092b51d6ad5ad5afb073d3c6b4"
+  },
+  {
+    "old": "seer_icons/1.png",
+    "next": "assets/icons/types/1.png",
+    "bytes": 3010,
+    "sha": "d974cc44b57034c320706a752907fe5708e7013ce44bc64559cab6b286c5fdd6"
+  },
+  {
+    "old": "seer_icons/10.png",
+    "next": "assets/icons/types/10.png",
+    "bytes": 2371,
+    "sha": "9ba12b29deaa82fbb17019c3f1e4acf313df38934cd52e775c51c2257d23bc8c"
+  },
+  {
+    "old": "seer_icons/100.png",
+    "next": "assets/icons/types/100.png",
+    "bytes": 2696,
+    "sha": "0e425810dced8eaa3bc63f58e635873537bddb41d6d5de6394ade1453868e0af"
+  },
+  {
+    "old": "seer_icons/101.png",
+    "next": "assets/icons/types/101.png",
+    "bytes": 4011,
+    "sha": "fddb5f93905f639a71f47c012c49210fc1f291f61801edecce2c569cbd6441b1"
+  },
+  {
+    "old": "seer_icons/102.png",
+    "next": "assets/icons/types/102.png",
+    "bytes": 3138,
+    "sha": "a513c86f72c1738c8927028ccb604cd9a5104c1525162478d204e933f5dafc26"
+  },
+  {
+    "old": "seer_icons/103.png",
+    "next": "assets/icons/types/103.png",
+    "bytes": 3731,
+    "sha": "92af0ceecbbebddff8355506ee0ec96fb5e4a97aa3257ba0b839bb922d53bffb"
+  },
+  {
+    "old": "seer_icons/104.png",
+    "next": "assets/icons/types/104.png",
+    "bytes": 2256,
+    "sha": "2a5c11f6fa0db8778e71bb141044ecb205babb822fe4954b8d770d0dcdcc1061"
+  },
+  {
+    "old": "seer_icons/105.png",
+    "next": "assets/icons/types/105.png",
+    "bytes": 2165,
+    "sha": "d2ae9f2096fa3d77904e98593c5801b194d8ca97da44d3e8834e32e75964efad"
+  },
+  {
+    "old": "seer_icons/106.png",
+    "next": "assets/icons/types/106.png",
+    "bytes": 3732,
+    "sha": "05e59fd6c3a1e309decc276be1b9f53e9b1a3a3675397705654174d2f680df2f"
+  },
+  {
+    "old": "seer_icons/107.png",
+    "next": "assets/icons/types/107.png",
+    "bytes": 2038,
+    "sha": "474f8165c676b64c93b6c0a62d06c1c093f0787ed5975d8d4a081153b6ed78ca"
+  },
+  {
+    "old": "seer_icons/108.png",
+    "next": "assets/icons/types/108.png",
+    "bytes": 2949,
+    "sha": "9db3cb4b72d9c2a1a04f9afda2466a771845908b030574aa289849ef45b50a00"
+  },
+  {
+    "old": "seer_icons/109.png",
+    "next": "assets/icons/types/109.png",
+    "bytes": 1944,
+    "sha": "e2f2103a09ec5cbebbaf3d37a6fa6848725278ee4d990ac94061a81b24165c46"
+  },
+  {
+    "old": "seer_icons/11.png",
+    "next": "assets/icons/types/11.png",
+    "bytes": 3329,
+    "sha": "e62a7d4a7a1dd9206142f82fcfff565aa196a64f415706c2cd938e53f57941e2"
+  },
+  {
+    "old": "seer_icons/110.png",
+    "next": "assets/icons/types/110.png",
+    "bytes": 2320,
+    "sha": "b01984800d16abb6374163354698dbbe6ab48e61bfff53f1198315053ee1375a"
+  },
+  {
+    "old": "seer_icons/111.png",
+    "next": "assets/icons/types/111.png",
+    "bytes": 2038,
+    "sha": "bbca286a0a4ab119b6a2999d9a7f796afd090261fd6f3f574471bb4356b61c42"
+  },
+  {
+    "old": "seer_icons/112.png",
+    "next": "assets/icons/types/112.png",
+    "bytes": 3329,
+    "sha": "cd66d5b9bbd3d3dec4c2f6c3f49aeb7fdee89364a0de182e99ccd0888199492e"
+  },
+  {
+    "old": "seer_icons/113.png",
+    "next": "assets/icons/types/113.png",
+    "bytes": 2471,
+    "sha": "01858babc9b3d58ea55631194cb03a745b6c37251cef2eaef2ad2c83564eded6"
+  },
+  {
+    "old": "seer_icons/114.png",
+    "next": "assets/icons/types/114.png",
+    "bytes": 2332,
+    "sha": "15c5ab0ec704318c876823e94eda4b1ca8055db6076685abf82ffc2303e4d5a2"
+  },
+  {
+    "old": "seer_icons/115.png",
+    "next": "assets/icons/types/115.png",
+    "bytes": 2382,
+    "sha": "e495dabf5e4d8b1ab64cd54f8ef242346ce71a7a1b776c6134518ac488f4f290"
+  },
+  {
+    "old": "seer_icons/116.png",
+    "next": "assets/icons/types/116.png",
+    "bytes": 2370,
+    "sha": "35e6587ccd0b1ac43f0d4700a899a5c70dacc48cf31531881505708674b18b21"
+  },
+  {
+    "old": "seer_icons/117.png",
+    "next": "assets/icons/types/117.png",
+    "bytes": 2446,
+    "sha": "2e7be451b63b07642b22e1211b2f28779ee9fe7620d7afc83058df7f7912ae3a"
+  },
+  {
+    "old": "seer_icons/118.png",
+    "next": "assets/icons/types/118.png",
+    "bytes": 2894,
+    "sha": "0733cde73249ed7b2bb51b55b4d50f838e5011d2b45c570fe1430431018ed860"
+  },
+  {
+    "old": "seer_icons/119.png",
+    "next": "assets/icons/types/119.png",
+    "bytes": 3782,
+    "sha": "81bf832f4c913992c0b01d93f2a5d213b5d335a7ba8ad56921100855a50900b9"
+  },
+  {
+    "old": "seer_icons/12.png",
+    "next": "assets/icons/types/12.png",
+    "bytes": 2162,
+    "sha": "ecea7625c1022d33a19d3d53b104973bba1d6be0f81982f136765fa4122de046"
+  },
+  {
+    "old": "seer_icons/120.png",
+    "next": "assets/icons/types/120.png",
+    "bytes": 3056,
+    "sha": "47e672aad2b4bb09bfb56fc672e1dd227212f90d955124a82d2284415ddfa096"
+  },
+  {
+    "old": "seer_icons/121.png",
+    "next": "assets/icons/types/121.png",
+    "bytes": 2729,
+    "sha": "7c9e2d6666ced751c67d5313e5ca0668fef4a9598d3940acf84c47bafe64e4ca"
+  },
+  {
+    "old": "seer_icons/122.png",
+    "next": "assets/icons/types/122.png",
+    "bytes": 1973,
+    "sha": "46e4d39cdcb790076899cc6f8d858ea98defb219477252b4495287b977875363"
+  },
+  {
+    "old": "seer_icons/123.png",
+    "next": "assets/icons/types/123.png",
+    "bytes": 1910,
+    "sha": "65215ce83fd4c875f311b079ec00618a2d94fc65e523b0b2918a44dc6a5c0b58"
+  },
+  {
+    "old": "seer_icons/124.png",
+    "next": "assets/icons/types/124.png",
+    "bytes": 3098,
+    "sha": "ecbe82e62cf869999044498275d9d3728edd4c71ac567561ed9e2cee6886b862"
+  },
+  {
+    "old": "seer_icons/125.png",
+    "next": "assets/icons/types/125.png",
+    "bytes": 3128,
+    "sha": "85b9236c7c5743aced49c7557ffad66be71e94bf801519241608dba5ddd2a58b"
+  },
+  {
+    "old": "seer_icons/126.png",
+    "next": "assets/icons/types/126.png",
+    "bytes": 5370,
+    "sha": "340ce3aa62f3f40719cbe79b826eb0b580f344da2610c3caf9db570916cc101b"
+  },
+  {
+    "old": "seer_icons/127.png",
+    "next": "assets/icons/types/127.png",
+    "bytes": 3025,
+    "sha": "f2c434f2b19aeef1f195dbf79bc45b6688794c205e81c912b82371dcca6e8855"
+  },
+  {
+    "old": "seer_icons/128.png",
+    "next": "assets/icons/types/128.png",
+    "bytes": 2319,
+    "sha": "8a97dbcd3181a72c2e102e19540b067658d11bc6fbd3bdb4514c43d7f83e522b"
+  },
+  {
+    "old": "seer_icons/129.png",
+    "next": "assets/icons/types/129.png",
+    "bytes": 2781,
+    "sha": "2d4d178970e8b98b2052026f97bc1524e34738080c018d93f16d555944135551"
+  },
+  {
+    "old": "seer_icons/13.png",
+    "next": "assets/icons/types/13.png",
+    "bytes": 3167,
+    "sha": "9b3cda08732b16f2719843731ce01233d55530f696b85d01fd5b517e46643c41"
+  },
+  {
+    "old": "seer_icons/130.png",
+    "next": "assets/icons/types/130.png",
+    "bytes": 4205,
+    "sha": "cdb396fe550ff5b1bb78b3e625e9c857075f493bdceb631066d4cc4141330ea4"
+  },
+  {
+    "old": "seer_icons/131.png",
+    "next": "assets/icons/types/131.png",
+    "bytes": 2664,
+    "sha": "e0a804a0755f5d886088ed660d9b3eeea5dbbe57d2e939373bc03cb489a64c12"
+  },
+  {
+    "old": "seer_icons/132.png",
+    "next": "assets/icons/types/132.png",
+    "bytes": 2563,
+    "sha": "baf189bbd961bbc96086d33391396e79981c660d907aa5170f13d6c744cec062"
+  },
+  {
+    "old": "seer_icons/14.png",
+    "next": "assets/icons/types/14.png",
+    "bytes": 3048,
+    "sha": "aeac6b52a434a8cc090e3c3b682c7520908bdebef30e4f7810eff61b1edf4af1"
+  },
+  {
+    "old": "seer_icons/15.png",
+    "next": "assets/icons/types/15.png",
+    "bytes": 3738,
+    "sha": "e94fecb58508d68046ee42594d5f835010a6f2fa64a384d9ca9fb5bf79bae244"
+  },
+  {
+    "old": "seer_icons/16.png",
+    "next": "assets/icons/types/16.png",
+    "bytes": 4302,
+    "sha": "8f860e25c0176db74da7fd41aa84a23f30b660770c0290a2f84432e6abb6d939"
+  },
+  {
+    "old": "seer_icons/17.png",
+    "next": "assets/icons/types/17.png",
+    "bytes": 3606,
+    "sha": "9b263084b48ea429f09d9308614955ff79c5654fab0753e60751f85a270f1b1e"
+  },
+  {
+    "old": "seer_icons/18.png",
+    "next": "assets/icons/types/18.png",
+    "bytes": 2723,
+    "sha": "9d21143f8c2a7f58a955c4067f5399fb0f6e0c8fc8a80884f0fc48b06e3d18e6"
+  },
+  {
+    "old": "seer_icons/19.png",
+    "next": "assets/icons/types/19.png",
+    "bytes": 3306,
+    "sha": "8cfe008e12cdc2e3b75181f792af4f756bdce11191e22d6f6c321a3f5c5762f0"
+  },
+  {
+    "old": "seer_icons/2.png",
+    "next": "assets/icons/types/2.png",
+    "bytes": 2861,
+    "sha": "e265bdf82931a946e0514e604946eb44f4c654937ca3d5c8e1adcb40f082fad1"
+  },
+  {
+    "old": "seer_icons/20.png",
+    "next": "assets/icons/types/20.png",
+    "bytes": 2688,
+    "sha": "394ab74f52e1c447ff045108fa311c01fd768f86a5100848d1cded4f392ca5fb"
+  },
+  {
+    "old": "seer_icons/21.png",
+    "next": "assets/icons/types/21.png",
+    "bytes": 3430,
+    "sha": "ca6b8f3193b3a003b33123da5e29d598f223ae67755ff7b7a6aa9b0bd4d67872"
+  },
+  {
+    "old": "seer_icons/22.png",
+    "next": "assets/icons/types/22.png",
+    "bytes": 3791,
+    "sha": "95d090094b440e9687db794f0284d2d506358a9b8930dd76baf9aa196aa56da5"
+  },
+  {
+    "old": "seer_icons/221.png",
+    "next": "assets/icons/types/221.png",
+    "bytes": 4723,
+    "sha": "c4836e63e4b66205c43eb59e6fbc27efd69b4d9c1a60ae75c7b839e9b704795f"
+  },
+  {
+    "old": "seer_icons/222.png",
+    "next": "assets/icons/types/222.png",
+    "bytes": 3621,
+    "sha": "9448d9138ef3ff9d3eba67f3ded2e7f82e479b685b1d60fd5a59479d6285178c"
+  },
+  {
+    "old": "seer_icons/223.png",
+    "next": "assets/icons/types/223.png",
+    "bytes": 2649,
+    "sha": "73b6f39798d09e5125bfa6efe4d20d6d1dfdb504bb4356b3400250269a49272b"
+  },
+  {
+    "old": "seer_icons/224.png",
+    "next": "assets/icons/types/224.png",
+    "bytes": 3663,
+    "sha": "e8657234a2dd3a696e628dd9b0a4c0c57a8eb51bb70d8042dac0ee0d7b40fae8"
+  },
+  {
+    "old": "seer_icons/225.png",
+    "next": "assets/icons/types/225.png",
+    "bytes": 2522,
+    "sha": "b319aa1f4323471f0f0aafc49a490b1c5ebf975ddc264ae5c7def3b4be1ec15e"
+  },
+  {
+    "old": "seer_icons/226.png",
+    "next": "assets/icons/types/226.png",
+    "bytes": 3524,
+    "sha": "c044d029377ffbe9b91f3a0e7851625e481ca9012d85c6fc726dbb7dfb682a60"
+  },
+  {
+    "old": "seer_icons/23.png",
+    "next": "assets/icons/types/23.png",
+    "bytes": 3588,
+    "sha": "26cf9736893f214f9803ddafd75325956ede79adda9b338cf4668bdaffe93675"
+  },
+  {
+    "old": "seer_icons/24.png",
+    "next": "assets/icons/types/24.png",
+    "bytes": 3858,
+    "sha": "915a121537703a5a083ffaf7f69e8d85bcfd4afa68097140a4adf3dcf3c0a4c8"
+  },
+  {
+    "old": "seer_icons/25.png",
+    "next": "assets/icons/types/25.png",
+    "bytes": 3086,
+    "sha": "5c480d4916b119ecc162c34a15c20b2713a9e5a88b29fe88e34976e1f22ae223"
+  },
+  {
+    "old": "seer_icons/26.png",
+    "next": "assets/icons/types/26.png",
+    "bytes": 1831,
+    "sha": "bcb51da61fd3217d31a6a58f51240dd5d24fe69152f2b22c842da8457116a302"
+  },
+  {
+    "old": "seer_icons/27.png",
+    "next": "assets/icons/types/27.png",
+    "bytes": 3786,
+    "sha": "12ae1d8554b8b000fe7afbaa26980bc088a68a9fac82d2841180af3d4c84054d"
+  },
+  {
+    "old": "seer_icons/28.png",
+    "next": "assets/icons/types/28.png",
+    "bytes": 1818,
+    "sha": "15100b1cd3ab61e01b9e813597cd179d9aa938b2c8837996b9113e88de88d705"
+  },
+  {
+    "old": "seer_icons/29.png",
+    "next": "assets/icons/types/29.png",
+    "bytes": 2406,
+    "sha": "1c5d96ee2c1aebef95c38f5faf9e408bca72372b6a2c41806cc6521bc0c98f90"
+  },
+  {
+    "old": "seer_icons/3.png",
+    "next": "assets/icons/types/3.png",
+    "bytes": 2780,
+    "sha": "312bafe003b3ce39f43cc96d9e5f20b79d542b4670fedbe64aba4f00af3c32f8"
+  },
+  {
+    "old": "seer_icons/30.png",
+    "next": "assets/icons/types/30.png",
+    "bytes": 2168,
+    "sha": "716f35f13975e155234e070070f34db2c33b99cc634c1fb94f79f865bae0ced8"
+  },
+  {
+    "old": "seer_icons/31.png",
+    "next": "assets/icons/types/31.png",
+    "bytes": 2244,
+    "sha": "514e6d12321aab9e5a1b6e922f7e5589edf62b9d85914a1edd8defaa6b66170d"
+  },
+  {
+    "old": "seer_icons/32.png",
+    "next": "assets/icons/types/32.png",
+    "bytes": 2873,
+    "sha": "d86167a1dc1bff278c66c47973edffda6fa42305cc238cc2e11e97008639210a"
+  },
+  {
+    "old": "seer_icons/33.png",
+    "next": "assets/icons/types/33.png",
+    "bytes": 2764,
+    "sha": "c4daac8d178c3b9ff7417f1c61c22162bb1fd8da3e5d52b619da4d588555758e"
+  },
+  {
+    "old": "seer_icons/34.png",
+    "next": "assets/icons/types/34.png",
+    "bytes": 2834,
+    "sha": "54bbc3b30c3f3660d201e63556622bfe520fb1f70abe97e2a81f133eb9e308a4"
+  },
+  {
+    "old": "seer_icons/35.png",
+    "next": "assets/icons/types/35.png",
+    "bytes": 2029,
+    "sha": "9c73b6123cb1b70de3088a8b959818daabe68b5fea195c90ef8e78482836ffe4"
+  },
+  {
+    "old": "seer_icons/36.png",
+    "next": "assets/icons/types/36.png",
+    "bytes": 3592,
+    "sha": "ba34acd3d380e139538fbebb1c1f75f0de1343234f200ca882f5bec9f22cc0c7"
+  },
+  {
+    "old": "seer_icons/37.png",
+    "next": "assets/icons/types/37.png",
+    "bytes": 3196,
+    "sha": "72beb8d91d2e28dde2a2b5a70273ed65cefd38d5457fb976590ddb5be40bda40"
+  },
+  {
+    "old": "seer_icons/38.png",
+    "next": "assets/icons/types/38.png",
+    "bytes": 2099,
+    "sha": "0b88a3ab1f6d42956c41888b5d357874c6507f85a96869fe4fb86f7cdd30e70c"
+  },
+  {
+    "old": "seer_icons/39.png",
+    "next": "assets/icons/types/39.png",
+    "bytes": 2598,
+    "sha": "b6735b1425dc9c551fa0bc1e789ac8b487231796639394914213edec5b25a26d"
+  },
+  {
+    "old": "seer_icons/4.png",
+    "next": "assets/icons/types/4.png",
+    "bytes": 1711,
+    "sha": "9a871143203a19a5a2fa322b2025f81c6ab614c829fc4581739bd37bd07d8fba"
+  },
+  {
+    "old": "seer_icons/40.png",
+    "next": "assets/icons/types/40.png",
+    "bytes": 3475,
+    "sha": "754226625741f836670d976afdad6c2dfa943a3c34702001273103949ff57801"
+  },
+  {
+    "old": "seer_icons/41.png",
+    "next": "assets/icons/types/41.png",
+    "bytes": 2746,
+    "sha": "d4ca100b2ce97b0ecbaaf6622c463b682cdbf450ef2b8cacd1d40f62fdb9fd8b"
+  },
+  {
+    "old": "seer_icons/42.png",
+    "next": "assets/icons/types/42.png",
+    "bytes": 3736,
+    "sha": "3d37ba6eae1f0b5a83855ee90f4bd7cac3e8201b1a301a3b5cc3e7a78199f611"
+  },
+  {
+    "old": "seer_icons/43.png",
+    "next": "assets/icons/types/43.png",
+    "bytes": 3598,
+    "sha": "74077002548a48678af752026d69b23527c5c3d9508845aae6c84918e93da5df"
+  },
+  {
+    "old": "seer_icons/44.png",
+    "next": "assets/icons/types/44.png",
+    "bytes": 2495,
+    "sha": "c0810984e1ce6742039cba58e539c9f492a9200eb06bd087063a9180e354cf04"
+  },
+  {
+    "old": "seer_icons/45.png",
+    "next": "assets/icons/types/45.png",
+    "bytes": 3714,
+    "sha": "379f2fa09e8327023ac731c573af658116d6ce96fae3ecb19c1abbafd241c65d"
+  },
+  {
+    "old": "seer_icons/46.png",
+    "next": "assets/icons/types/46.png",
+    "bytes": 3639,
+    "sha": "c1c5b0eb3ee00d27afb5e55341ae3f016d6c9ab0a27bc32fa0e02eba08b71ba4"
+  },
+  {
+    "old": "seer_icons/47.png",
+    "next": "assets/icons/types/47.png",
+    "bytes": 3157,
+    "sha": "a5a48b2e2bc958284dc533b892ce4c94ff4cb76a7f101c38ab0ab1d8f5130a9c"
+  },
+  {
+    "old": "seer_icons/48.png",
+    "next": "assets/icons/types/48.png",
+    "bytes": 2964,
+    "sha": "490ab28403d52b414122bdce319eb78cd35c9b184a79659f043e66ff6b2db582"
+  },
+  {
+    "old": "seer_icons/49.png",
+    "next": "assets/icons/types/49.png",
+    "bytes": 3573,
+    "sha": "03d844de1143edae08c6efc62d53cd8beb23338b8083923e17d4c7e8b3648a51"
+  },
+  {
+    "old": "seer_icons/5.png",
+    "next": "assets/icons/types/5.png",
+    "bytes": 2433,
+    "sha": "d584fb2aee33c5f42fe4479a156f26e1ce4ad342279d921ec01a3b593900e7c8"
+  },
+  {
+    "old": "seer_icons/50.png",
+    "next": "assets/icons/types/50.png",
+    "bytes": 3949,
+    "sha": "f415bd5081c90959cf4cb274a8137cb66542f4026b051c2015655af0dc3bbc48"
+  },
+  {
+    "old": "seer_icons/51.png",
+    "next": "assets/icons/types/51.png",
+    "bytes": 2678,
+    "sha": "b3cb524d7c2faa0312010c38932e8ba80cd3df294473e550dd052716997bd5a0"
+  },
+  {
+    "old": "seer_icons/52.png",
+    "next": "assets/icons/types/52.png",
+    "bytes": 2021,
+    "sha": "b3051e06b364597162c48a65aae5b8542197557014aa1d72a094a546e54f112f"
+  },
+  {
+    "old": "seer_icons/53.png",
+    "next": "assets/icons/types/53.png",
+    "bytes": 3085,
+    "sha": "080f3e1aa1159e2eaecca199d3b73148c7a00203094390e1e50c65fbfcd61789"
+  },
+  {
+    "old": "seer_icons/54.png",
+    "next": "assets/icons/types/54.png",
+    "bytes": 2581,
+    "sha": "a3f013157ca7b8f57ef3851a07c16a9b3890ea1a3ee49a593193d1a64788ef6d"
+  },
+  {
+    "old": "seer_icons/55.png",
+    "next": "assets/icons/types/55.png",
+    "bytes": 4053,
+    "sha": "7d19c8f30ad5731fffdccf90ae2289d7e3ea618a619ee32b081162e0744b6560"
+  },
+  {
+    "old": "seer_icons/56.png",
+    "next": "assets/icons/types/56.png",
+    "bytes": 2640,
+    "sha": "340a11e5ee9616caf5231ca1088d6d456e6be231ab1b86b72c0163e34a92c41e"
+  },
+  {
+    "old": "seer_icons/57.png",
+    "next": "assets/icons/types/57.png",
+    "bytes": 3475,
+    "sha": "eacd527758cb357f7554294651f79fb6c6b093841e639217abd6e7f32c469b13"
+  },
+  {
+    "old": "seer_icons/58.png",
+    "next": "assets/icons/types/58.png",
+    "bytes": 3687,
+    "sha": "3e73a45e67fda38b36f4caaf6aa91f631e5263fb0e2bd716e041c545d207f4a5"
+  },
+  {
+    "old": "seer_icons/59.png",
+    "next": "assets/icons/types/59.png",
+    "bytes": 3967,
+    "sha": "7c78725459ee804e758c24bd75a2c5abee48bcddfc63830085e00565296dd3e3"
+  },
+  {
+    "old": "seer_icons/6.png",
+    "next": "assets/icons/types/6.png",
+    "bytes": 2893,
+    "sha": "36a7fceb5ab8b65b8696d3eda706e48b6b562a522d9964a75371a9eb326595c3"
+  },
+  {
+    "old": "seer_icons/60.png",
+    "next": "assets/icons/types/60.png",
+    "bytes": 3731,
+    "sha": "0c5a116e97b9def53988ed090eb9301253966eb239d1f54c350e7b79b7ef5fd7"
+  },
+  {
+    "old": "seer_icons/61.png",
+    "next": "assets/icons/types/61.png",
+    "bytes": 2367,
+    "sha": "9895c3ee24a90de66d76258b492b1119d5c48480967a0a98494d681122c8cec5"
+  },
+  {
+    "old": "seer_icons/62.png",
+    "next": "assets/icons/types/62.png",
+    "bytes": 4014,
+    "sha": "19c1efc6eaf1cdde9a7bfc17d54245fbb1ef029d9fc66a304eecad732d0e33a3"
+  },
+  {
+    "old": "seer_icons/63.png",
+    "next": "assets/icons/types/63.png",
+    "bytes": 1966,
+    "sha": "efb81171b2920462304710712d7ef308532f29c56289a0e41c42668b27425ab0"
+  },
+  {
+    "old": "seer_icons/64.png",
+    "next": "assets/icons/types/64.png",
+    "bytes": 2407,
+    "sha": "1b62ec3b394f3d2bbd18721cc76d249ea8de5babaa999e80236975ac16070d40"
+  },
+  {
+    "old": "seer_icons/65.png",
+    "next": "assets/icons/types/65.png",
+    "bytes": 2837,
+    "sha": "ba94b27b3ceb4a1a9856a6cde3fd9a746027a3ddc523b1dd1e6be5e0a97eaf23"
+  },
+  {
+    "old": "seer_icons/66.png",
+    "next": "assets/icons/types/66.png",
+    "bytes": 3566,
+    "sha": "94db332d7667f5349d7504b831fc162d3725b0cae6573f5e7ded9550b9d91f71"
+  },
+  {
+    "old": "seer_icons/67.png",
+    "next": "assets/icons/types/67.png",
+    "bytes": 2461,
+    "sha": "45fa9d8b993ca04defb8ce0ab600599be89f98983ea4b506dc76776539c11231"
+  },
+  {
+    "old": "seer_icons/68.png",
+    "next": "assets/icons/types/68.png",
+    "bytes": 5241,
+    "sha": "bf717983603713c1a590c86624691ed5eb0ad9c6c363e573940a530b863956b2"
+  },
+  {
+    "old": "seer_icons/69.png",
+    "next": "assets/icons/types/69.png",
+    "bytes": 3940,
+    "sha": "21510b2d2ea4cd97974e17bb3d888c8a3240b3f94990216587593200aea77a46"
+  },
+  {
+    "old": "seer_icons/7.png",
+    "next": "assets/icons/types/7.png",
+    "bytes": 1713,
+    "sha": "71e7740510c9d8216a1c7d546d26b34aeafe07e5bea6f56f6e6b31e49845c114"
+  },
+  {
+    "old": "seer_icons/70.png",
+    "next": "assets/icons/types/70.png",
+    "bytes": 3365,
+    "sha": "427da9756a1e587ec9091a2f8c9521810ca1703ee2192aa34fd97fe5f86cfb50"
+  },
+  {
+    "old": "seer_icons/71.png",
+    "next": "assets/icons/types/71.png",
+    "bytes": 2273,
+    "sha": "6dffce5ff171dd23745be91cedf6c3098ce5e0c6a133a5351a246b4ccdee7525"
+  },
+  {
+    "old": "seer_icons/72.png",
+    "next": "assets/icons/types/72.png",
+    "bytes": 3911,
+    "sha": "e37f04717e4556c0b7abf5fc2f825f8d293547f1b0b118b0f3110b89ef820e1d"
+  },
+  {
+    "old": "seer_icons/73.png",
+    "next": "assets/icons/types/73.png",
+    "bytes": 2462,
+    "sha": "b688267f5a2bc488dd1369002258329eb13a2be8546f2ba41803190d2cdba758"
+  },
+  {
+    "old": "seer_icons/74.png",
+    "next": "assets/icons/types/74.png",
+    "bytes": 2324,
+    "sha": "5693d7117d4528e47a00e65d63731739a3099fccefdd6678ff536a4417df2065"
+  },
+  {
+    "old": "seer_icons/75.png",
+    "next": "assets/icons/types/75.png",
+    "bytes": 3965,
+    "sha": "57f42f971d4be2d8fce54b1a42fdb3078c6b22882068d117857ceeeaef3641aa"
+  },
+  {
+    "old": "seer_icons/76.png",
+    "next": "assets/icons/types/76.png",
+    "bytes": 3838,
+    "sha": "3a0bcf76bf871c22032932e41bbeb76936f3df607fe1e7635b1d60187c685341"
+  },
+  {
+    "old": "seer_icons/77.png",
+    "next": "assets/icons/types/77.png",
+    "bytes": 4040,
+    "sha": "2a7f65622c7a47bcf70640a9cadf617624453a2786087da4221b400b881eb967"
+  },
+  {
+    "old": "seer_icons/78.png",
+    "next": "assets/icons/types/78.png",
+    "bytes": 3993,
+    "sha": "05a1084c252639b73306d739648a55bce48fd656568d845b2ed8c72210e692a4"
+  },
+  {
+    "old": "seer_icons/79.png",
+    "next": "assets/icons/types/79.png",
+    "bytes": 4118,
+    "sha": "36b67a9907aea7ccdfddcba55da4e6b3b7d387200f68d978b01289481e5a894b"
+  },
+  {
+    "old": "seer_icons/8.png",
+    "next": "assets/icons/types/8.png",
+    "bytes": 2455,
+    "sha": "ea608d4afe3ade70ce9ee8f776eef4c9efe144a340f5d06b34d4ff4ead747b84"
+  },
+  {
+    "old": "seer_icons/80.png",
+    "next": "assets/icons/types/80.png",
+    "bytes": 3790,
+    "sha": "73bdf406af79db0bae43ae197ce75c79371b15da53ece17e3949290c435d43c5"
+  },
+  {
+    "old": "seer_icons/81.png",
+    "next": "assets/icons/types/81.png",
+    "bytes": 2342,
+    "sha": "54b13f56d649d3aac18ba38f6a75694362a3caa5a4f4de58cdc20fc3a61ef4cd"
+  },
+  {
+    "old": "seer_icons/82.png",
+    "next": "assets/icons/types/82.png",
+    "bytes": 2556,
+    "sha": "c5b208f947ca33662cb2033634fdee0a0823309309921926c9eeeaabcba923ff"
+  },
+  {
+    "old": "seer_icons/83.png",
+    "next": "assets/icons/types/83.png",
+    "bytes": 2430,
+    "sha": "aa3403057ea529d5afebb4898aa9fd6b3558ee71a1a45a78ba889ec2fe5c6a03"
+  },
+  {
+    "old": "seer_icons/84.png",
+    "next": "assets/icons/types/84.png",
+    "bytes": 2430,
+    "sha": "460ffa10961df4979587222ba5a71836af66099f68739d5137565d71794c0bff"
+  },
+  {
+    "old": "seer_icons/85.png",
+    "next": "assets/icons/types/85.png",
+    "bytes": 2262,
+    "sha": "149126e58d50c49ad148c6b034f14871beed539162b32d1600bc68e8cf8724f9"
+  },
+  {
+    "old": "seer_icons/86.png",
+    "next": "assets/icons/types/86.png",
+    "bytes": 3328,
+    "sha": "9396e3e234971da99cb71a31e9422d0d7456cb4c3d7f2ba0defa5f7443ad1818"
+  },
+  {
+    "old": "seer_icons/87.png",
+    "next": "assets/icons/types/87.png",
+    "bytes": 1851,
+    "sha": "89246316965021c8558ae55fb92907e416968d57ed0a65dfa84814219f7dc5d3"
+  },
+  {
+    "old": "seer_icons/88.png",
+    "next": "assets/icons/types/88.png",
+    "bytes": 2380,
+    "sha": "68382e62bd8245ef00c7fc0e348e944d438dc59bb3dbd83cae1553c6e42f7b06"
+  },
+  {
+    "old": "seer_icons/89.png",
+    "next": "assets/icons/types/89.png",
+    "bytes": 2481,
+    "sha": "e23c358626e8618841d03522b51a90841f1ae0e28bb7698fab69802c60b32b51"
+  },
+  {
+    "old": "seer_icons/9.png",
+    "next": "assets/icons/types/9.png",
+    "bytes": 2816,
+    "sha": "ded483edebd09190698bbbf44b42285bb4f919d42e1d254c3ae906a6d6e5410d"
+  },
+  {
+    "old": "seer_icons/90.png",
+    "next": "assets/icons/types/90.png",
+    "bytes": 2782,
+    "sha": "72e3b290094e33b43e6390ab5dc63a501f668e9e5ca5c4ebc543d1a28fdedb9e"
+  },
+  {
+    "old": "seer_icons/91.png",
+    "next": "assets/icons/types/91.png",
+    "bytes": 3338,
+    "sha": "b269957ca0c722ec978d7217568ab932142e9dedd036606219ce1a4ba844888e"
+  },
+  {
+    "old": "seer_icons/92.png",
+    "next": "assets/icons/types/92.png",
+    "bytes": 2175,
+    "sha": "3ffb6ab84d3d6564eb2baf76f41efbade5c3a0538732e2da9c555a01f343279b"
+  },
+  {
+    "old": "seer_icons/93.png",
+    "next": "assets/icons/types/93.png",
+    "bytes": 2895,
+    "sha": "a6a53de75606fe9c0f40c4c935ce3ec6c8191cd37f10a14a9527c2be6bd95f98"
+  },
+  {
+    "old": "seer_icons/94.png",
+    "next": "assets/icons/types/94.png",
+    "bytes": 1869,
+    "sha": "58cd4ef131d3ed17d28b9635efc1a0f5c46305ad620313328d170e211bd9825d"
+  },
+  {
+    "old": "seer_icons/95.png",
+    "next": "assets/icons/types/95.png",
+    "bytes": 2848,
+    "sha": "37112e203d1bd6ccadec74294a2392194d8f977887a52f2db6d13e51c0222c2b"
+  },
+  {
+    "old": "seer_icons/96.png",
+    "next": "assets/icons/types/96.png",
+    "bytes": 2965,
+    "sha": "71e7c7cbcc8474a9a556ce30cd5d4e2d8c447a11049240023b5e42b53512037b"
+  },
+  {
+    "old": "seer_icons/97.png",
+    "next": "assets/icons/types/97.png",
+    "bytes": 2106,
+    "sha": "f286c76ca0bd4ee2224ee7feaf18416bc412773ab0e6905800d8c58c96c0226d"
+  },
+  {
+    "old": "seer_icons/98.png",
+    "next": "assets/icons/types/98.png",
+    "bytes": 2805,
+    "sha": "68dd7e78a2d2561d535cc1886ea3fcbaf0b69fbfbcf2f89d85f85569da3771d6"
+  },
+  {
+    "old": "seer_icons/99.png",
+    "next": "assets/icons/types/99.png",
+    "bytes": 3471,
+    "sha": "fa58e6003ba78ee114ef831528daf11a17a867c9116e05dfa1aba8e70ca42258"
+  },
+  {
+    "old": "seer_icons/common_pet_skin_icon_0.png",
+    "next": "assets/icons/skin-categories/0.png",
+    "bytes": 5091,
+    "sha": "c2669da8ac49eb7727c38c0be48bf78d99a16b737942e200ba9bce434bb1a6d6"
+  },
+  {
+    "old": "seer_icons/common_pet_skin_icon_11.png",
+    "next": "assets/icons/skin-categories/11.png",
+    "bytes": 14606,
+    "sha": "c35cb440b49f1fb68bb2fcd0a0407236c685353e70d47ac4d40f4f7ed25efaab"
+  },
+  {
+    "old": "seer_icons/common_pet_skin_icon_12.png",
+    "next": "assets/icons/skin-categories/12.png",
+    "bytes": 14949,
+    "sha": "5db4238cabd41c0bc84c207132710239205feb5ef150b4dd1432e4cc6e508f67"
+  },
+  {
+    "old": "seer_icons/common_pet_skin_icon_13.png",
+    "next": "assets/icons/skin-categories/13.png",
+    "bytes": 15394,
+    "sha": "161cf65ea4574ef10ed365e55167196e540c44726f103ad1daa625b036ba420b"
+  },
+  {
+    "old": "seer_icons/common_pet_skin_icon_14.png",
+    "next": "assets/icons/skin-categories/14.png",
+    "bytes": 10413,
+    "sha": "2fc64b95b01310a931869f9f33994a9f8d84abc0cd73b59cec8b4048b8bddc1c"
+  },
+  {
+    "old": "seer_icons/common_pet_skin_icon_15.png",
+    "next": "assets/icons/skin-categories/15.png",
+    "bytes": 14982,
+    "sha": "05d6e78de9b0992a292adf205840481706e0fc85c3259498f1f410d3c64bb144"
+  },
+  {
+    "old": "seer_icons/common_pet_skin_icon_16.png",
+    "next": "assets/icons/skin-categories/16.png",
+    "bytes": 13724,
+    "sha": "2366f484b57ba79004e72ef2a7d1eb3174e735ee4a0e1cea8b0bc7d95ca2ad1a"
+  },
+  {
+    "old": "seer_icons/common_pet_skin_icon_17.png",
+    "next": "assets/icons/skin-categories/17.png",
+    "bytes": 13800,
+    "sha": "bb927db6f45515b5b69e96c0b1f8bbfc2b4ec58513e4b2cc8ade6cdb1ef4f22a"
+  },
+  {
+    "old": "seer_icons/common_pet_skin_icon_18.png",
+    "next": "assets/icons/skin-categories/18.png",
+    "bytes": 11152,
+    "sha": "74425d963b43d62e906a25e40bcb632bdf1f62f0459314ee0c4a61ff0c79bd45"
+  },
+  {
+    "old": "seer_icons/common_pet_skin_icon_19.png",
+    "next": "assets/icons/skin-categories/19.png",
+    "bytes": 17763,
+    "sha": "107afed2c3d20967c61f79ae0e12da2405d34e91672898edcecf6219ca32a146"
+  },
+  {
+    "old": "seer_icons/common_pet_skin_icon_2.png",
+    "next": "assets/icons/skin-categories/2.png",
+    "bytes": 6495,
+    "sha": "125e4a940797e2ab683db2acc76045704238588d8394eea03ca3087b7c4a4c71"
+  },
+  {
+    "old": "seer_icons/common_pet_skin_icon_20.png",
+    "next": "assets/icons/skin-categories/20.png",
+    "bytes": 9070,
+    "sha": "88b3255d373abf982a68f7b0f092b4aae2266271229524f373166929b2fa6630"
+  },
+  {
+    "old": "seer_icons/common_pet_skin_icon_3.png",
+    "next": "assets/icons/skin-categories/3.png",
+    "bytes": 6643,
+    "sha": "2db0aab46e1cbd192a36882ff82c50ef3c3ab4b42847a3327579322b8a884552"
+  },
+  {
+    "old": "seer_icons/common_pet_skin_icon_4.png",
+    "next": "assets/icons/skin-categories/4.png",
+    "bytes": 10051,
+    "sha": "3ad3d134bce2f34a8b5b01a2589d7a82f3359e9c5b4c11747f91b7fe4ffe301f"
+  },
+  {
+    "old": "seer_icons/common_pet_skin_icon_6.png",
+    "next": "assets/icons/skin-categories/6.png",
+    "bytes": 16904,
+    "sha": "924dafc819dd829704394905f64bf70c3be8e65097a67b103bccf3f90066c380"
+  },
+  {
+    "old": "seer_icons/common_pet_skin_icon_7.png",
+    "next": "assets/icons/skin-categories/7.png",
+    "bytes": 12910,
+    "sha": "c3030d24effb765d694975987949c39046f62c08a96578b0f82e85404772aded"
+  },
+  {
+    "old": "seer_icons/common_pet_skin_icon_8.png",
+    "next": "assets/icons/skin-categories/8.png",
+    "bytes": 15034,
+    "sha": "65b57cdf29c9820188d2c9c0abc848d6e36d0c22d9ffac188998835343ffc573"
+  },
+  {
+    "old": "seer_icons/common_pet_skin_icon_9.png",
+    "next": "assets/icons/skin-categories/9.png",
+    "bytes": 14835,
+    "sha": "b6189650bb0d1f72d6eaddb1a7799eaefce3f1052cf08266b6d6e62dfb70fb4d"
+  },
+  {
+    "old": "seer_icons/prop.png",
+    "next": "assets/icons/skills/attribute.png",
+    "bytes": 2449,
+    "sha": "c5e9907717502606aec84ffce6fa322da563c4f029bbc9e0184e0db291da1bd6"
+  },
+  {
+    "old": "seer_icons/sex_female.png",
+    "next": "assets/icons/gender/female.png",
+    "bytes": 1996,
+    "sha": "19c58f904da6c515be2481f03b3028fba0cb31858e2f64ce785e880f4d2f380c"
+  },
+  {
+    "old": "seer_icons/sex_male.png",
+    "next": "assets/icons/gender/male.png",
+    "bytes": 1485,
+    "sha": "205c2db226a989c58d01fc65b4c2bfe354a24e362702e020dc3aa8180b299355"
+  },
+  {
+    "old": "seer_icons/sex_sexless.png",
+    "next": "assets/icons/gender/sexless.png",
+    "bytes": 526,
+    "sha": "e216fa4064cdffa4e3c7cee2cc8334a6a2ececa6e3f605a93b519f436a6d444b"
+  }
+]

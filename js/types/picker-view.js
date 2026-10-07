@@ -1,3 +1,4 @@
+import { typeIconUrl } from "../shared/assets.js";
 import {createTypeLabel} from "./labels.js";
 import { SEER_TYPE_DATA } from "../seer-type-data.js";
 import { getRelatedTypeOptions } from "../shared/type-options.js";
@@ -115,7 +116,7 @@ renderPickerOptions() {
             button.dataset.calcTypeId = String(item.id);
 
             const icon = document.createElement("img");
-            icon.src = `./seer_icons/${item.id}.png`;
+            icon.src = typeIconUrl(item.id);
             icon.alt = "";
             icon.loading = "lazy";
             icon.addEventListener("error", () => { icon.hidden = true; }, { once: true });

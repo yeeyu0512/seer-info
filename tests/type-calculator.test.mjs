@@ -1,3 +1,4 @@
+import { typeIconUrl } from "../js/shared/assets.js";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { SEER_TYPE_DATA } from "../js/seer-type-data.js";
@@ -116,7 +117,7 @@ test("partial matchup selection hides results and never substitutes a default", 
     view.renderSkillStones();
     assert.equal(view.vsStoneResult.hidden, true);
     assert.equal(view.vsStoneSelect.children[0].children[1], "火系技能石");
-    assert.equal(view.vsStoneSelect.children[0].children[0].src, `./seer_icons/${view.selectedSkillStoneId}.png`);
+    assert.equal(view.vsStoneSelect.children[0].children[0].src, typeIconUrl(view.selectedSkillStoneId));
 });
 
 for (const [attack, defense, expected] of examples) {
@@ -172,8 +173,8 @@ test("lookup and skill stone calculations use the corrected formula", () => {
         view.renderSkillStones();
         assert.equal(view.vsStoneMult.textContent, "4×");
         assert.equal(view.vsStoneResult.hidden, false);
-        assert.equal(view.vsStoneTitle.children[0].children[0].src, `./seer_icons/${holy.id}.png`);
-        assert.equal(view.vsStoneTitle.children[2].children[0].src, `./seer_icons/${target.id}.png`);
+        assert.equal(view.vsStoneTitle.children[0].children[0].src, typeIconUrl(holy.id));
+        assert.equal(view.vsStoneTitle.children[2].children[0].src, typeIconUrl(target.id));
     } finally {
         globalThis.document = previousDocument;
     }

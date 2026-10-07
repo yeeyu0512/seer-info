@@ -1,3 +1,4 @@
+import { typeIconUrl, skinCategoryIconUrl } from "./shared/assets.js";
 import { getSeerServerSettings } from "./seer-server-settings.js";
 import { SEER_TYPE_DATA } from "./seer-type-data.js";
 import { getRelatedTypeOptions } from "./shared/type-options.js";
@@ -272,7 +273,7 @@ export function initSeerLookup(dependencies) {
                 button.textContent = option.label;
             } else {
                 const icon = document.createElement("img");
-                icon.src = `./seer_icons/common_pet_skin_icon_${option.id}.png`;
+                icon.src = skinCategoryIconUrl(option.id);
                 icon.alt = "";
                 icon.loading = "lazy";
                 icon.addEventListener("error", () => {
@@ -546,7 +547,7 @@ export function initSeerLookup(dependencies) {
                 const label = document.createElement("span");
                 label.className = "type-vs-inline-type";
                 const icon = document.createElement("img");
-                icon.src = `./seer_icons/${type.id}.png`;
+                icon.src = typeIconUrl(type.id);
                 icon.alt = "";
                 label.append(icon, type.name);
                 button.append(label);
@@ -590,7 +591,7 @@ export function initSeerLookup(dependencies) {
             button.dataset.petTypeId = combination.id === null ? "all" : String(combination.id);
             if (combination.id !== null) {
                 const icon = document.createElement("img");
-                icon.src = `./seer_icons/${combination.id}.png`;
+                icon.src = typeIconUrl(combination.id);
                 icon.alt = "";
                 icon.loading = "lazy";
                 icon.addEventListener("error", () => { icon.hidden = true; }, { once: true });
@@ -1068,7 +1069,7 @@ export function initSeerLookup(dependencies) {
             type.className = "seer-lookup-result-type";
             if (typeDetails) {
                 const typeIcon = document.createElement("img");
-                typeIcon.src = `./seer_icons/${typeDetails.id}.png`;
+                typeIcon.src = typeIconUrl(typeDetails.id);
                 typeIcon.alt = typeDetails.name || "屬性";
                 type.append(typeIcon);
             } else {
@@ -1233,7 +1234,7 @@ export function initSeerLookup(dependencies) {
         seerLookupSkinCategoryIcon.removeAttribute("src");
         seerLookupIllustrationCategoryIcon.hidden = true;
         seerLookupIllustrationCategoryIcon.removeAttribute("src");
-        seerLookupTypeIcon.src = `./seer_icons/${resolvedTypeId}.png`;
+        seerLookupTypeIcon.src = typeIconUrl(resolvedTypeId);
         seerLookupTypeName.textContent = typeName || "未知";
         seerLookupIllustrationImage.src = `https://newseer.61.com/web/monster//body/${encodeURIComponent(petId)}.png`;
         seerLookupIllustrationImage.alt = `${petName}立繪`;
@@ -1370,9 +1371,9 @@ export function initSeerLookup(dependencies) {
         seerLookupRelatedPet.hidden = false;
         const categoryId = skin && skin.category && Number(skin.category.id);
         if (Number.isSafeInteger(categoryId) && categoryId >= 0) {
-            seerLookupSkinCategoryIcon.src = `./seer_icons/common_pet_skin_icon_${categoryId}.png`;
+            seerLookupSkinCategoryIcon.src = skinCategoryIconUrl(categoryId);
             seerLookupSkinCategoryIcon.hidden = false;
-            seerLookupIllustrationCategoryIcon.src = `./seer_icons/common_pet_skin_icon_${categoryId}.png`;
+            seerLookupIllustrationCategoryIcon.src = skinCategoryIconUrl(categoryId);
             seerLookupIllustrationCategoryIcon.hidden = false;
         } else {
             seerLookupSkinCategoryIcon.hidden = true;
@@ -1380,7 +1381,7 @@ export function initSeerLookup(dependencies) {
             seerLookupIllustrationCategoryIcon.hidden = true;
             seerLookupIllustrationCategoryIcon.removeAttribute("src");
         }
-        seerLookupTypeIcon.src = `./seer_icons/${typeDetails.id}.png`;
+        seerLookupTypeIcon.src = typeIconUrl(typeDetails.id);
         seerLookupTypeName.textContent = typeDetails.name || "未知";
         seerLookupIllustrationImage.src = `https://newseer.61.com/web/monster//body/${encodeURIComponent(imageResourceId)}.png`;
         seerLookupIllustrationImage.alt = `${skinName}立繪`;
@@ -1606,7 +1607,7 @@ export function initSeerLookup(dependencies) {
             categoryIcon.loading = "lazy";
             if (Number.isSafeInteger(categoryId) && categoryId >= 0) {
                 categoryIcon.src =
-                    `./seer_icons/common_pet_skin_icon_${categoryId}.png`;
+                    skinCategoryIconUrl(categoryId);
                 categoryIcon.addEventListener("error", () => categoryIcon.remove(), { once: true });
             } else {
                 categoryIcon.remove();
@@ -1728,7 +1729,7 @@ export function initSeerLookup(dependencies) {
         }
         if (seerPetTypeCurrentIcon) {
             seerPetTypeCurrentIcon.hidden = false;
-            seerPetTypeCurrentIcon.src = `./seer_icons/${selectedSeerPetTypeId}.png`;
+            seerPetTypeCurrentIcon.src = typeIconUrl(selectedSeerPetTypeId);
         }
         const match = getElementTypeCombinations().find((item) => item.id === selectedSeerPetTypeId);
         if (match) {

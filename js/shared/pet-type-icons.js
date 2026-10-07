@@ -1,3 +1,4 @@
+import { typeIconUrl } from "./assets.js";
 export function createPetTypeIcons({
     fetchSeerJson
 }) {
@@ -120,7 +121,7 @@ export function createPetTypeIcons({
         if (!Number.isSafeInteger(resolvedTypeId) || resolvedTypeId <= 0) {
             throw new Error("SeerAPI 回傳的屬性 ID 無效。");
         }
-        return `./seer_icons/${resolvedTypeId}.png`;
+        return typeIconUrl(resolvedTypeId);
     }
     return { createCharacterTypeIcon, clearObservedTypeIcons, loadCharacterTypeIcon, processCharacterTypeIconQueue, fetchCharacterTypeIconUrl };
 }

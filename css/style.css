@@ -3664,7 +3664,7 @@ html:has(.site-header .primary-main-tabs) { scroll-padding-top: 84px; }
     border-radius: 50%;
     background:
         linear-gradient(145deg, rgba(104, 91, 184, .12), rgba(65, 183, 202, .12)),
-        url("../1400837.png") center 35% / cover no-repeat;
+        url("../assets/site/about-artwork.png") center 35% / cover no-repeat;
     box-shadow: 0 0 0 12px rgba(136, 146, 255, .045), 0 0 48px rgba(106, 120, 235, .16);
     content: "";
     transform: translateY(-50%);
@@ -5427,7 +5427,7 @@ body {
     background:
         linear-gradient(90deg, rgba(5, 7, 16, .66) 0%, rgba(6, 8, 18, .53) 44%, rgba(5, 7, 16, .45) 100%),
         linear-gradient(180deg, rgba(6, 8, 18, .14), rgba(6, 8, 18, .62)),
-        url("../bg.png") center center / cover fixed no-repeat;
+        url("../assets/site/background.png") center center / cover fixed no-repeat;
 }
 
 @media (max-width: 680px) {

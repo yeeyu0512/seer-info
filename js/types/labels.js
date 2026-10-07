@@ -1,8 +1,9 @@
+import { typeIconUrl } from "../shared/assets.js";
 export function createTypeLabel(type, text = type.name) {
     const label = document.createElement("span");
     label.className = "type-vs-inline-type";
     const icon = document.createElement("img");
-    icon.src = `./seer_icons/${type.id}.png`;
+    icon.src = typeIconUrl(type.id);
     icon.alt = "";
     label.append(icon, text);
     return label;

@@ -1,10 +1,11 @@
+import { ASSETS } from "./shared/assets.js";
 import { suitBattleModes, selectSuits, fetchSuitCatalog } from "./data/suit-catalog.js";
 export { suitBattleModes, selectSuits, fetchSuitCatalog } from "./data/suit-catalog.js";
 import { createSuitImageService, SUIT_PARTS } from "./seer-suit-images.js";
 
 const STATS = [["atk", "攻擊"], ["sp_atk", "特攻"], ["def", "防禦"], ["sp_def", "特防"], ["spd", "速度"], ["hp", "體力"]];
 const PAGE_SIZE = 6;
-const BASE_URL = new URL("../assets/seer-base.png", import.meta.url).href;
+const BASE_URL = ASSETS.seerBase;
 
 
 

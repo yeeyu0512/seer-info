@@ -1,3 +1,4 @@
+import { typeIconUrl, skinCategoryIconUrl, genderIconUrl, ASSETS } from "./shared/assets.js";
 const SEER_TYPE_ICON_IDS = [
     ...Array.from({ length: 132 }, (_, index) => index + 1),
     221, 222, 223, 224, 225, 226
@@ -6,12 +7,9 @@ const SEER_SKIN_CATEGORY_IDS = [
     0, 2, 3, 4, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
 ];
 const SEER_ICON_PATHS = [
-    ...SEER_TYPE_ICON_IDS.map((id) => `${id}.png`),
-    "prop.png",
-    ...SEER_SKIN_CATEGORY_IDS.map((id) => `common_pet_skin_icon_${id}.png`),
-    "sex_sexless.png",
-    "sex_male.png",
-    "sex_female.png"
+    ...SEER_TYPE_ICON_IDS.map(typeIconUrl), ASSETS.attributeSkill,
+    ...SEER_SKIN_CATEGORY_IDS.map(skinCategoryIconUrl),
+    ...['sexless','male','female'].map(genderIconUrl)
 ];
 const SEER_ICON_PRELOAD_CONCURRENCY = 4;
 const preloadedSeerIcons = [];
@@ -43,7 +41,7 @@ export function preloadSeerIcons() {
                 };
                 image.addEventListener("load", settle, { once: true });
                 image.addEventListener("error", settle, { once: true });
-                image.src = new URL(`../seer_icons/${iconPath}`, import.meta.url).href;
+                image.src = iconPath;
             }
         };
 
