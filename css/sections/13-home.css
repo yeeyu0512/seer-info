@@ -151,3 +151,16 @@
 /* Known issues follow the same plain, divided rows as the other lists. */
 .home-known-issues ul { list-style: none; padding: 0; margin: 0; }
 .home-known-issues li { padding: 14px 0; border-bottom: 1px solid #304356; font-size: 13px; font-weight: 400; line-height: 1.6; color: var(--text); }
+
+/* Small game-console keys, with restrained colour and tactile feedback. */
+.home-key-icon { width: 18px; height: 18px; flex: 0 0 18px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: square; stroke-linejoin: miter; color: #a7cde0; }
+#home-section .home-shortcuts button { position: relative; transition: background-color .12s, transform .08s, box-shadow .08s; }
+#home-section .home-shortcuts button[data-home-mode="pet"] { background: #324b67; }
+#home-section .home-shortcuts button[data-home-mode="skin"] { background: #484766; }
+.home-shortcuts button[data-home-mode="skin"] .home-key-icon { color: #c6b9e8; }
+.home-shortcuts button[data-home-target="seal-encyclopedia-section"] .home-key-icon { color: #ddc48e; }
+.home-shortcuts button[data-home-target="training-section"] .home-key-icon { color: #c1e8e8; }
+.home-shortcuts button[data-home-target="type-chart-section"] .home-key-icon { color: #adc8ed; }
+#home-section .home-shortcuts button:hover { background: #405c77; transform: translateY(-1px); box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 2px 0 #0e1928; }
+#home-section .home-shortcuts button:active { transform: translateY(2px); border-bottom-color: #25394b; box-shadow: inset 0 2px 4px rgba(0,0,0,.3); }
+@media (prefers-reduced-motion: reduce) { #home-section .home-shortcuts button { transition: none; } }
