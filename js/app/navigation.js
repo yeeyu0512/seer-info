@@ -106,6 +106,7 @@ export function createNavigation({
         if (typeChartSection) typeChartSection.hidden = !isTypeChart;
         trainingSection.hidden = !isTraining;
         if (isTraining) seerTraining.load();
+        else seerTraining.cancelRestore?.();
         accountSection.hidden = !isAccount;
         aboutSection.hidden = !isAbout;
         votingSubTabs.hidden = mainTarget !== "voting";
@@ -146,8 +147,15 @@ export function createNavigation({
                     (!route.mode || route.mode === seerLookup.getMode());
             });
 
+            if (!routeName) {
+                const url = new URL(window.location.href);
+                url.searchParams.delete("build"); url.searchParams.delete("tab");
+                if (url.href !== window.location.href) window.history.pushState(null,"",url);
+            }
             if (routeName) {
                 const url = new URL(window.location.href);
+
+                if (routeName !== "training") url.searchParams.delete("build");
 
                 if (routeName === "home") {
                     url.searchParams.delete("tab");
@@ -175,6 +183,8 @@ export function createNavigation({
         }
 
         activateTab(route.section, { updateUrl: false });
+        if (tab === "training" && params.has("build")) seerTraining.restoreBuild(params.get("build"));
+        else seerTraining.cancelRestore?.();
     }
 
     window.addEventListener("popstate", () => {

@@ -1,3 +1,4 @@
+import { createShareUrl, resolveShareConfig, createShareRestorer } from "./training/share-config.js";
 import {trainingDescription as description, trainingSource} from "./training/model.js";
 import { fillLearningEffort } from "./training/learning-effort.js";
 import {initTrainingSearchPickers} from "./training/search-picker.js";
@@ -25,7 +26,7 @@ export function initSeerTraining(root, { fetchSeerJson, convertToTraditionalChin
     const source = (record, kind) => trainingSource(record, kind, name);
     const images = createTrainingImages({fetchCached, simplified});
     const suitHasEye = createSuitEyeDetector(fetchCached);
-    let eyeState = "free", suitEyeVersion = 0;
+    let eyeState = "free", suitEyeVersion = 0, restoring = false;
     async function updateSuitEye(suit) {
         const request = ++suitEyeVersion; eyeState = "pending";
         equipmentPickers.setAvailability("eye",false,"正在檢查套裝是否含有目鏡…");
@@ -94,7 +95,7 @@ export function initSeerTraining(root, { fetchSeerJson, convertToTraditionalChin
         }
     }
     const {recalculate} = createTrainingResultView({query, vector, selected, name, source, description, activeRace, getNatures:() => natures, getAdvancedStats:() => advancedStats, getResultMode:() => resultMode,getEyeState:() => eyeState});
-    function choose(id, record) {
+    function choose(id, record, { restored = false } = {}) {
         selected.set(id, record);
         if (id === "pet") {
             petVersion++; advancedStats = null;
@@ -106,10 +107,10 @@ export function initSeerTraining(root, { fetchSeerJson, convertToTraditionalChin
             const preview = query(".training-pet"); preview.hidden = false; preview.querySelector("img").src = `https://newseer.61.com/web/monster/head/${record.resource_id || record.id}.png`; preview.querySelector("img").alt = name(record); preview.querySelector("strong").textContent = name(record); preview.querySelector("p").textContent = `#${record.id} · 種族值總和 ${record.base_stats?.total ?? "—"}`;
             selectedSkin = null; query("[data-pet-select]").hidden = false; updateAppearance(); query("[data-skin-select]").disabled = false;
             renderRace();
-            if (record.advance?.id != null) loadAdvance(record);
+            if (!restored && record.advance?.id != null) loadAdvance(record);
         } else if (id.startsWith("mint")) {
             renderMintSlot(Number(id.slice(4)));
-        } else { query(`[data-effect="${id}"]`).textContent = traditional(description(record, id)); if (id === "suit") { query("[data-suit-select]").textContent = `${name(record)} · #${record.id} ›`; query("[data-suit-remove]").hidden = false; updateSuitEye(record); } else equipmentPickers.sync(id); }
+        } else { query(`[data-effect="${id}"]`).textContent = traditional(description(record, id)); if (id === "suit") { query("[data-suit-select]").textContent = `${name(record)} · #${record.id} ›`; query("[data-suit-remove]").hidden = false; if (!restored) updateSuitEye(record); } else equipmentPickers.sync(id); }
         recalculate();
     }
     const petDialog = document.createElement("dialog");
@@ -202,7 +203,7 @@ export function initSeerTraining(root, { fetchSeerJson, convertToTraditionalChin
         recalculate();
     });
     renderRace();
-    return { async load() {
+    async function load() {
         if (!naturePending) naturePending = fetchCached(`${API}nature?limit=200&expand=true`).then(data => {
             natures = data.results || []; const select = query("[data-nature]");
             if (!natures.some(item => Number(item.id) === 1)) throw new Error("固執個性資料缺失");
@@ -212,5 +213,56 @@ export function initSeerTraining(root, { fetchSeerJson, convertToTraditionalChin
             select.dispatchEvent(new Event("change"));
         }).catch(() => { naturePending = null; query(".training-nature-note").textContent = "個性載入失敗，重新進入頁籤可重試。"; });
         await naturePending;
-    } };
+    }
+    const feedback = message => { const status = query("[data-share-status]"); status.hidden = false; status.textContent = message; };
+    const restorer = createShareRestorer({
+        resolve: async config => { await load(); if (!natures.some(item => item.id === config.nature)) throw new Error("個性資料載入失敗或不存在。"); return resolveShareConfig(config,{fetchCached,suitHasEye}); },
+        onStatus: feedback,
+        apply: async (config,records,active) => {
+            restoring = true;
+            try {
+                // Close pending picker requests before replacing the current selections.
+                for (const dialog of root.querySelectorAll("dialog[open]")) dialog.close();
+                selected.clear(); suitEyeVersion++; petVersion++;
+                eyeState = "free"; equipmentPickers.setAvailability("eye",true,"");
+                query("[data-suit-select]").textContent = "選擇套裝 ›"; query("[data-suit-remove]").hidden = true;
+                for (const kind of ["suit","eye","title"]) { query(`[data-effect="${kind}"]`).textContent = ""; equipmentPickers.sync(kind); }
+                for (let i=0;i<3;i++) renderMintSlot(i);
+                choose("pet",records.pet,{restored:true});
+                advancedStats = records.advance?.base_stats || null;
+                selectedSkin = records.skin; updateAppearance();
+                for (const kind of ["suit","title"]) if (records[kind]) choose(kind,records[kind],{restored:true});
+                eyeState = records.includedEye ? "included" : "free";
+                equipmentPickers.setAvailability("eye",!records.includedEye,records.includedEye ? "套裝已包含目鏡，無法另外裝備目鏡。" : "");
+                if (!active()) return;
+                if (eyeState === "unknown") throw new Error("套裝部件尚未確認，請重試。");
+                if (records.eye) choose("eye",records.eye);
+                records.mint.forEach((record,i) => { if (record) choose(`mint${i}`,record); });
+                for (const [field,selector] of [["ev","[data-ev]"],["team","[data-extra]"]])
+                    for (const [key] of STATS) query(`${selector} [data-stat="${key}"]`).value = config[field][key];
+                query("[data-iv]").value = config.iv; query("[data-hp-training]").value = config.hp;
+                query("[data-year-bonus]").checked = config.year;
+                query("[data-nature]").value = config.nature; query("[data-nature]").dispatchEvent(new Event("change"));
+                query("[data-race-mode]").value = config.awakened ? "advance" : "normal";
+                renderRace(); query(`[data-result-mode="${config.mode}"]`).click(); recalculate();
+                if (query("[data-error]").textContent) throw new Error(query("[data-error]").textContent);
+            } finally { restoring = false; }
+        }
+    });
+    // User edits supersede a pending URL restore, including selections in dialogs.
+    root.addEventListener("input",event => { if (!restoring && event.isTrusted) restorer.cancel(); },true);
+    root.addEventListener("change",event => { if (!restoring && event.isTrusted) restorer.cancel(); },true);
+    root.addEventListener("click",event => { if (!restoring && event.isTrusted) restorer.cancel(); },true);
+    query("[data-share-config]").addEventListener("click",async () => {
+        try {
+            recalculate();
+            if (restoring || (selected.get("pet")?.advance?.id != null && !advancedStats) || ["pending","unknown"].includes(eyeState)) throw new Error("資料仍在載入或檢查中，請完成後再分享。");
+            if (!selected.has("pet") || query("[data-error]").textContent) throw new Error(query("[data-error]").textContent || "請先選擇精靈並完成有效配置。");
+            const id = kind => selected.get(kind)?.id ?? null;
+            const url = createShareUrl(window.location.href,{v:1,pet:id("pet"),skin:selectedSkin?.id ?? null,nature:Number(query("[data-nature]").value),iv:Number(query("[data-iv]").value),ev:vector(query("[data-ev]")),team:vector(query("[data-extra]")),hp:Number(query("[data-hp-training]").value),year:query("[data-year-bonus]").checked,mint:[0,1,2].map(i => id(`mint${i}`)),suit:id("suit"),eye:id("eye"),title:id("title"),mode:resultMode,awakened:query("[data-race-mode]").value === "advance"});
+            await navigator.clipboard.writeText(url); feedback("分享連結已複製到剪貼簿。");
+        } catch(error) { feedback(`無法分享配置：${error.message}`); }
+    });
+    return {load, restoreBuild:encoded => restorer.restore(encoded), cancelRestore:() => restorer.cancel()};
+
 }
