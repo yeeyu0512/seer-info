@@ -139,7 +139,7 @@ const { loadRanking, renderRanking, findRankingCharacter, startRankingRefresh, s
     getCharacters: (...args) => getCharacters(...args),
     getIsAdministrator: (...args) => getIsAdministrator(...args)
 });
-const { activateTab } = createNavigation({
+const { activateTab, restoreRouteFromUrl } = createNavigation({
     primaryMainTabs,
     seerLookup,
     votePanels,
@@ -208,4 +208,6 @@ initHome({ seerLookup, activateTab });
 
 preloadSeerIcons();
 
-checkSession();
+checkSession().then(() => {
+    restoreRouteFromUrl({ initial: true });
+});

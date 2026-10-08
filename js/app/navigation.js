@@ -24,6 +24,17 @@ export function createNavigation({
 
     let currentVotePanelId = "selection-panel";
 
+    const publicRoutes = {
+        home: { section: "home-section" },
+        pet: { section: "seer-lookup-section", mode: "pet" },
+        skin: { section: "seer-lookup-section", mode: "skin" },
+        mintmark: { section: "seal-encyclopedia-section" },
+        suit: { section: "suit-encyclopedia-section" },
+        types: { section: "type-chart-section" },
+        training: { section: "training-section" },
+        about: { section: "about-section" }
+    };
+
     primaryMainTabs.forEach((tab) => {
         tab.addEventListener("click", () => {
             const target = tab.dataset.mainTarget;
@@ -35,9 +46,9 @@ export function createNavigation({
                         ? "type-chart-section"
                         : target === "training"
                             ? "training-section"
-                        : target === "account"
-                            ? "account-section"
-                            : "about-section");
+                            : target === "account"
+                                ? "account-section"
+                                : "about-section");
         });
     });
 
@@ -62,7 +73,7 @@ export function createNavigation({
         });
     });
 
-    function activateTab(targetId) {
+    function activateTab(targetId, { updateUrl = true } = {}) {
         if (!getIsAdministrator() && votePanels.has(targetId)) targetId = "seer-lookup-section";
         const isLookup = targetId === "seer-lookup-section";
         const isSealEncyclopedia = targetId === "seal-encyclopedia-section";
@@ -78,11 +89,11 @@ export function createNavigation({
                 ? "account"
                 : isTraining
                     ? "training"
-                : isTypeChart
-                    ? "type-chart"
-                    : isLookup || isSealEncyclopedia || isSuitEncyclopedia
-                        ? "encyclopedia"
-                        : "voting";
+                    : isTypeChart
+                        ? "type-chart"
+                        : isLookup || isSealEncyclopedia || isSuitEncyclopedia
+                            ? "encyclopedia"
+                            : "voting";
         if (!isLookup && !isAccount && !isTypeChart && votePanels.has(targetId)) currentVotePanelId = targetId;
 
         voteSection.hidden = mainTarget !== "voting";
@@ -124,8 +135,51 @@ export function createNavigation({
             tab.classList.toggle("is-active", isActive);
             tab.setAttribute("aria-selected", String(isActive));
         });
+
         if (targetId === "competitive-pool-section") loadCurrentCompetitivePool();
         if (isLookup) seerLookup.browseLatestIfEmpty();
+
+        if (updateUrl) {
+            const routeName = Object.keys(publicRoutes).find((key) => {
+                const route = publicRoutes[key];
+                return route.section === targetId &&
+                    (!route.mode || route.mode === seerLookup.getMode());
+            });
+
+            if (routeName) {
+                const url = new URL(window.location.href);
+
+                if (routeName === "home") {
+                    url.searchParams.delete("tab");
+                } else {
+                    url.searchParams.set("tab", routeName);
+                }
+
+                if (url.href !== window.location.href) {
+                    window.history.pushState(null, "", url);
+                }
+            }
+        }
     }
-    return { activateTab };
+
+    function restoreRouteFromUrl({ initial = false } = {}) {
+        const params = new URLSearchParams(window.location.search);
+        const tab = params.get("tab");
+
+        if (!tab && initial) return;
+
+        const route = publicRoutes[tab] || publicRoutes.home;
+
+        if (route.mode) {
+            seerLookup.setMode(route.mode);
+        }
+
+        activateTab(route.section, { updateUrl: false });
+    }
+
+    window.addEventListener("popstate", () => {
+        restoreRouteFromUrl();
+    });
+
+    return { activateTab, restoreRouteFromUrl };
 }

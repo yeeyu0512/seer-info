@@ -47,11 +47,11 @@ export function createSessionController({
         publicLoginPrompt.hidden = true;
         if (!isAdministrator) {
             stopRankingRefresh();
-            activateTab("home-section");
+            activateTab("home-section", { updateUrl: false });
             await loadGameAccount();
             return;
         }
-        activateTab("selection-panel");
+        activateTab("selection-panel", { updateUrl: false });
         selectionPanel.hidden = false;
         selectionBar.hidden = false;
         publicLoginPrompt.hidden = true;
@@ -65,7 +65,7 @@ export function createSessionController({
     async function initializePublicPage() {
         if (isAuthenticated) return;
         stopRankingRefresh();
-        activateTab("home-section");
+        activateTab("home-section", { updateUrl: false });
         selectionBar.hidden = true;
         alreadyVoted.hidden = true;
         submitButton.hidden = true;
@@ -100,7 +100,7 @@ export function createSessionController({
         isAuthenticated = false;
         isAdministrator = false;
         primaryMainTabs.find((tab) => tab.dataset.mainTarget === "voting").hidden = true;
-        activateTab("home-section");
+        activateTab("home-section", { updateUrl: false });
         loginModal.classList.remove("is-closing");
         loginModal.hidden = true;
         loginTrigger.hidden = true;
