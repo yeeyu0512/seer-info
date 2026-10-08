@@ -25,9 +25,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+
+      - name: Run automated tests
+        run: npm test
+
+      - name: Check JavaScript modules
+        run: npm run check
+
       # A failed fetch stops publication, leaving the live site untouched.
       - name: Fetch Taiwan official announcements
         run: npm run news:refresh
+
       - uses: actions/configure-pages@v5
       - name: Prepare static website
         shell: bash
