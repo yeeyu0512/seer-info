@@ -948,3 +948,5 @@
         padding: 16px 0;
     }
 }
+.home-shark-title { display: flex; align-items: center; gap: 8px; }
+.home-shark-icon { width: 26px; height: 26px; object-fit: contain; flex-shrink: 0; }

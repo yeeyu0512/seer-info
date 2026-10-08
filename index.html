@@ -146,6 +146,7 @@
                                 <path d="M4 8h14l-3-3 M20 16H6l3 3 M18 8l-3 3 M6 16l3-3" />
                             </svg><span>屬性克制</span></button>
                         <p class="home-nav-label">本站</p>
+                        <button type="button" id="open-player-lookup"><svg class="home-key-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 8a3 3 0 1 1 5 2c-2 1-2 2-2 4 M12 18h.01 M4 4h16v16H4z"/></svg><span>神祕功能</span></button>
                         <button type="button" data-home-target="about-section"><svg class="home-key-icon" width="18"
                                 height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"
                                 stroke-linejoin="miter" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -169,7 +170,7 @@
                     <div class="home-panel-heading"><span>SEER INFO</span><span>玩家看板</span></div>
                     <section class="home-official-news" aria-labelledby="home-news-title">
                         <div class="home-news-heading">
-                            <h2 id="home-news-title">台服更新情報</h2>
+                            <h2 id="home-news-title" class="home-shark-title"><img src="./assets/icons/shark.png" alt="" aria-hidden="true" class="home-shark-icon">台服更新情報</h2>
                             <a class="home-news-source" href="https://www.61.com.tw/seer_df/news/more" target="_blank"
                                 rel="noopener noreferrer" aria-label="台服官網公告（另開分頁）"><span>台服</span><span>官網公告 <span
                                         aria-hidden="true">↗</span></span></a>
@@ -179,7 +180,7 @@
                         </ul>
                     </section>
                     <section class="home-recommendations" aria-labelledby="home-recommendations-title">
-                        <h2 id="home-recommendations-title">站長推薦</h2>
+                        <h2 id="home-recommendations-title" class="home-shark-title"><img src="./assets/icons/shark.png" alt="" aria-hidden="true" class="home-shark-icon">站長推薦</h2>
                         <div class="home-recommendation-slots" aria-label="站長推薦精靈">
                             <button class="home-recommendation-slot" type="button" data-home-pet-id="3506"
                                 aria-label="查看精靈 3506" title="精靈 #3506"><img
@@ -204,7 +205,7 @@
                     <div class="home-panel-heading"><span>SEER INFO</span><span>站內紀錄</span></div>
                     <section class="home-updates" aria-labelledby="home-updates-title">
                         <header class="home-updates-heading home-news-heading">
-                            <h2 id="home-updates-title">更新紀錄</h2>
+                            <h2 id="home-updates-title" class="home-shark-title"><img src="./assets/icons/shark.png" alt="" aria-hidden="true" class="home-shark-icon">更新紀錄</h2>
                             <button type="button" id="open-changelog-button" class="home-news-source">
                                 <span>更新</span>
                                 <span>完整紀錄</span>
@@ -215,7 +216,7 @@
                         </ol>
                     </section>
                     <section class="home-known-issues" aria-labelledby="known-issues-title">
-                        <h2 id="known-issues-title">已知問題</h2>
+                        <h2 id="known-issues-title" class="home-shark-title"><img src="./assets/icons/shark.png" alt="" aria-hidden="true" class="home-shark-icon">已知問題</h2>
                         <ul id="known-issues-list">
                             <li>台服未實裝的合作刻印未能隱藏</li>
                         </ul>
@@ -897,6 +898,19 @@
         </div>
     </dialog>
 
+    <dialog id="lookup-explanation" class="lookup-explanation" aria-labelledby="lookup-explanation-title">
+        <h2 id="lookup-explanation-title">查詢原理</h2>
+        <p>伺服器上的測試帳號登入台服後，向遊戲伺服器查詢玩家資料。需要驗證碼時，由查詢者填寫。</p>
+        <p>僅顯示在線狀態、巔峰統計及出戰與待戰精靈的名稱與編號，不提供配招或配置，也不保存查詢歷史。</p>
+        <p>查詢共用冷卻時間，資料以遊戲伺服器回傳為準。台服連線狀態僅表示測試帳號目前有沒有建立遊戲連線，無法據此判定官方是否開服。</p>
+        <button id="close-lookup-explanation" type="button">知道了</button>
+    </dialog>
+    <dialog id="player-lookup-dialog" class="player-lookup-dialog" aria-label="玩家資料查詢">
+        <div class="player-lookup-dialog-bar"><div class="player-dialog-title"><strong>玩家資料查詢</strong><span>輸入米米號，查詢台服玩家的巔峰戰績與出戰、待戰精靈。</span><button id="open-lookup-explanation" type="button">查詢原理 ⓘ</button></div><button id="close-player-lookup" type="button" aria-label="關閉玩家查詢">✕</button></div>
+        <iframe id="player-lookup-frame" title="台服玩家查詢" data-src="./player-lookup.html?embedded=1"></iframe>
+    </dialog>
+    <link rel="stylesheet" href="./css/player-lookup-dialog.css">
+    <script type="module" src="./js/player-lookup-dialog.js"></script>
 </body>
 
 </html>
