@@ -47,7 +47,7 @@ export function createSessionController({
         publicLoginPrompt.hidden = true;
         if (!isAdministrator) {
             stopRankingRefresh();
-            activateTab("seer-lookup-section");
+            activateTab("home-section");
             await loadGameAccount();
             return;
         }
@@ -65,7 +65,7 @@ export function createSessionController({
     async function initializePublicPage() {
         if (isAuthenticated) return;
         stopRankingRefresh();
-        activateTab("seer-lookup-section");
+        activateTab("home-section");
         selectionBar.hidden = true;
         alreadyVoted.hidden = true;
         submitButton.hidden = true;
@@ -100,7 +100,7 @@ export function createSessionController({
         isAuthenticated = false;
         isAdministrator = false;
         primaryMainTabs.find((tab) => tab.dataset.mainTarget === "voting").hidden = true;
-        activateTab("seer-lookup-section");
+        activateTab("home-section");
         loginModal.classList.remove("is-closing");
         loginModal.hidden = true;
         loginTrigger.hidden = true;

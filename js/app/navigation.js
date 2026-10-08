@@ -17,6 +17,7 @@ export function createNavigation({
 }) {
     const voteSection = document.getElementById("vote-section");
     const aboutSection = document.getElementById("about-section");
+    const homeSection = document.getElementById("home-section");
     const voteSubTabs = Array.from(votingSubTabs.querySelectorAll("[data-tab-target]"));
     const encyclopediaModeTabs = Array.from(encyclopediaSubTabs.querySelectorAll("[data-lookup-mode]"));
     const seerLookupSection = document.getElementById("seer-lookup-section");
@@ -26,7 +27,7 @@ export function createNavigation({
     primaryMainTabs.forEach((tab) => {
         tab.addEventListener("click", () => {
             const target = tab.dataset.mainTarget;
-            activateTab(target === "voting"
+            activateTab(target === "home" ? "home-section" : target === "voting"
                 ? currentVotePanelId
                 : target === "encyclopedia"
                     ? "seer-lookup-section"
@@ -70,7 +71,8 @@ export function createNavigation({
         const isTraining = targetId === "training-section";
         const isAccount = targetId === "account-section";
         const isAbout = targetId === "about-section";
-        const mainTarget = isAbout
+        const isHome = targetId === "home-section";
+        const mainTarget = isHome ? "home" : isAbout
             ? "about"
             : isAccount
                 ? "account"
@@ -84,6 +86,7 @@ export function createNavigation({
         if (!isLookup && !isAccount && !isTypeChart && votePanels.has(targetId)) currentVotePanelId = targetId;
 
         voteSection.hidden = mainTarget !== "voting";
+        homeSection.hidden = !isHome;
         seerLookupSection.hidden = !isLookup;
         sealEncyclopediaSection.hidden = !isSealEncyclopedia;
         if (isSealEncyclopedia) seerMintmarks.load();

@@ -35,10 +35,10 @@ function createContext(authenticated, adminResult) {
     return {context,calls,votingTab};
 }
 
-test("guests open the encyclopedia without fetching voting data or starting polling", async () => {
+test("guests open the home page without fetching voting data or starting polling", async () => {
     const { context, calls, votingTab } = createContext(false, false);
     await context.initializePublicPage();
-    assert.deepEqual(calls, ["stop", "seer-lookup-section"]);
+    assert.deepEqual(calls, ["stop", "home-section"]);
     assert.equal(votingTab.hidden, true);
     assert.equal(context.publicLoginPrompt.hidden, true);
 });
@@ -49,7 +49,7 @@ test("regular accounts and failed admin checks keep voting hidden", async () => 
         await context.initializeAuthenticatedPage();
         assert.equal(votingTab.hidden, true);
         assert.equal(context.adminLink.hidden, true);
-        assert.deepEqual(calls, ["stop", "seer-lookup-section", "account"]);
+        assert.deepEqual(calls, ["stop", "home-section", "account"]);
     }
 });
 

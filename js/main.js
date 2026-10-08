@@ -4,6 +4,7 @@ import { createGameAccountController } from "./account/game-account-controller.j
 import { createVotingController } from "./voting/controller.js";
 import { createRankingController } from "./voting/ranking-controller.js";
 import { createNavigation } from "./app/navigation.js";
+import { initHome } from "./app/home.js";
 import { createAuthView } from "./account/auth-view.js";
 import { createSessionController } from "./app/session-controller.js";
 import { createChineseConverters } from "./shared/chinese.js";
@@ -203,36 +204,8 @@ const { initializeAuthenticatedPage, initializePublicPage, showAuthenticatedView
     getSession: (...args) => getSession(...args)
 });
 
+initHome({ seerLookup, activateTab });
+
 preloadSeerIcons();
 
 checkSession();
-
-const knownIssuesModal = document.getElementById("known-issues-modal");
-const knownIssuesClose = document.getElementById("known-issues-close");
-
-function openKnownIssuesModal() {
-    knownIssuesModal.hidden = false;
-    document.body.classList.add("has-admin-confirm-modal");
-    knownIssuesClose.focus();
-}
-
-function closeKnownIssuesModal() {
-    if (
-        knownIssuesModal.hidden ||
-        knownIssuesModal.classList.contains("is-closing")
-    ) {
-        return;
-    }
-
-    knownIssuesModal.classList.add("is-closing");
-
-    window.setTimeout(() => {
-        knownIssuesModal.hidden = true;
-        knownIssuesModal.classList.remove("is-closing");
-        document.body.classList.remove("has-admin-confirm-modal");
-    }, 180);
-}
-
-knownIssuesClose.addEventListener("click", closeKnownIssuesModal);
-
-window.addEventListener("DOMContentLoaded", openKnownIssuesModal);

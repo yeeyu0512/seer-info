@@ -1,0 +1,43 @@
+name: Refresh official news
+
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  refresh-and-publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # A failed fetch stops publication, leaving the live site untouched.
+      - name: Fetch Taiwan official announcements
+        run: npm run news:refresh
+      - uses: actions/configure-pages@v5
+      - name: Prepare static website
+        shell: bash
+        run: |
+          mkdir _site
+          cp *.html favicon.ico robots.txt sitemap.xml _site/
+          cp -R css js assets data _site/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - name: Publish refreshed website
+        id: deployment
+        uses: actions/deploy-pages@v4

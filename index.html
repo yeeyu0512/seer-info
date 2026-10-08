@@ -34,7 +34,7 @@
     </script>
 
     <link rel="icon" href="./favicon.ico" sizes="any">
-    <link rel="stylesheet" href="./css/style.css?v=20261005_modal">
+    <link rel="stylesheet" href="./css/style.css?v=20261008_home">
 
 
 </head>
@@ -56,9 +56,11 @@
             </a>
 
             <nav class="main-tabs primary-main-tabs" aria-label="主要功能" role="tablist">
+                <button class="main-tab is-active" type="button" role="tab" aria-selected="true"
+                    aria-controls="home-section" data-main-target="home">首頁</button>
                 <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="vote-section"
                     data-main-target="voting" hidden>投票</button>
-                <button class="main-tab is-active" type="button" role="tab" aria-selected="true"
+                <button class="main-tab" type="button" role="tab" aria-selected="false"
                     aria-controls="seer-lookup-section" data-main-target="encyclopedia">圖鑑</button>
                 <button class="main-tab" type="button" role="tab" aria-selected="false"
                     aria-controls="type-chart-section" data-main-target="type-chart">屬性克制</button>
@@ -88,6 +90,92 @@
 
 
     <main class="container">
+
+        <section id="home-section" aria-labelledby="home-title">
+            <section class="home-carousel" aria-label="首頁圖片" aria-roledescription="輪播">
+                <div class="home-carousel-stage" data-carousel-stage></div>
+                <div class="home-carousel-controls">
+                    <button type="button" data-carousel-prev aria-label="上一張">‹</button>
+                    <div class="home-carousel-pages" data-carousel-pages aria-label="選擇圖片"></div>
+                    <button type="button" data-carousel-next aria-label="下一張">›</button>
+                    <span data-carousel-count aria-live="off"></span>
+                    <button type="button" data-carousel-pause>暫停輪播</button>
+                </div>
+            </section>
+            <div class="home-overview">
+                <section class="home-shortcuts home-panel" aria-labelledby="home-title">
+                    <div class="home-panel-heading"><span>SEER INFO</span><h1 id="home-title">功能面板</h1></div>
+                    <nav aria-label="首頁功能">
+                        <p class="home-nav-label">圖鑑</p>
+                        <button type="button" data-home-target="seer-lookup-section" data-home-mode="pet"><span class="home-key-number" aria-hidden="true">01</span><span>精靈圖鑑</span></button>
+                        <button type="button" data-home-target="seer-lookup-section" data-home-mode="skin"><span class="home-key-number" aria-hidden="true">02</span><span>皮膚圖鑑</span></button>
+                        <button type="button" data-home-target="seal-encyclopedia-section"><span class="home-key-number" aria-hidden="true">03</span><span>刻印圖鑑</span></button>
+                        <button type="button" data-home-target="suit-encyclopedia-section"><span class="home-key-number" aria-hidden="true">04</span><span>套裝圖鑑</span></button>
+                        <p class="home-nav-label">工具</p>
+                        <button type="button" data-home-target="training-section"><span class="home-key-number" aria-hidden="true">05</span><span>模擬培養</span></button>
+                        <button type="button" data-home-target="type-chart-section"><span class="home-key-number" aria-hidden="true">06</span><span>屬性克制</span></button>
+                        <p class="home-nav-label">本站</p>
+                        <button type="button" data-home-target="about-section"><span class="home-key-number" aria-hidden="true">07</span><span>關於本站</span></button>
+                        <button type="button" data-home-target="account-section" data-home-visibility="account-tab" hidden><span class="home-key-number" aria-hidden="true">08</span><span>帳號</span></button>
+                        <div data-home-visibility="voting" hidden>
+                            <p class="home-nav-label">投票</p>
+                            <button type="button" data-home-target="selection-panel"><span class="home-key-number" aria-hidden="true">09</span><span>精靈投票</span></button>
+                            <button type="button" data-home-target="ranking-section"><span class="home-key-number" aria-hidden="true">10</span><span>投票排名</span></button>
+                            <button type="button" data-home-target="competitive-pool-section"><span class="home-key-number" aria-hidden="true">11</span><span>競技池</span></button>
+                        </div>
+                        <a href="./admin.html" data-home-visibility="admin-link" hidden>管理面板</a>
+                    </nav>
+                </section>
+                <div class="home-notices home-panel">
+                    <div class="home-panel-heading"><span>SEER INFO</span><span>站內紀錄</span></div>
+                    <section class="home-updates" aria-labelledby="home-updates-title">
+                        <header class="home-updates-heading">
+                            <h2 id="home-updates-title">更新紀錄</h2>
+                            <span>2026</span>
+                        </header>
+                        <ol class="home-update-log">
+                            <li>
+                                <time datetime="2026-10-08">10 / 08</time>
+                                <div><h3>首頁入口重新整理</h3></div>
+                            </li>
+                            <li>
+                                <time datetime="2026-10-07">10 / 07</time>
+                                <div><h3>匯出圖片支援直接複製</h3></div>
+                            </li>
+                            <li>
+                                <time datetime="2026-10-05">10 / 05</time>
+                                <div><h3>支援 Excel 匯出</h3></div>
+                            </li>
+                        </ol>
+                    </section>
+                    <section class="home-known-issues" aria-labelledby="known-issues-title">
+                        <h2 id="known-issues-title">已知問題</h2>
+                        <ul id="known-issues-list">
+                            <li>台服未實裝的合作刻印未能隱藏</li>
+                        </ul>
+                    </section>
+                </div>
+                <div class="home-community home-panel">
+                    <div class="home-panel-heading"><span>SEER INFO</span><span>玩家看板</span></div>
+                    <section class="home-official-news" aria-labelledby="home-news-title">
+                        <div class="home-news-heading">
+                            <h2 id="home-news-title">官網最新資訊</h2>
+                            <a class="home-news-source" href="https://www.61.com.tw/seer_df/news/more" target="_blank" rel="noopener noreferrer" aria-label="台服官網公告（另開分頁）"><span>台服</span><span>官網公告 <span aria-hidden="true">↗</span></span></a>
+                        </div>
+                        <ul id="home-news-list"><li>公告載入中…</li></ul>
+                    </section>
+                    <section class="home-recommendations" aria-labelledby="home-recommendations-title">
+                        <h2 id="home-recommendations-title">站長推薦</h2>
+                        <div class="home-recommendation-slots" aria-label="站長推薦精靈">
+                            <button class="home-recommendation-slot" type="button" data-home-pet-id="3506" aria-label="查看精靈 3506" title="精靈 #3506"><img src="https://newseer.61.com/web/monster/head/1400523.png" alt="" width="72" height="72" loading="lazy"></button>
+                            <button class="home-recommendation-slot" type="button" data-home-pet-id="4554" aria-label="查看精靈 4554" title="精靈 #4554"><img src="https://newseer.61.com/web/monster/head/1400694.png" alt="" width="72" height="72" loading="lazy"></button>
+                            <button class="home-recommendation-slot" type="button" data-home-pet-id="4329" aria-label="查看精靈 4329" title="精靈 #4329"><img src="https://newseer.61.com/web/monster/head/1400564.png" alt="" width="72" height="72" loading="lazy"></button>
+                            <button class="home-recommendation-slot" type="button" data-home-pet-id="4500" aria-label="查看精靈 4500" title="精靈 #4500"><img src="https://newseer.61.com/web/monster/head/1400654.png" alt="" width="72" height="72" loading="lazy"></button>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </section>
 
 
         <!-- ==================== -->
@@ -364,7 +452,7 @@
             </section>
         </section>
 
-        <nav id="encyclopedia-sub-tabs" class="main-tabs view-sub-tabs encyclopedia-sub-tabs" aria-label="圖鑑種類"
+        <nav id="encyclopedia-sub-tabs" hidden class="main-tabs view-sub-tabs encyclopedia-sub-tabs" aria-label="圖鑑種類"
             role="tablist">
             <button class="main-tab is-active" type="button" role="tab" aria-selected="true"
                 aria-controls="seer-lookup-section" data-lookup-mode="pet">精靈圖鑑</button>
@@ -376,7 +464,7 @@
                 aria-controls="suit-encyclopedia-section" data-lookup-mode="suit">套裝圖鑑</button>
         </nav>
 
-        <div id="seer-lookup-section" class="seer-lookup-layout">
+        <div id="seer-lookup-section" class="seer-lookup-layout" hidden>
             <section class="panel seer-lookup-panel">
                 <div class="panel-header">
                     <div>
@@ -598,27 +686,6 @@
             </div>
 
         </section>
-
-        <div id="known-issues-modal" class="admin-confirm-modal" role="presentation" hidden>
-            <section class="admin-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="known-issues-title"
-                aria-describedby="known-issues-description">
-                <h2 id="known-issues-title">⚠️ 已知問題</h2>
-
-                <div id="known-issues-description">
-                    <p>據回報和統計後，目前資訊站存在以下已知問題：</p>
-                    <ul id="known-issues-list">
-                        <li>台服未實裝的合作刻印未能隱藏</li>
-                    </ul>
-                    <p>目前正在處理或排查中，相關錯誤還希望您多多包涵！</p>
-                </div>
-
-                <div class="admin-confirm-actions">
-                    <button id="known-issues-close" class="compact-button" type="button">
-                        關閉
-                    </button>
-                </div>
-            </section>
-        </div>
 
     </main>
 

@@ -27,7 +27,9 @@ test("PNG export includes the selected portrait and all three cached mintmark im
     await downloadTrainingImage({petName:"角色/測試",petId:5000,portrait:"https://newseer.61.com/web/monster/head/5000.png",
         appearance:"原始外觀",mode:"PVP",nature:"開朗",iv:31,raceVersion:"一般種族值",hpTraining:20,year:true,
         stats:{},ev:{},team:{},mintmarks:[1,2,3].map(id=>({id,name:`刻印${id}`,image:`data:image/png;base64,${id}`})),suit:"無",eye:"無",title:"無"});
-    assert.equal(drawn.length,5); // Thumbnail also substitutes for a missing body image.
+    assert.equal(drawn.length,7); // Background, logo, portrait/body fallback and three mintmarks.
+    assert.ok(images.some(url=>url.endsWith("/assets/seer-infobg.png")));
+    assert.ok(images.some(url=>url.endsWith("/assets/site/export-logo.png")));
     assert.equal(images.filter(url=>url.startsWith("data:image/png")).length,3);
     assert.ok(images.some(url=>url.startsWith("https://wsrv.nl/")));
     assert.equal(created,1);assert.ok(clicked);

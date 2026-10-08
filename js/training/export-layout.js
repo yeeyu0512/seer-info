@@ -1,7 +1,7 @@
 import { TRAINING_STATS } from "../seer-training-core.js";
 
 // A standalone image layout, independent of the page's controls and viewport.
-export function drawTrainingExport(canvas, data, {portrait, art, marks}) {
+export function drawTrainingExport(canvas, data, {portrait, art, marks, background, logo}) {
     canvas.width = 1600;
     const ctx = canvas.getContext("2d");
     const font = (size,bold=false) => `${bold ? "700 " : ""}${size}px "Microsoft JhengHei",sans-serif`;
@@ -17,7 +17,8 @@ export function drawTrainingExport(canvas, data, {portrait, art, marks}) {
     };
     ctx.font=font(21);
     const badgeWidth=Math.ceil(ctx.measureText("神諭覺醒").width)+16;
-    const nameWidth=data.awakened ? 664-badgeWidth-12 : 664;
+    const headerWidth=664-(logo ? 202 : 0);
+    const nameWidth=data.awakened ? headerWidth-badgeWidth-12 : headerWidth;
     const nameSize=wrap(data.petName,nameWidth,36,true).length > 1 ? 28 : 36;
     const nameLines=wrap(data.petName,nameWidth,nameSize,true);
     const headerOffset=(nameLines.length-1)*36;
@@ -50,6 +51,13 @@ export function drawTrainingExport(canvas, data, {portrait, art, marks}) {
         ctx.fillStyle="#6b8ee8";ctx.fillRect(x,y-22,4,26);
         text(label,x+18,y,25,"#b9caff",width,true);
     };
+    if (background) {
+        // Cover the canvas without stretching, including taller long-name exports.
+        const scale = Math.max(canvas.width / background.naturalWidth, canvas.height / background.naturalHeight);
+        const width = background.naturalWidth * scale, height = background.naturalHeight * scale;
+        ctx.drawImage(background, (canvas.width-width)/2, (canvas.height-height)/2, width, height);
+        ctx.fillStyle="rgba(5, 13, 27, .32)";ctx.fillRect(0,0,canvas.width,canvas.height);
+    } else {
     const bg=ctx.createLinearGradient(0,0,1600,canvas.height);
     bg.addColorStop(0,"#07233b");bg.addColorStop(.6,"#101b35");bg.addColorStop(1,"#14152a");
     ctx.fillStyle=bg;ctx.fillRect(0,0,1600,canvas.height);
@@ -59,16 +67,24 @@ export function drawTrainingExport(canvas, data, {portrait, art, marks}) {
     ctx.strokeStyle="#164569";ctx.lineWidth=1;
     for(let y=canvas.height-380;y<panelBottom+14;y+=35){ctx.beginPath();ctx.moveTo(36,y);ctx.lineTo(688,y);ctx.stroke();}
     for(let x=-400;x<1100;x+=110){ctx.beginPath();ctx.moveTo(360,canvas.height-480);ctx.lineTo(x,panelBottom+14);ctx.stroke();}
+    }
     text("賽爾號資訊站",48,60,24,"#b4c4df",540,true);
     text("精靈模擬培養 · 模擬結果僅供參考",48,95,19,"#849dbb",590);
-    panel(714,36,842,panelBottom-36,"#101b30","#314462",24);
+    panel(714,36,842,panelBottom-36,"rgba(16, 27, 48, .75)","#314462",24);
+    if (logo) picture(logo,1334,66,180,82);
     picture(art || portrait,48,122,640,panelBottom-346);
-    text(data.appearance,48,panelBottom-216,20,"#9ab3d3",630);
+    ctx.shadowColor="rgba(5, 12, 24, .85)";
+    ctx.shadowBlur=4;
+    ctx.shadowOffsetY=1;
+    text(data.appearance,48,panelBottom-216,20,"#f5f7fc",630);
+    ctx.shadowColor="transparent";
+    ctx.shadowBlur=0;
+    ctx.shadowOffsetY=0;
     text("刻印 · 最大值與隱藏加成",48,panelBottom-180,22,"#b9caff",630,true);
     data.mintmarks.forEach((mark,i)=>{
         const x=48+i*218;
         const y=panelBottom-162;
-        panel(x,y,202,162,"#14243b","#426282",16);
+        panel(x,y,202,162,"rgba(20, 36, 59, .75)","#426282",16);
         if(marks[i])picture(marks[i],x+51,y+7,100,100);
         else text("＋",x+85,y+74,38,"#7185a4",80);
         text(mark.name,x+12,y+133,19,"#e9efff",178,true);
@@ -82,7 +98,7 @@ export function drawTrainingExport(canvas, data, {portrait, art, marks}) {
         panel(x,y-27,badgeWidth,34,"#2c3154","#575986",9);
         text("神諭覺醒",x+8,y-3,21,"#b6b7ee",badgeWidth-16);
     }
-    text(`#${data.petId} · Lv.100 · ${data.appearance}`,850,140+headerOffset,19,"#a4b5d1",664);
+    text(`#${data.petId} · Lv.100 · ${data.appearance}`,850,140+headerOffset,19,"#a4b5d1",headerWidth);
     const modeColor=data.mode==="PVE"?"#8adecc":data.mode==="PVP"?"#c3b1ff":"#b6c9e5";
     panel(748,174+headerOffset,766,45,"#28385e","#455789",10);
     text(`${data.mode} 能力值`,766,205+headerOffset,25,modeColor,730,true);

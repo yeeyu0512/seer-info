@@ -1,9 +1,9 @@
 /* Shared artwork background. The overlay keeps controls readable over the image. */
 body {
     background:
-        linear-gradient(90deg, rgba(5, 7, 16, .66) 0%, rgba(6, 8, 18, .53) 44%, rgba(5, 7, 16, .45) 100%),
-        linear-gradient(180deg, rgba(6, 8, 18, .14), rgba(6, 8, 18, .62)),
-        url("../../assets/site/background.png") center center / cover fixed no-repeat;
+        linear-gradient(90deg, rgba(5, 7, 16, .36) 0%, rgba(6, 8, 18, .25) 44%, rgba(5, 7, 16, .19) 100%),
+        linear-gradient(180deg, rgba(6, 8, 18, .04), rgba(6, 8, 18, .30)),
+        url("../../assets/site/background-scene-1718.png") center center / cover fixed no-repeat;
 }
 
 @media (max-width: 680px) {

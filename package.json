@@ -4,7 +4,10 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "check": "node tools/check-modules.mjs"
+    "check": "node tools/check-modules.mjs",
+    "news:refresh": "node tools/fetch-official-news.mjs"
   },
-  "engines": { "node": ">=22" }
+  "engines": {
+    "node": ">=22"
+  }
 }

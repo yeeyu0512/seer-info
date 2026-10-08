@@ -12,6 +12,22 @@ function loadImage(url) {
 }
 
 const portraits = new Map();
+let backgroundImage;
+let logoImage;
+function loadExportLogo() {
+    if (!logoImage) {
+        logoImage = loadImage(new URL("../assets/site/export-logo.png", import.meta.url).href)
+            .catch(error => { logoImage = null; throw error; });
+    }
+    return logoImage;
+}
+function loadExportBackground() {
+    if (!backgroundImage) {
+        backgroundImage = loadImage(new URL("../assets/seer-infobg.png", import.meta.url).href)
+            .catch(() => { backgroundImage = null; return null; });
+    }
+    return backgroundImage;
+}
 async function loadPortrait(url) {
     // Official character images do not provide CORS headers. Use a public image
     // proxy only on explicit export, restricted to official head/body paths.
@@ -28,7 +44,9 @@ async function loadPortrait(url) {
 
 // Draw a standalone card so controls and page scroll positions do not affect export.
 export async function createTrainingImage(data) {
-    const [portrait, art, ...marks] = await Promise.all([
+    const [background, logo, portrait, art, ...marks] = await Promise.all([
+        loadExportBackground(),
+        loadExportLogo(),
         loadPortrait(data.portrait),
         data.art ? loadPortrait(data.art).catch(() => null) : null,
         ...data.mintmarks.map(async mark => {
@@ -39,7 +57,7 @@ export async function createTrainingImage(data) {
         })
     ]);
     const canvas = document.createElement("canvas");
-    drawTrainingExport(canvas,data,{portrait,art,marks});
+    drawTrainingExport(canvas,data,{portrait,art,marks,background,logo});
     const blob = await new Promise(resolve => canvas.toBlob(resolve,"image/png"));
     if (!blob) throw new Error("圖片產生失敗");
     return blob;
