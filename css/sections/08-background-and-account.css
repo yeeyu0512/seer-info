@@ -8,8 +8,30 @@ body {
 
 @media (max-width: 680px) {
     body {
-        background-position: 54% center;
-        background-attachment: scroll;
+        background: #0b1420;
+        isolation: isolate;
+    }
+    /* Size against the viewport, rather than the full length of the page. */
+    body::before {
+        display: block;
+        opacity: 1;
+        mask-image: none;
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background-image:
+            linear-gradient(90deg, rgba(5, 7, 16, .36), rgba(5, 7, 16, .19)),
+            linear-gradient(180deg, rgba(6, 8, 18, .04), rgba(6, 8, 18, .30)),
+            url("../../assets/site/mobile-background-720.webp");
+        background-image:
+            linear-gradient(90deg, rgba(5, 7, 16, .36), rgba(5, 7, 16, .19)),
+            linear-gradient(180deg, rgba(6, 8, 18, .04), rgba(6, 8, 18, .30)),
+            image-set(url("../../assets/site/mobile-background-720.webp") 1x, url("../../assets/site/mobile-background-1080.webp") 2x);
+        background-position: center;
+        background-size: cover;
+        background-repeat: no-repeat;
     }
 }
 

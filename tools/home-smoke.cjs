@@ -37,6 +37,9 @@ const server = http.createServer((req,res) => {
             assert.equal(await page.locator('#home-section').isVisible(),true);
             assert.equal(await page.locator('#seer-lookup-section').isVisible(),false);
             assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth),true);
+            const icons = await page.locator('.home-key-icon').evaluateAll(nodes => nodes.map(node => ({ width: node.getBoundingClientRect().width, height: node.getBoundingClientRect().height, fill: getComputedStyle(node).fill })));
+            assert.equal(icons.length,7);
+            assert.equal(icons.every(icon => icon.width===18 && icon.height===18 && icon.fill==='none'),true);
             const carousel = page.locator('.home-carousel');
             await carousel.locator('img').first().evaluate(img => img.decode());
             assert.match(await carousel.locator('img').first().evaluate(img => img.currentSrc), /home-banner-\d+\.webp$/);
