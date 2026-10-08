@@ -1,7 +1,7 @@
 // Replace these empty slots with { src: "./assets/site/…", alt: "角色名稱", position: "50% 30%" }.
 export const homeCarouselSlides = [
-    { src: "./assets/site/background.png", alt: "賽爾號角色聚會場景", position: "50% 25%" },
-    { src: "", alt: "" }
+    { src: "./assets/site/home-banner-1600.webp", srcset: "./assets/site/home-banner-960.webp 960w, ./assets/site/home-banner-1600.webp 1600w, ./assets/site/home-banner-2400.webp 2400w", sizes: "(max-width: 1200px) calc(100vw - 32px), 1120px", width: 1600, height: 900, alt: "賽爾號角色聚會場景", position: "50% 25%" },
+    { src: "./assets/site/home-banner-2-1600.webp", srcset: "./assets/site/home-banner-2-960.webp 960w, ./assets/site/home-banner-2-1600.webp 1600w, ./assets/site/home-banner-2-2400.webp 2400w", sizes: "(max-width: 1200px) calc(100vw - 32px), 1120px", width: 1600, height: 933, alt: "賽爾號紅髮角色與暮色水面", position: "50% 20%" }
 ];
 
 export function initHomeCarousel(home, slides = homeCarouselSlides) {
@@ -35,6 +35,10 @@ export function initHomeCarousel(home, slides = homeCarouselSlides) {
                 placeholder.hidden = false;
                 placeholder.textContent = "圖片無法載入";
             });
+            image.decoding = "async";
+            image.fetchPriority = index === 0 ? "high" : "auto";
+            if (slide.width && slide.height) { image.width = slide.width; image.height = slide.height; }
+            if (slide.srcset) { image.sizes = slide.sizes || "100vw"; image.srcset = slide.srcset; }
             image.src = slide.src;
             panel.append(image);
         }

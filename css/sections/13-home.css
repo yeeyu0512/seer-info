@@ -104,12 +104,12 @@
 #home-news-list time { display: block; color: #9cc5d5; font-size: 11px; }
 @media (max-width: 1000px) {
  .home-overview { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
- .home-community { grid-column: 1 / -1; }
+ .home-notices { grid-column: 1 / -1; }
 }
 @media (max-width: 760px) {
  .home-overview { grid-template-columns: 1fr; gap: 16px; }
  .home-panel, .home-notices.home-panel { padding: 16px; margin-bottom: 0; }
- .home-community { grid-column: auto; }
+ .home-notices { grid-column: auto; }
 }
 
 /* Short dated rows keep the maintenance panel close to keypad height. */

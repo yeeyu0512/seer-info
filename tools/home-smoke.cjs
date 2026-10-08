@@ -6,7 +6,7 @@ const server = http.createServer((req,res) => {
     if (!file.startsWith(root + path.sep)) {res.writeHead(403); return res.end();}
     const target = fs.existsSync(file) && fs.statSync(file).isDirectory() ? path.join(file,'index.html') : file;
     if (!fs.existsSync(target)) {res.writeHead(404); return res.end();}
-    res.setHeader('Content-Type', ({'.json':'application/json','.html':'text/html','.js':'text/javascript','.css':'text/css','.ico':'image/x-icon','.jpg':'image/jpeg','.png':'image/png'})[path.extname(target)] || 'application/octet-stream');
+    res.setHeader('Content-Type', ({'.json':'application/json','.html':'text/html','.js':'text/javascript','.css':'text/css','.ico':'image/x-icon','.jpg':'image/jpeg','.png':'image/png','.webp':'image/webp'})[path.extname(target)] || 'application/octet-stream');
     res.end(fs.readFileSync(target));
 });
 (async () => {
@@ -38,8 +38,13 @@ const server = http.createServer((req,res) => {
             assert.equal(await page.locator('#seer-lookup-section').isVisible(),false);
             assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth),true);
             const carousel = page.locator('.home-carousel');
+            await carousel.locator('img').first().evaluate(img => img.decode());
+            assert.match(await carousel.locator('img').first().evaluate(img => img.currentSrc), /home-banner-\d+\.webp$/);
+
             await carousel.locator('[data-carousel-next]').click();
             assert.equal(await carousel.locator('[data-carousel-count]').textContent(),'2 / 2');
+            await carousel.locator('img').nth(1).evaluate(img => img.decode());
+            assert.match(await carousel.locator('img').nth(1).evaluate(img => img.currentSrc), /home-banner-2-\d+\.webp$/);
             await carousel.locator('[data-carousel-prev]').click();
             await carousel.locator('[data-carousel-prev]').click();
             assert.equal(await carousel.locator('[data-carousel-count]').textContent(),'2 / 2');
@@ -77,7 +82,7 @@ const server = http.createServer((req,res) => {
             assert.equal(await carousel.locator('[data-carousel-pause]').textContent(),'播放輪播');
             await page.screenshot({path:`${process.env.TEMP}/seer-home-${width}.png`,fullPage:true});
             assert.equal(await page.locator('.home-training').count(),0);
-            const columns = await page.evaluate(() => { const left=document.querySelector('.home-shortcuts').getBoundingClientRect(), right=document.querySelector('.home-notices').getBoundingClientRect(); return innerWidth>760 ? left.right<=right.left && Math.abs(left.top-right.top)<1 : left.bottom<=right.top; });
+            const columns = await page.evaluate(() => { const left=document.querySelector('.home-shortcuts').getBoundingClientRect(), right=document.querySelector('.home-community').getBoundingClientRect(); return innerWidth>760 ? left.right<=right.left && Math.abs(left.top-right.top)<1 : left.bottom<=right.top; });
             assert.equal(columns,true);
             assert.equal(await page.evaluate(() => { const banner=document.querySelector('.home-carousel'),nav=document.querySelector('.home-shortcuts'),updates=document.querySelector('.home-updates'),issues=document.querySelector('.home-known-issues'); return banner.getBoundingClientRect().bottom <= nav.getBoundingClientRect().top && updates.getBoundingClientRect().bottom <= issues.getBoundingClientRect().top; }),true);
             for (const [label,target] of [['精靈圖鑑','seer-lookup-section'],['皮膚圖鑑','seer-lookup-section'],['刻印圖鑑','seal-encyclopedia-section'],['套裝圖鑑','suit-encyclopedia-section'],['模擬培養','training-section'],['屬性克制','type-chart-section'],['關於本站','about-section']]) {
