@@ -1,0 +1,74 @@
+/* Station information tabs; original text remains in index.html. */
+#about-section { padding: 0; overflow: hidden; border: 1px solid rgba(196,191,255,.16); border-radius: 16px; background: #15192b; }
+#about-section .about-hero { position: relative; min-height: 144px; padding: 28px 150px 24px 30px; border: 0; background: transparent; }
+#about-section .about-hero::after { inset: 18px 28px auto auto; width: 110px; height: 110px; border: 0; border-radius: 0; transform: none; box-shadow: none; background: url('../../assets/site/about-artwork.png') center / contain no-repeat; }
+#about-section .about-eyebrow, #about-section .about-detail-kicker { color: #aaa2ec; font-size: 10px; letter-spacing: .16em; }
+#about-section .about-hero h1 { margin: 8px 0; font-size: 28px; line-height: 1.35; color: #eeedfa; }
+#about-section .about-hero > p { margin: 0; max-width: none; color: #b6bdd3; font-size: 14px; line-height: 1.7; }
+.about-tabs { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 30px 14px; border-bottom: 1px solid rgba(196,191,255,.12); }
+#about-section .about-tabs button { margin: 0; padding: 9px 16px; border: 1px solid transparent; border-radius: 7px; background: transparent; color: #aeb6ce; font-size: 13px; font-weight: 600; line-height: 1.4; box-shadow: none; transform: none; }
+#about-section .about-tabs button[aria-selected="true"] { background: rgba(147,135,255,.16); color: #d9d3ff; border-color: rgba(147,135,255,.28); }
+#about-section .about-tabs button:hover { background: rgba(147,135,255,.1); color: #e4dfff; }
+#about-section .about-tabs button:focus-visible { outline: 2px solid #bcb3ff; outline-offset: 2px; }
+#about-section .about-detail-grid { display: block; padding: 28px 30px 32px; }
+#about-section .about-detail-card { display: block; min-height: 0; padding: 0; border: 0; border-radius: 0; background: transparent; transform: none; transition: none; max-width: 850px; }
+#about-section .about-author-heading { display: flex; gap: 14px; }
+#about-section .about-author-avatar { width: 58px; height: 58px; border-radius: 10px; box-shadow: none; border: 1px solid rgba(164,178,255,.25); }
+#about-section .about-detail-card h2 { margin: 8px 0 16px; color: #eeedfa; font-size: 20px; line-height: 1.4; }
+#about-section .about-author-heading h2 { margin: 4px 0 0; font-size: 23px; }
+#about-section .about-author-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 22px; }
+#about-section .about-author-tags li { padding: 6px 10px; border-radius: 5px; border: 1px solid rgba(196,191,255,.13); background: rgba(4,6,18,.2); color: #bac1d8; font-size: 12px; font-weight: 500; }
+#about-section .about-detail-card p { padding: 0; margin: 0; color: #afb7d0; font-size: 14px; line-height: 1.9; overflow-wrap: anywhere; }
+#about-section .about-detail-card p + p { margin-top: 18px; }
+#about-section .about-detail-card a { color: #bcb3ff; text-decoration-color: rgba(188,179,255,.45); }
+.about-issues-list { padding-left: 20px; margin: 0; color: #afb7d0; font-size: 14px; line-height: 1.9; }
+@media (max-width: 600px) {
+ #about-section .about-hero { padding: 22px 98px 20px 20px; min-height: 126px; }
+ #about-section .about-hero::after { width: 78px; height: 88px; top: 18px; right: 14px; }
+ #about-section .about-hero h1 { font-size: 23px; }
+ #about-section .about-hero > p { font-size: 12px; }
+ .about-tabs { padding: 0 16px 12px; gap: 4px; }
+ #about-section .about-tabs button { padding: 8px 10px; font-size: 12px; }
+ #about-section .about-detail-grid { padding: 24px 20px; }
+ #about-section .about-detail-card p { font-size: 13px; }
+}
+
+/* Give the illustration a full side column, with one readable content area. */
+#about-section { display: grid; grid-template-columns: minmax(0, 1fr) 320px; max-width: 1120px; margin-inline: auto; padding: 34px 38px 18px; gap: 0 36px; background: linear-gradient(135deg, #1b2034, #131729); }
+#about-section .about-hero { grid-column: 1; min-height: 0; padding: 0 0 24px; }
+#about-section .about-hero::after { content: none; }
+#about-section .about-hero h1 { font-size: 30px; margin: 10px 0; }
+#about-section .about-artwork { grid-column: 2; grid-row: 1 / 4; align-self: center; width: 100%; max-height: 390px; object-fit: contain; filter: drop-shadow(0 14px 24px #080b1e55); }
+#about-section .about-tabs { grid-column: 1; padding: 0; gap: 20px; border-bottom: 1px solid rgba(196,191,255,.14); }
+#about-section .about-tabs button { padding: 10px 0 12px; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; }
+#about-section .about-tabs button[aria-selected="true"] { border-bottom-color: #b6aaff; background: transparent; color: #eee9ff; }
+#about-section .about-tabs button:hover { background: transparent; color: #eee9ff; }
+#about-section .about-detail-grid { grid-column: 1; padding: 26px 0 24px; }
+#about-section .about-author-avatar { width: 64px; height: 64px; }
+#about-section .about-author-tags { margin: 16px 0 20px; }
+#about-section .about-footer { grid-column: 1 / -1; display: flex; justify-content: flex-end; border-top: 1px solid rgba(196,191,255,.08); padding-top: 10px; }
+#about-section .about-footer button { padding: 4px 0; border: 0; background: transparent; color: #818ba6; font-size: 11px; font-weight: 400; box-shadow: none; transform: none; }
+#about-section .about-footer button:hover { color: #cec5ff; }
+@media (max-width: 900px) {
+ #about-section { grid-template-columns: minmax(0, 1fr) 220px; gap: 0 24px; padding: 28px 26px 16px; }
+}
+@media (max-width: 600px) {
+ #about-section { grid-template-columns: minmax(0, 1fr) 116px; padding: 22px 20px 14px; gap: 0 8px; }
+ #about-section .about-hero { padding: 0 0 22px; }
+ #about-section .about-hero h1 { font-size: 23px; }
+ #about-section .about-artwork { grid-row: 1; align-self: center; max-height: 140px; }
+ #about-section .about-tabs, #about-section .about-detail-grid { grid-column: 1 / -1; }
+ #about-section .about-tabs { gap: 16px; }
+ #about-section .about-tabs button { padding: 10px 0; font-size: 12px; }
+ #about-section .about-detail-grid { padding: 24px 0; }
+}
+
+#about-section .about-contact-list { list-style: none; padding: 0; margin: 18px 0 22px; display: grid; gap: 12px; }
+#about-section .about-contact-list li { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; color: #d2d7e9; font-size: 14px; line-height: 1.7; }
+.about-contact-label { min-width: 72px; color: #929db9; font-size: 12px; }
+.about-contact-handle { color: #afb7d0; }
+#about-section .about-copy-contact { padding: 4px 9px; border: 1px solid rgba(188,179,255,.22); border-radius: 6px; background: rgba(147,135,255,.08); color: #bcb3ff; font-size: 11px; box-shadow: none; transform: none; }
+#about-section .about-copy-contact:hover { background: rgba(147,135,255,.17); }
+.about-copy-status { display: block; color: #bcb3ff; font-size: 12px; }
+.about-copy-status:empty { display: none; }
+#about-section .about-copy-status:not(:empty) { margin: -8px 0 18px; }

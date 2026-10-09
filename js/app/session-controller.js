@@ -34,6 +34,8 @@ export function createSessionController({
 }) {
     const logoutButton = document.getElementById("logout-button");
     const adminLink = document.getElementById("admin-link");
+    const aboutLoginTrigger = document.getElementById("about-login-trigger");
+    const adminTools = document.getElementById("admin-tools");
     const accountTab = document.getElementById("account-tab");
 
     let isAuthenticated = false;
@@ -51,7 +53,8 @@ export function createSessionController({
             await loadGameAccount();
             return;
         }
-        activateTab("selection-panel", { updateUrl: false });
+        stopRankingRefresh();
+        activateTab("home-section", { updateUrl: false });
         selectionPanel.hidden = false;
         selectionBar.hidden = false;
         publicLoginPrompt.hidden = true;
@@ -60,6 +63,7 @@ export function createSessionController({
         await loadPool();
         await loadRanking();
         startRankingRefresh();
+
     }
 
     async function initializePublicPage() {
@@ -89,6 +93,7 @@ export function createSessionController({
 
     function showAuthenticatedView() {
         isAuthenticated = true;
+        aboutLoginTrigger.hidden = true;
         loginModal.classList.remove("is-closing");
         loginModal.hidden = true;
         loginTrigger.hidden = true;
@@ -98,7 +103,10 @@ export function createSessionController({
 
     function showLoggedOutView() {
         isAuthenticated = false;
+        aboutLoginTrigger.hidden = false;
         isAdministrator = false;
+        adminTools.hidden = true;
+        adminTools.open = false;
         primaryMainTabs.find((tab) => tab.dataset.mainTarget === "voting").hidden = true;
         activateTab("home-section", { updateUrl: false });
         loginModal.classList.remove("is-closing");
@@ -131,6 +139,8 @@ export function createSessionController({
             console.error("Admin status error:", error);
             isAdministrator = false;
         }
+        adminTools.hidden = !isAdministrator;
+        if (!isAdministrator) adminTools.open = false;
         adminLink.hidden = !isAdministrator;
         primaryMainTabs.find((tab) => tab.dataset.mainTarget === "voting").hidden = !isAdministrator;
     }

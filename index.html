@@ -58,31 +58,25 @@
             <nav class="main-tabs primary-main-tabs" aria-label="主要功能" role="tablist">
                 <button class="main-tab is-active" type="button" role="tab" aria-selected="true"
                     aria-controls="home-section" data-main-target="home">首頁</button>
-                <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="vote-section"
-                    data-main-target="voting" hidden>投票</button>
                 <button class="main-tab" type="button" role="tab" aria-selected="false"
                     aria-controls="seer-lookup-section" data-main-target="encyclopedia">圖鑑</button>
                 <button class="main-tab" type="button" role="tab" aria-selected="false"
                     aria-controls="type-chart-section" data-main-target="type-chart">屬性克制</button>
                 <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="training-section"
                     data-main-target="training">模擬培養</button>
-                <button id="account-tab" class="main-tab" type="button" role="tab" aria-selected="false"
-                    aria-controls="account-section" data-main-target="account" hidden>帳號</button>
                 <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="about-section"
                     data-main-target="about">關於本站</button>
+                <button id="login-trigger" class="main-tab nav-action" type="button" aria-haspopup="dialog" hidden>登入</button>
+                <details id="admin-tools" class="admin-nav" hidden>
+                    <summary class="main-tab">管理 <span aria-hidden="true">▾</span></summary>
+                    <div class="admin-nav-menu" aria-label="管理選單">
+                        <a id="admin-link" href="./admin.html" hidden>後台</a>
+                        <button type="button" data-main-target="voting" aria-controls="vote-section" hidden>投票</button>
+                        <button id="account-tab" type="button" data-main-target="account" aria-controls="account-section" hidden>帳號</button>
+                        <button id="logout-button" type="button" hidden>登出</button>
+                    </div>
+                </details>
             </nav>
-
-            <div class="header-actions">
-
-                <a id="admin-link" class="admin-home-link" href="./admin.html" hidden>管理面板</a>
-
-                <button id="login-trigger" class="compact-button" type="button" hidden>登入</button>
-
-                <button id="logout-button" type="button" hidden>
-                    登出
-                </button>
-
-            </div>
 
         </div>
 
@@ -216,10 +210,16 @@
                         </ol>
                     </section>
                     <section class="home-known-issues" aria-labelledby="known-issues-title">
-                        <h2 id="known-issues-title" class="home-shark-title"><img src="./assets/icons/shark.png" alt="" aria-hidden="true" class="home-shark-icon">已知問題</h2>
-                        <ul id="known-issues-list">
-                            <li>台服未實裝的合作刻印未能隱藏</li>
-                        </ul>
+                        <h2 id="known-issues-title" class="home-shark-title"><img src="./assets/icons/shark.png" alt="" aria-hidden="true" class="home-shark-icon">Discord 機器人</h2>
+                        <!-- 已知問題暫存：台服未實裝的合作刻印未能隱藏。展示位置待定。 -->
+                        <div class="home-bot-mini">
+                            <img src="https://cdn.discordapp.com/avatars/1557598334812819519/be40bf520c4e5780f2f0750e06ba983f.png?size=128" width="40" height="40" alt="" loading="lazy">
+                            <div class="home-bot-mini-copy"><h3>武心嬋</h3><p>提供小規模的賽爾號服務！</p></div>
+                            <div class="home-bot-mini-actions">
+                                <a href="https://discord.com/oauth2/authorize?client_id=1557598334812819519" target="_blank" rel="noopener noreferrer" aria-label="邀請 Discord 機器人（另開分頁）">邀請 ↗</a>
+                                <button type="button" id="open-bot-guide" aria-haspopup="dialog">指令說明</button>
+                            </div>
+                        </div>
                     </section>
                 </div>
             </div>
@@ -666,16 +666,25 @@
             <div class="about-hero">
                 <span class="about-eyebrow">SEER INFO</span>
                 <h1>賽爾號資訊站</h1>
-                <p>騙人的吧，難道真的還能再飛十年？！</p>
+                <p>站長的嘔心瀝血作品，可能做到台服賽爾號沒了為止。</p>
             </div>
 
+            <img class="about-artwork" src="./assets/site/about-artwork.png" alt="" loading="lazy" decoding="async">
+
+            <div class="about-tabs" role="tablist" aria-label="本站資訊">
+                <button type="button" id="about-tab-author" role="tab" aria-selected="true" aria-controls="about-author-panel" data-about-tab="about-author-panel">站長介紹</button>
+                <button type="button" id="about-tab-data" role="tab" aria-selected="false" aria-controls="about-data-panel" tabindex="-1" data-about-tab="about-data-panel">資料來源</button>
+                <button type="button" id="about-tab-disclaimer" role="tab" aria-selected="false" aria-controls="about-disclaimer-panel" tabindex="-1" data-about-tab="about-disclaimer-panel">使用聲明</button>
+                <button type="button" id="about-tab-issues" role="tab" aria-selected="false" aria-controls="about-issues-panel" tabindex="-1" data-about-tab="about-issues-panel">已知問題</button>
+                <button type="button" id="about-tab-communicate" role="tab" aria-selected="false" aria-controls="about-communicate-panel" tabindex="-1" data-about-tab="about-communicate-panel">聯絡站長</button>
+            </div>
             <div class="about-detail-grid">
-                <section class="about-detail-card about-author-card" aria-labelledby="about-author-title">
+                <section id="about-author-panel" class="about-detail-card about-author-card" role="tabpanel" aria-labelledby="about-tab-author" tabindex="0">
                     <div class="about-author-heading">
                         <img class="about-author-avatar" src="./assets/site/author-avatar.png" alt="作者選用的精靈頭像"
                             width="54" height="54" loading="lazy" decoding="async">
                         <div>
-                            <span class="about-detail-kicker">ABOUT THE AUTHOR</span>
+                            <span class="about-detail-kicker">ABOUT THE SYSOP</span>
                             <h2 id="about-author-title">澪伍</h2>
                         </div>
                     </div>
@@ -683,27 +692,45 @@
                         <li>陸服：949847689</li>
                         <li>台服：40332732</li>
                     </ul>
-                    <p>謹以此站致敬傳奇三招第五技能男神—<br>驚濤海皇．波塞冬，也是我賽爾號最喜歡一角。</p>
-                    <p>本站經由大量 AI 協助與染指，功能與排版仍在調整更新。若有遇到資料錯誤或操作不順的地方，歡迎您找我本人回報。</p>
+                    <p>謹以此站致敬傳奇三招第五技能男神 — 驚濤海皇．波塞冬，也是我賽爾號最喜歡一角。
+                        <br>資訊站建築過程經過大量的 AI 協助與染指，若有遇到資料錯誤或操作不順的地方，歡迎你聯絡站長回報。</p>
+                    <p>競技玩家，水準一般，目前正在思考要怎麼把歐根丟回限三、古王丟回限二。</p>
                 </section>
-                <section class="about-detail-card">
+                <section id="about-data-panel" class="about-detail-card" role="tabpanel" aria-labelledby="about-tab-data" tabindex="0" hidden>
                     <span class="about-detail-kicker">DATA &amp; REFERENCES</span>
                     <h2>資料來源</h2>
                     <p>精靈、皮膚、刻印、套裝、目鏡與稱號等資料主要由 <a href="https://github.com/SeerAPI/" data-external-link target="_blank"
-                            rel="noopener noreferrer">SeerAPI</a> 提供；部分補充資料參考 <a href="https://wiki.biligame.com/seer/"
+                            rel="noopener noreferrer">SeerAPI</a> 提供，部分補充資料參考 <a href="https://wiki.biligame.com/seer/"
                             data-external-link target="_blank" rel="noopener noreferrer">bilibili
-                            遊戲百科</a>。本站將資料整理為繁體中文，方便搜尋與比較；更新可能有延遲，部分資料也可能缺漏，請以遊戲內資訊為準。</p>
-                    <p>模擬培養支援個性、天賦、學習力、刻印與裝備加成，並可比較基礎、PVE 與 PVP 能力值。刻印能力值包含隱藏加成；關聯皮膚僅切換外觀。</p>
+                            遊戲百科</a>。<br>資訊站將資料整理為繁體中文，方便搜尋與比較，更新可能有延遲、資料也可能有缺漏，請以遊戲內資訊為準。</p>
+                    <!--<p>模擬培養支援個性、天賦、學習力、刻印與裝備加成，並可比較基礎、PVE 與 PVP 能力值。刻印能力值包含隱藏加成；關聯皮膚僅切換外觀。</p>-->
                 </section>
-                <section class="about-detail-card about-disclaimer-card">
+                <section id="about-disclaimer-panel" class="about-detail-card about-disclaimer-card" role="tabpanel" aria-labelledby="about-tab-disclaimer" tabindex="0" hidden>
                     <span class="about-detail-kicker">DISCLAIMER</span>
                     <h2>使用提醒與聲明</h2>
-                    <p>模擬培養仍在 Beta 階段，結果僅供參考。特殊精靈、特殊套裝例外與戰鬥中的條件效果尚未完整納入，實際能力與效果請以遊戲為準。</p>
-                    <p>本站由玩家自發維護，與賽爾號官方及遊戲營運方沒有隸屬或合作關係。遊戲名稱、角色與相關素材的權利歸其各自權利人所有。<br><br><a
+                    <p>模擬培養功能雖然經過站長多次驗證，但實際數值結果請以遊戲內為準。<br>目前也沒有支援魂印提及數值變化的精靈面板修正，還請靜待後續更新！</p>
+                    <p>資訊站是由站長一個人獨自維護的，和賽爾號的營運、官方都沒有任何隸屬與合作關係。<br>遊戲名稱、角色與相關素材的權利歸其各自權利人所有 → <a
                             href="https://www.61.com.tw/seer_df/" data-external-link target="_blank"
-                            rel="noopener noreferrer">賽爾號巔峰之戰官網</a></p>
+                            rel="noopener noreferrer">賽爾號巔峰之戰官網</a>。</p>
+                </section>
+                <section id="about-issues-panel" class="about-detail-card" role="tabpanel" aria-labelledby="about-tab-issues" tabindex="0" hidden>
+                    <span class="about-detail-kicker">KNOWN ISSUES</span>
+                    <h2>已知問題</h2>
+                    <ul class="about-issues-list"><li>台服未實裝的合作內容未能隱藏（暫時還在思考怎麼做比較輕鬆）</li></ul>
+                </section>
+                <section id="about-communicate-panel" class="about-detail-card" role="tabpanel" aria-labelledby="about-tab-communicate" tabindex="0" hidden>
+                    <span class="about-detail-kicker">CONTACT SYSOP</span>
+                    <h2>聯絡站長</h2>
+                    <p>如果你對這個資訊站有任何的建議，你可以透過這些方式聯絡站長：</p>
+                    <ul class="about-contact-list">
+                        <li><span class="about-contact-label">Discord</span><span>澪伍 <span class="about-contact-handle">@zerof0512</span></span><button type="button" class="about-copy-contact" data-copy-contact="zerof0512" aria-label="複製 Discord 帳號 zerof0512">複製帳號</button></li>
+                        <li><span class="about-contact-label">Facebook</span><a href="https://www.facebook.com/zerof0512" data-external-link target="_blank" rel="noopener noreferrer">澪伍 ↗</a></li>
+                    </ul>
+                    <span class="about-copy-status" role="status" aria-live="polite"></span>
+                    <p>當然，站長有權利拒絕回復任何無理或無禮的私訊、問題與騷擾，也不保證能馬上回復。</p>
                 </section>
             </div>
+            <footer class="about-footer"><button id="about-login-trigger" type="button" aria-haspopup="dialog" aria-controls="login-modal">站務登入</button></footer>
         </section>
 
         <section id="account-section" class="panel account-panel" hidden>
@@ -882,6 +909,17 @@
     <!-- Application -->
 
     <script type="module" src="./js/main.js"></script>
+
+    <dialog id="bot-guide" class="changelog-dialog" aria-labelledby="bot-guide-title">
+        <div class="changelog-dialog-header"><h2 id="bot-guide-title">武心嬋 · 指令說明</h2><button type="button" id="close-bot-guide" aria-label="關閉指令說明">✕</button></div>
+        <div class="changelog-dialog-body bot-guide-body">
+            <p><strong>/player 米米號</strong><br>暱稱、在線狀態、巔峰戰績與出戰／待戰精靈。</p>
+            <p><strong>/online 米米號</strong><br>查詢玩家是否在線。</p>
+            <p><strong>/pet 編號或名稱</strong><br>繁簡搜尋精靈，查看編號、屬性並前往完整圖鑑。</p>
+            <p><strong>/help</strong><br>查看指令及冷卻限制。</p>
+            <p>玩家查詢可能需要驗證碼；不提供玩家配置，不保存查詢歷史。</p>
+        </div>
+    </dialog>
 
     <dialog id="changelog-dialog" class="changelog-dialog" aria-labelledby="changelog-dialog-title">
         <div class="changelog-dialog-header">

@@ -1,11 +1,31 @@
 import { initHomeCarousel } from "./home-carousel.js";
+import { initAbout } from "./about.js";
 
 // Home only routes to the existing tools; lookup remains owned by seer-lookup.
 export function initHome({ seerLookup, activateTab }) {
+    initAbout();
+    const adminTools = document.getElementById("admin-tools");
+    adminTools.addEventListener("click", (event) => {
+        if (event.target.closest(".admin-nav-menu a, .admin-nav-menu button")) adminTools.open = false;
+    });
+    document.addEventListener("click", (event) => {
+        if (!adminTools.contains(event.target)) adminTools.open = false;
+    });
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && adminTools.open) {
+            adminTools.open = false;
+            adminTools.querySelector("summary").focus();
+        }
+    });
     const home = document.getElementById("home-section");
     initHomeCarousel(home);
     loadOfficialNews(home);
     loadChangelog(home);
+    const botGuide = document.getElementById("bot-guide");
+    const botGuideOpener = document.getElementById("open-bot-guide");
+    botGuideOpener.addEventListener("click", () => botGuide.showModal());
+    document.getElementById("close-bot-guide").addEventListener("click", () => botGuide.close());
+    botGuide.addEventListener("close", () => botGuideOpener.focus({ preventScroll: true }));
     document.querySelector(".site-header .logo").addEventListener("click", (event) => {
         event.preventDefault();
         activateTab("home-section");

@@ -635,7 +635,7 @@
 }
 
 .home-known-issues {
-    margin-top: 20px;
+    margin-top: 18px;
     padding-top: 16px;
     border-top: 1px solid #304356;
 }
@@ -852,7 +852,7 @@
     color: #ffffff;
 }
 
-#close-changelog-button {
+#close-changelog-button, #close-bot-guide {
     display: grid;
     place-items: center;
     flex-shrink: 0;
@@ -867,7 +867,7 @@
     cursor: pointer;
 }
 
-#close-changelog-button:hover {
+#close-changelog-button:hover, #close-bot-guide:hover {
     background: rgba(255, 255, 255, 0.16);
 }
 
@@ -954,4 +954,29 @@
     }
 }
 .home-shark-title { display: flex; align-items: center; gap: 8px; }
+.site-header .primary-main-tabs .nav-action { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; font-family: inherit; font-size: 14px; font-weight: 600; white-space: nowrap; }
+.home-bot-mini { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 12px; min-height: 80px; margin-top: 12px; }
+.home-bot-mini > img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; }
+.home-bot-mini h3 { margin: 0 0 5px; font-size: 16px; line-height: 1.4; }
+#home-section .home-bot-mini p { margin: 0; color: #afc4d7; font-size: 13px; line-height: 1.5; }
+.home-bot-mini-actions { display: flex; flex-direction: column; gap: 6px; }
+#home-section .home-bot-mini-actions a, #home-section .home-bot-mini-actions button { display: block; margin: 0; padding: 4px 8px; min-height: 24px; box-sizing: border-box; border: 1px solid #435d72; border-radius: 4px; background: #2c4057; color: #dce8fa; font-size: 10px; font-weight: 600; line-height: 1.4; text-decoration: none; text-align: center; box-shadow: none; transform: none; cursor: pointer; }
+#home-section .home-bot-mini-actions a { background: #414778; border-color: #7279b4; }
+#home-section .home-bot-mini-actions :hover { border-color: #83c8dc; }
+#home-section .home-bot-mini-actions :focus-visible { outline: 2px solid #83c8dc; outline-offset: 2px; }
+#bot-guide { width: min(520px, calc(100vw - 32px)); }
+.bot-guide-body p { margin: 12px 0; color: #c0cddc; font-size: 13px; line-height: 1.7; }
+.bot-guide-body strong { color: #b7d8e9; }
 .home-shark-icon { width: 26px; height: 26px; object-fit: contain; flex-shrink: 0; }
+
+/* Administrator actions share one compact navigation entry. */
+.admin-nav { position: relative; }
+.admin-nav > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.admin-nav > summary::-webkit-details-marker { display: none; }
+.admin-nav[open] > summary { background: rgba(166, 151, 255, .16); color: #cec5ff; }
+.admin-nav-menu { position: absolute; right: 0; top: calc(100% + 10px); z-index: 100; width: 104px; box-sizing: border-box; padding: 5px; border: 1px solid rgba(196,191,255,.16); border-radius: 10px; background: #1c2332; box-shadow: 0 8px 20px #0004; }
+.admin-nav-menu > a, .admin-nav-menu > button { display: block; width: 100%; box-sizing: border-box; min-height: 32px; padding: 7px 12px; border: 0; border-radius: 8px; background: transparent; color: var(--text-secondary); font: inherit; font-size: 14px; font-weight: 700; line-height: 1.4; box-shadow: none; transform: none; text-align: left; text-decoration: none; cursor: pointer; }
+.admin-nav-menu > :hover, .admin-nav-menu > :focus-visible { color: var(--text); background: rgba(196,191,255,.08); box-shadow: none; transform: none; }
+.admin-nav-menu > .is-active { color: var(--text); background: rgba(130,113,244,.42); box-shadow: inset 0 1px rgba(255,255,255,.13); }
+.admin-nav-menu > #logout-button { border-top: 1px solid #343950; border-radius: 0 0 7px 7px; margin-top: 4px; }
+.site-header .primary-main-tabs:has(.admin-nav[open]) { overflow: visible; }

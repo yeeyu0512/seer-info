@@ -170,6 +170,7 @@ const { openLoginModal, closeLoginModal, setAuthMode, getChineseAuthError } = cr
     mimiIdInput,
     register: (...args) => register(...args)
 });
+document.getElementById("about-login-trigger").addEventListener("click", openLoginModal);
 const { initializeAuthenticatedPage, initializePublicPage, showAuthenticatedView, showLoggedOutView, syncAdminLink, checkSession, getIsAuthenticated, getIsAdministrator } = createSessionController({
     publicLoginPrompt,
     stopRankingRefresh: (...args) => stopRankingRefresh(...args),

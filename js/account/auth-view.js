@@ -27,7 +27,7 @@ export function createAuthView({
 
     let modalPointerStartedOnBackdrop = false;
 
-    const LOGIN_ENABLED = false;
+    const LOGIN_ENABLED = true;
 
     const REGISTRATION_ENABLED = false;
 

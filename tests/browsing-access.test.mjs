@@ -8,7 +8,7 @@ function element() {
 function createContext(authenticated, adminResult) {
     const calls = [];
     const votingTab = { dataset: { mainTarget: "voting" }, hidden: true };
-    const dependencies = Object.fromEntries(["accountTab","publicLoginPrompt","selectionPanel","selectionBar",
+    const dependencies = Object.fromEntries(["adminTools","accountTab","publicLoginPrompt","selectionPanel","selectionBar",
         "alreadyVoted","submitButton","voteMessage","mimiBindingPrompt","selectionCount","selectionMax",
         "logoutButton","loginModal","loginTrigger","accountSection","adminLink","emailInput","passwordInput",
         "passwordConfirmInput","mimiIdInput","loginMessage"].map(name => [name,element()]));
@@ -49,16 +49,18 @@ test("regular accounts and failed admin checks keep voting hidden", async () => 
         await context.initializeAuthenticatedPage();
         assert.equal(votingTab.hidden, true);
         assert.equal(context.adminLink.hidden, true);
+        assert.equal(context.adminTools.hidden, true);
         assert.deepEqual(calls, ["stop", "home-section", "account"]);
     }
 });
 
-test("confirmed admins retain voting and ranking refresh", async () => {
+test("confirmed admins open home with management and voting data available", async () => {
     const { context, calls, votingTab } = createContext(true, true);
     await context.initializeAuthenticatedPage();
     assert.equal(votingTab.hidden, false);
     assert.equal(context.adminLink.hidden, false);
-    assert.deepEqual(calls, ["selection-panel", "account", "pool", "ranking", "refresh"]);
+    assert.equal(context.adminTools.hidden, false);
+    assert.deepEqual(calls, ["stop", "home-section", "account", "pool", "ranking", "refresh"]);
 });
 
 test("an admin check resolving after logout cannot restore voting", async () => {
