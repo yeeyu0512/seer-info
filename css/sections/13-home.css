@@ -702,6 +702,7 @@
 }
 
 .home-recommendation-slot {
+    position: relative;
     width: 100%;
     aspect-ratio: 1;
     box-sizing: border-box;
@@ -715,7 +716,7 @@
     min-width: 0;
     margin: 0;
     padding: 0;
-    overflow: hidden;
+    overflow: visible;
     cursor: pointer;
     box-shadow: none;
     transform: none;
@@ -726,10 +727,87 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: 3px;
 }
 
-#home-section .home-recommendation-slot:hover {
+#home-section .home-recommendation-slot:hover,
+#home-section .home-recommendation-slot:focus-visible {
     border-color: var(--home-accent);
+    z-index: 2;
+}
+
+#home-section .home-recommendation-slot:focus-visible {
+    outline: 2px solid var(--home-accent);
+    outline-offset: 2px;
+}
+
+.home-recommendation-tag {
+    position: absolute;
+    bottom: 3px;
+    right: 3px;
+    max-width: calc(2em + 6px);
+    padding: 1px 3px;
+    border-radius: 3px;
+    background: rgba(12, 24, 39, .88);
+    color: #e5f4ff;
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.home-recommendation-note {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 0;
+    width: max-content;
+    max-width: min(200px, calc(100vw - 48px));
+    box-sizing: border-box;
+    padding: 9px 11px;
+    border: 1px solid #7191af;
+    border-radius: 8px;
+    background: #243b55;
+    color: #f2f7ff;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, .35);
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: left;
+    white-space: normal;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(4px);
+    transition: opacity .15s ease, transform .15s ease, visibility .15s ease;
+}
+
+.home-recommendation-note::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 24px;
+    border: 6px solid transparent;
+    border-top-color: #7191af;
+}
+
+.home-recommendation-slot:nth-child(n+3) .home-recommendation-note {
+    right: 0;
+    left: auto;
+}
+
+.home-recommendation-slot:nth-child(n+3) .home-recommendation-note::after {
+    right: 24px;
+    left: auto;
+}
+
+.home-recommendation-slot:hover .home-recommendation-note,
+.home-recommendation-slot:focus-visible .home-recommendation-note {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
 }
 
 /* Known issues follow the same plain, divided rows as the other lists. */
