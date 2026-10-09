@@ -41,21 +41,6 @@ export function initHome({ seerLookup, activateTab }) {
     home.querySelectorAll("[data-home-pet-id]").forEach((button) => {
         button.addEventListener("click", () => seerLookup.openPetInfo(button.dataset.homePetId));
     });
-    // Follow the existing header's session visibility without duplicating permissions.
-    const header = document.querySelector(".site-header");
-    const syncVisibility = () => {
-        home.querySelectorAll("[data-home-visibility]").forEach((entry) => {
-            const key = entry.dataset.homeVisibility;
-            const source = key === "voting"
-                ? header.querySelector('[data-main-target="voting"]')
-                : document.getElementById(key);
-            entry.hidden = !source || source.hidden;
-        });
-    };
-    syncVisibility();
-    new MutationObserver(syncVisibility).observe(header, {
-        attributes: true, attributeFilter: ["hidden"], subtree: true
-    });
 }
 
 async function loadOfficialNews(home) {

@@ -146,18 +146,6 @@
                                 stroke-linejoin="miter" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                                 <path d="M5 4h14v16H5z M9 8h6 M9 12h6 M9 16h4" />
                             </svg><span>關於本站</span></button>
-                        <button type="button" data-home-target="account-section" data-home-visibility="account-tab"
-                            hidden><span class="home-key-number" aria-hidden="true">08</span><span>帳號</span></button>
-                        <div data-home-visibility="voting" hidden>
-                            <p class="home-nav-label">投票</p>
-                            <button type="button" data-home-target="selection-panel"><span class="home-key-number"
-                                    aria-hidden="true">09</span><span>精靈投票</span></button>
-                            <button type="button" data-home-target="ranking-section"><span class="home-key-number"
-                                    aria-hidden="true">10</span><span>投票排名</span></button>
-                            <button type="button" data-home-target="competitive-pool-section"><span
-                                    class="home-key-number" aria-hidden="true">11</span><span>競技池</span></button>
-                        </div>
-                        <a href="./admin.html" data-home-visibility="admin-link" hidden>管理面板</a>
                     </nav>
                 </section>
                 <div class="home-community home-panel">
@@ -694,7 +682,7 @@
                     </ul>
                     <p>謹以此站致敬傳奇三招第五技能男神 — 驚濤海皇．波塞冬，也是我賽爾號最喜歡一角。
                         <br>資訊站建築過程經過大量的 AI 協助與染指，若有遇到資料錯誤或操作不順的地方，歡迎你聯絡站長回報。</p>
-                    <p>競技玩家，水準一般，目前正在思考要怎麼把歐根丟回限三、古王丟回限二。</p>
+                    <p><a href="https://forum.gamer.com.tw/A.php?bsn=18072" data-external-link target="_blank" rel="noopener noreferrer">巴哈姆特賽爾號哈啦板</a>板主，陸服玩家。<br>競技玩家，水準一般，目前正在思考要怎麼把歐根丟回限三、古王丟回限二。</p>
                 </section>
                 <section id="about-data-panel" class="about-detail-card" role="tabpanel" aria-labelledby="about-tab-data" tabindex="0" hidden>
                     <span class="about-detail-kicker">DATA &amp; REFERENCES</span>
@@ -716,15 +704,31 @@
                 <section id="about-issues-panel" class="about-detail-card" role="tabpanel" aria-labelledby="about-tab-issues" tabindex="0" hidden>
                     <span class="about-detail-kicker">KNOWN ISSUES</span>
                     <h2>已知問題</h2>
-                    <ul class="about-issues-list"><li>台服未實裝的合作內容未能隱藏（暫時還在思考怎麼做比較輕鬆）</li></ul>
+                    <div class="about-issues-board">
+                        <section class="about-issue-group" aria-labelledby="about-issues-investigating">
+                            <h3 id="about-issues-investigating"><span class="about-issue-status is-investigating" aria-hidden="true"></span>排查中</h3>
+                            <p class="about-issues-empty">目前沒有排查中的問題。</p>
+                        </section>
+                        <section class="about-issue-group" aria-labelledby="about-issues-in-progress">
+                            <h3 id="about-issues-in-progress"><span class="about-issue-status is-in-progress" aria-hidden="true"></span>處理中</h3>
+                            <ul class="about-issues-list">
+                                <li>台服尚未實裝的合作內容目前仍會顯示，正在評估合適的隱藏方式。</li>
+                            </ul>
+                        </section>
+                        <section class="about-issue-group" aria-labelledby="about-issues-on-hold">
+                            <h3 id="about-issues-on-hold"><span class="about-issue-status is-on-hold" aria-hidden="true"></span>擱置中</h3>
+                            <p class="about-issues-empty">目前沒有擱置中的問題。</p>
+                        </section>
+                    </div>
                 </section>
                 <section id="about-communicate-panel" class="about-detail-card" role="tabpanel" aria-labelledby="about-tab-communicate" tabindex="0" hidden>
                     <span class="about-detail-kicker">CONTACT SYSOP</span>
                     <h2>聯絡站長</h2>
                     <p>如果你對這個資訊站有任何的建議，你可以透過這些方式聯絡站長：</p>
                     <ul class="about-contact-list">
-                        <li><span class="about-contact-label">Discord</span><span>澪伍 <span class="about-contact-handle">@zerof0512</span></span><button type="button" class="about-copy-contact" data-copy-contact="zerof0512" aria-label="複製 Discord 帳號 zerof0512">複製帳號</button></li>
-                        <li><span class="about-contact-label">Facebook</span><a href="https://www.facebook.com/zerof0512" data-external-link target="_blank" rel="noopener noreferrer">澪伍 ↗</a></li>
+                        <li><span class="about-contact-label">Discord</span><span>澪伍 / <span class="about-contact-handle">@zerof0512</span></span><button type="button" class="about-copy-contact" data-copy-contact="zerof0512" aria-label="複製 Discord 帳號 zerof0512">複製帳號</button></li>
+                        <li><span class="about-contact-label">Facebook</span><a href="https://www.facebook.com/zerof0512" data-external-link target="_blank" rel="noopener noreferrer">澪伍</a></li>
+                        <li><span class="about-contact-label">Plurk</span><a href="https://plurk.com/zerof0512" data-external-link target="_blank" rel="noopener noreferrer">澪伍</a></li>
                     </ul>
                     <span class="about-copy-status" role="status" aria-live="polite"></span>
                     <p>當然，站長有權利拒絕回復任何無理或無禮的私訊、問題與騷擾，也不保證能馬上回復。</p>

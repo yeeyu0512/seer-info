@@ -1,33 +1,4 @@
 /* Admin page: compact toolbar and consistent controls. */
-.admin-page .header-actions {
-    gap: 8px;
-}
-
-.admin-page .admin-header-control {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 34px;
-    padding: 7px 12px;
-    border: 1px solid rgba(196,191,255,.16);
-    border-radius: 9px;
-    color: var(--text-secondary);
-    background: rgba(196,191,255,.05);
-    box-shadow: none;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0;
-    text-decoration: none;
-    text-transform: none;
-}
-
-.admin-page .admin-header-control:hover {
-    color: var(--text);
-    background: rgba(196,191,255,.11);
-    box-shadow: none;
-    transform: none;
-}
-
 .admin-page .admin-hero {
     padding: 22px 0 12px;
 }

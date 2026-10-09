@@ -21,7 +21,25 @@
 #about-section .about-detail-card p { padding: 0; margin: 0; color: #afb7d0; font-size: 14px; line-height: 1.9; overflow-wrap: anywhere; }
 #about-section .about-detail-card p + p { margin-top: 18px; }
 #about-section .about-detail-card a { color: #bcb3ff; text-decoration-color: rgba(188,179,255,.45); }
-.about-issues-list { padding-left: 20px; margin: 0; color: #afb7d0; font-size: 14px; line-height: 1.9; }
+.about-issues-board { display: grid; gap: 22px; }
+#about-section .about-issue-group { padding: 0 0 18px; border-bottom: 1px solid rgba(196,191,255,.1); }
+#about-section .about-issue-group:last-child { padding-bottom: 0; border-bottom: 0; }
+#about-section .about-issue-group h3 { display: flex; align-items: center; gap: 9px; margin: 0 0 8px; color: #dce1f2; font-size: 14px; font-weight: 600; }
+.about-issue-status { width: 8px; height: 8px; flex: 0 0 8px; border-radius: 50%; }
+.about-issue-status.is-investigating { background: #e7b765; box-shadow: 0 0 8px #e7b76555; animation: about-issue-light 1.8s ease-in-out infinite; }
+.about-issue-status.is-in-progress { background: #8e9df8; box-shadow: 0 0 8px #8e9df855; animation: about-issue-light 1.8s ease-in-out infinite; }
+.about-issue-status.is-on-hold { background: #f16b76; box-shadow: 0 0 8px #f16b7666; animation: about-issue-light 1.8s ease-in-out infinite; }
+@keyframes about-issue-light {
+ 0%, 100% { opacity: 1; transform: scale(1); }
+ 50% { opacity: .4; transform: scale(.78); }
+}
+@media (prefers-reduced-motion: reduce) {
+ .about-issue-status { animation: none !important; }
+}
+.about-issues-list { list-style: none; padding: 0; margin: 0; color: #afb7d0; font-size: 14px; line-height: 1.9; }
+.about-issues-list li { padding-left: 17px; position: relative; }
+.about-issues-list li::before { content: ""; position: absolute; left: 2px; top: .82em; width: 4px; height: 4px; border-radius: 50%; background: #7e89aa; }
+#about-section .about-issues-empty { color: #828ca8; font-size: 13px; }
 @media (max-width: 600px) {
  #about-section .about-hero { padding: 22px 98px 20px 20px; min-height: 126px; }
  #about-section .about-hero::after { width: 78px; height: 88px; top: 18px; right: 14px; }
@@ -38,7 +56,7 @@
 #about-section .about-hero { grid-column: 1; min-height: 0; padding: 0 0 24px; }
 #about-section .about-hero::after { content: none; }
 #about-section .about-hero h1 { font-size: 30px; margin: 10px 0; }
-#about-section .about-artwork { grid-column: 2; grid-row: 1 / 4; align-self: center; width: 100%; max-height: 390px; object-fit: contain; filter: drop-shadow(0 14px 24px #080b1e55); }
+#about-section .about-artwork { grid-column: 2; grid-row: 1 / 4; align-self: end; width: 100%; max-height: 390px; object-fit: contain; filter: drop-shadow(0 14px 24px #080b1e55); }
 #about-section .about-tabs { grid-column: 1; padding: 0; gap: 20px; border-bottom: 1px solid rgba(196,191,255,.14); }
 #about-section .about-tabs button { padding: 10px 0 12px; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; }
 #about-section .about-tabs button[aria-selected="true"] { border-bottom-color: #b6aaff; background: transparent; color: #eee9ff; }
