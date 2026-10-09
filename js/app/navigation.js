@@ -155,6 +155,8 @@ export function createNavigation({
             if (routeName) {
                 const url = new URL(window.location.href);
 
+                if (url.searchParams.get("tab") !== routeName) url.searchParams.delete("id");
+
                 if (routeName !== "training") url.searchParams.delete("build");
 
                 if (routeName === "home") {
@@ -182,10 +184,14 @@ export function createNavigation({
             seerLookup.setMode(route.mode);
         }
 
-        if (tab === 'pet' && /^[1-9][0-9]{0,9}$/.test(params.get('id') || '')) {
-            seerLookup.searchPetById(params.get('id'));
-        }
+        const id = params.get("id");
+        if (tab === "pet" && /^[1-9][0-9]{0,9}$/.test(id || "")) seerLookup.searchPetById(id);
+        if (tab === "skin" && /^[1-9][0-9]{0,9}$/.test(id || "")) seerLookup.searchSkinById(id);
         activateTab(route.section, { updateUrl: false });
+        if (/^[1-9][0-9]{0,9}$/.test(id || "")) {
+            if (tab === "mintmark") void seerMintmarks.searchById(id);
+            if (tab === "suit") void seerSuits.searchById(id);
+        }
         if (tab === "training" && params.has("build")) seerTraining.restoreBuild(params.get("build"));
         else seerTraining.cancelRestore?.();
     }

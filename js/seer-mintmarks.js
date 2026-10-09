@@ -303,5 +303,20 @@ export function initSeerMintmarks(root, { fetchSeerJson, convertToTraditionalChi
         return pending;
     }
     retry.addEventListener("click", load);
-    return { load };
+    let routeRequest = 0;
+    async function searchById(value) {
+        const id = String(value || '').trim();
+        if (!/^[1-9][0-9]{0,9}$/.test(id)) return;
+        const request = ++routeRequest;
+        await load();
+        if (!loaded || request !== routeRequest || root.hidden) return;
+        input.value = id; type.value = 'all'; series.value = 'all'; sort.value = 'id';
+        selectedCorners = 'all'; exclusive.checked = true;
+        if (taiwanOnly) taiwanOnly.checked = false;
+        page = 1; updateCornerButtons(); render();
+        const record = records.find(item => String(item.id) === id && !item.is_hidden);
+        if (record) detail(record);
+        else status.textContent = `找不到刻印 #${id}。`;
+    }
+    return { load, searchById };
 }

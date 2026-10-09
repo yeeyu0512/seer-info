@@ -158,5 +158,18 @@ export function initSeerSuits(root, { fetchSeerJson, convertToTraditionalChinese
         return pending;
     }
     retry.onclick = load;
-    return { load };
+    let routeRequest = 0;
+    async function searchById(value) {
+        const id = String(value || '').trim();
+        if (!/^[1-9][0-9]{0,9}$/.test(id)) return;
+        const request = ++routeRequest;
+        await load();
+        if (!loaded || request !== routeRequest || root.hidden) return;
+        input.value = id; effect.value = 'all'; battle.value = 'all'; sort.value = 'newest'; page = 1;
+        resetPreview(); render();
+        const record = records.find(item => String(item.id) === id);
+        if (record) choose(record);
+        else status.textContent = `找不到套裝 #${id}。`;
+    }
+    return { load, searchById };
 }

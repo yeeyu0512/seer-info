@@ -1476,6 +1476,14 @@ export function initSeerLookup(dependencies) {
                 seerLookupIdInput.value = id;
                 startSeerPetLookup(id);
             },
+            searchSkinById: (skinId) => {
+                const id = String(skinId || '').trim();
+                if (!/^[1-9][0-9]{0,9}$/.test(id)) return;
+                setSeerLookupMode('skin');
+                setSeerSkinSearchMode('skin');
+                seerLookupIdInput.value = id;
+                startSeerPetLookup(id);
+            },
             openPetInfo: (petId) => {
                 const normalizedPetId = String(petId || "").trim();
                 if (!normalizedPetId) return;
