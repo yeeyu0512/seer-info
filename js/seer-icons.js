@@ -1,8 +1,6 @@
 import { typeIconUrl, skinCategoryIconUrl, genderIconUrl, ASSETS } from "./shared/assets.js";
-const SEER_TYPE_ICON_IDS = [
-    ...Array.from({ length: 132 }, (_, index) => index + 1),
-    221, 222, 223, 224, 225, 226
-];
+import { SEER_TYPE_DATA } from "./seer-type-data.js";
+const SEER_TYPE_ICON_IDS = SEER_TYPE_DATA.combinations.map(type => type.id);
 const SEER_SKIN_CATEGORY_IDS = [
     0, 2, 3, 4, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
 ];

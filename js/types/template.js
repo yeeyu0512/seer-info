@@ -1,3 +1,5 @@
+import { SEER_TYPE_DATA } from "../seer-type-data.js";
+
 export const TYPE_CALCULATOR_TEMPLATE = `
             <div class="type-calc-wrapper">
                 <!-- 功能一：屬性倍率查詢 -->
@@ -38,7 +40,7 @@ export const TYPE_CALCULATOR_TEMPLATE = `
                     <!-- 統計與快速篩選標籤 (採用遊戲官方正統術語：克制、普通、微弱、無效) -->
                     <div class="type-calc-stats-bar">
                         <div class="type-calc-filter-pills" role="toolbar" aria-label="倍率篩選">
-                            <button class="type-calc-pill is-active" type="button" data-filter="all">全部 (<span id="type-count-all">138</span>)</button>
+                            <button class="type-calc-pill is-active" type="button" data-filter="all">全部 (<span id="type-count-all">${SEER_TYPE_DATA.combinations.length}</span>)</button>
                             <button class="type-calc-pill" type="button" data-filter="counter">克制 (<span id="type-count-counter">0</span>)</button>
                             <button class="type-calc-pill" type="button" data-filter="normal">普通 (<span id="type-count-normal">0</span>)</button>
                             <button class="type-calc-pill" type="button" data-filter="weak">微弱 (<span id="type-count-weak">0</span>)</button>

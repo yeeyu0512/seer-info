@@ -1922,6 +1922,17 @@ export const SEER_TYPE_DATA = {
       ]
     },
     {
+      "id": 133,
+      "name": "遠古 水",
+      "isDouble": true,
+      "primary": "遠古",
+      "secondary": "水",
+      "types": [
+        "遠古",
+        "水"
+      ]
+    },
+    {
       "id": 221,
       "name": "王",
       "isDouble": false,

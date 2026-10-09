@@ -10,6 +10,21 @@ import {
     getRelatedTypeOptions,
 } from "../js/seer-type-calculator.js";
 
+test("ancient water is selectable, searchable, and included in matchup analysis", () => {
+    const type = SEER_TYPE_DATA.combinations.find(type => type.id === 133);
+    assert.deepEqual(type.types, ["遠古", "水"]);
+    for (const base of type.types) {
+        assert(getRelatedTypeOptions(base).some(option => option.id === 133));
+    }
+    assert(getRelatedTypeOptions(null, "遠古水").some(option => option.id === 133));
+    const analysis = getTypeMatchupAnalysis(133);
+    assert.equal(analysis.activeType, type);
+    assert.equal(analysis.attackResults.length, SEER_TYPE_DATA.combinations.length);
+    assert.equal(analysis.defenseResults.length, SEER_TYPE_DATA.combinations.length);
+    assert.equal(analysis.attackResults.find(result => result.type.name === "火").multiplier, 1.5);
+    assert.equal(typeIconUrl(type.id), new URL("../assets/icons/types/133.png", import.meta.url).href);
+});
+
 test("related attribute choices include the single type and every matching dual type", () => {
     assert.deepEqual(getRelatedTypeOptions(null), []);
     for (const base of SEER_TYPE_DATA.singleTypes) {
