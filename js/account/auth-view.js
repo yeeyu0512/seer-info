@@ -157,10 +157,10 @@ export function createAuthView({
         loginButton.hidden = isRegisterMode;
         registerButton.hidden = !isRegisterMode;
         passwordInput.autocomplete = isRegisterMode ? "new-password" : "current-password";
-        authTitle.textContent = isRegisterMode ? "建立帳號" : "登入投票";
+        authTitle.textContent = isRegisterMode ? "建立帳號" : "站務登入";
         authDescription.textContent = isRegisterMode
-            ? "建立帳號時須綁定米米號，完成後即可參與投票。"
-            : "登入後即可參與本期競技限制投票。";
+            ? "建立帳號完成後等待站長驗證後即可使用管理員功能。"
+            : "登入後即可使用管理員功能。";
         authModeToggle.textContent = isRegisterMode
             ? "已有帳號？返回登入"
             : "還沒有帳號？建立帳號";
