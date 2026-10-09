@@ -20,6 +20,9 @@ export function createNavigation({
     const homeSection = document.getElementById("home-section");
     const voteSubTabs = Array.from(votingSubTabs.querySelectorAll("[data-tab-target]"));
     const encyclopediaModeTabs = Array.from(encyclopediaSubTabs.querySelectorAll("[data-lookup-mode]"));
+    const encyclopediaNav = document.getElementById("encyclopedia-nav");
+    const encyclopediaNavSummary = encyclopediaNav?.querySelector?.("summary");
+    const encyclopediaNavOptions = Array.from(encyclopediaNav?.querySelectorAll?.("[data-lookup-mode]") ?? []);
     const seerLookupSection = document.getElementById("seer-lookup-section");
 
     let currentVotePanelId = "selection-panel";
@@ -59,19 +62,25 @@ export function createNavigation({
     });
 
     encyclopediaModeTabs.forEach((tab) => {
-        tab.addEventListener("click", () => {
-            if (tab.dataset.lookupMode === "seal") {
-                activateTab("seal-encyclopedia-section");
-                return;
-            }
-            if (tab.dataset.lookupMode === "suit") {
-                activateTab("suit-encyclopedia-section");
-                return;
-            }
-            seerLookup.setMode(tab.dataset.lookupMode);
-            activateTab("seer-lookup-section");
-        });
+        tab.addEventListener("click", () => activateEncyclopediaMode(tab.dataset.lookupMode));
     });
+
+    encyclopediaNavOptions.forEach((option) => {
+        option.addEventListener("click", () => activateEncyclopediaMode(option.dataset.lookupMode));
+    });
+
+    function activateEncyclopediaMode(mode) {
+        if (mode === "seal") {
+            activateTab("seal-encyclopedia-section");
+            return;
+        }
+        if (mode === "suit") {
+            activateTab("suit-encyclopedia-section");
+            return;
+        }
+        seerLookup.setMode(mode);
+        activateTab("seer-lookup-section");
+    }
 
     function activateTab(targetId, { updateUrl = true } = {}) {
         if (!getIsAdministrator() && votePanels.has(targetId)) targetId = "seer-lookup-section";
@@ -111,6 +120,8 @@ export function createNavigation({
         aboutSection.hidden = !isAbout;
         votingSubTabs.hidden = mainTarget !== "voting";
         encyclopediaSubTabs.hidden = mainTarget !== "encyclopedia";
+        encyclopediaNavSummary?.classList.toggle("is-active", mainTarget === "encyclopedia");
+        encyclopediaNavSummary?.setAttribute("aria-selected", String(mainTarget === "encyclopedia"));
         document.getElementById("type-chart-sub-tabs").hidden = !isTypeChart;
         votePanels.forEach((panel, panelId) => {
             panel.hidden = panelId !== currentVotePanelId;
@@ -135,6 +146,15 @@ export function createNavigation({
             );
             tab.classList.toggle("is-active", isActive);
             tab.setAttribute("aria-selected", String(isActive));
+        });
+        encyclopediaNavOptions.forEach((option) => {
+            const isActive = mainTarget === "encyclopedia" && (
+                isSealEncyclopedia ? option.dataset.lookupMode === "seal"
+                    : isSuitEncyclopedia ? option.dataset.lookupMode === "suit"
+                        : option.dataset.lookupMode === seerLookup.getMode()
+            );
+            option.classList.toggle("is-active", isActive);
+            option.setAttribute("aria-pressed", String(isActive));
         });
 
         if (targetId === "competitive-pool-section") loadCurrentCompetitivePool();

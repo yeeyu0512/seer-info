@@ -58,8 +58,15 @@
             <nav class="main-tabs primary-main-tabs" aria-label="主要功能" role="tablist">
                 <button class="main-tab is-active" type="button" role="tab" aria-selected="true"
                     aria-controls="home-section" data-main-target="home">首頁</button>
-                <button class="main-tab" type="button" role="tab" aria-selected="false"
-                    aria-controls="seer-lookup-section" data-main-target="encyclopedia">圖鑑</button>
+                <details id="encyclopedia-nav" class="admin-nav encyclopedia-nav">
+                    <summary class="main-tab" role="tab" aria-selected="false" aria-controls="seer-lookup-section">圖鑑 <span aria-hidden="true">▾</span></summary>
+                    <div class="admin-nav-menu encyclopedia-nav-menu" aria-label="選擇圖鑑">
+                        <button type="button" data-lookup-mode="pet">精靈</button>
+                        <button type="button" data-lookup-mode="skin">皮膚</button>
+                        <button type="button" data-lookup-mode="seal">刻印</button>
+                        <button type="button" data-lookup-mode="suit">套裝</button>
+                    </div>
+                </details>
                 <button class="main-tab" type="button" role="tab" aria-selected="false"
                     aria-controls="type-chart-section" data-main-target="type-chart">屬性克制</button>
                 <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="training-section"

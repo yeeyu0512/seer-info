@@ -2,10 +2,13 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createNavigation } from '../js/app/navigation.js';
 
-function setup(search) {
+function setup(search, { menuSummary, menuOptions } = {}) {
     const calls = [], elements = new Map();
     const element = () => ({ hidden: true, querySelectorAll: () => [] });
     globalThis.document = { getElementById(id) {
+        if (id === 'encyclopedia-nav' && menuSummary) {
+            return { querySelector: () => menuSummary, querySelectorAll: () => menuOptions };
+        }
         if (!elements.has(id)) elements.set(id, element());
         return elements.get(id);
     } };
@@ -40,6 +43,32 @@ test('all four encyclopedia routes restore their own ID without confusing resour
             navigation.restoreRouteFromUrl();
             assert.deepEqual(calls, []);
         }
+    } finally { delete globalThis.document; delete globalThis.window; }
+});
+
+test('header encyclopedia menu opens each catalog route and marks the selected choice', () => {
+    const summary = {
+        classList: { toggle() {} },
+        setAttribute(name, value) { this[name] = value; }
+    };
+    const options = ['pet', 'skin', 'seal', 'suit'].map(mode => ({
+        dataset: { lookupMode: mode },
+        classList: { toggle() {} },
+        setAttribute(name, value) { this[name] = value; },
+        addEventListener(_name, handler) { this.click = handler; }
+    }));
+    try {
+        const { navigation } = setup('', { menuSummary: summary, menuOptions: options });
+        for (const [mode, route] of [['pet', 'pet'], ['skin', 'skin'], ['seal', 'mintmark'], ['suit', 'suit']]) {
+            options.find(option => option.dataset.lookupMode === mode).click();
+            assert.equal(new URL(window.location.href).searchParams.get('tab'), route);
+            assert.equal(summary['aria-selected'], 'true');
+            assert.deepEqual(options.map(option => option['aria-pressed']),
+                options.map(option => String(option.dataset.lookupMode === mode)));
+        }
+        navigation.activateTab('home-section');
+        assert.equal(summary['aria-selected'], 'false');
+        assert(options.every(option => option['aria-pressed'] === 'false'));
     } finally { delete globalThis.document; delete globalThis.window; }
 });
 
