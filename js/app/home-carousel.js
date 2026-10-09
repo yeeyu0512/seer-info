@@ -1,4 +1,4 @@
-// Replace these empty slots with { src: "./assets/site/…", alt: "角色名稱", position: "50% 30%" }.
+// Homepage artwork and responsive image sources.
 export const homeCarouselSlides = [
     { src: "./assets/site/home-banner-1600.webp", srcset: "./assets/site/home-banner-960.webp 960w, ./assets/site/home-banner-1600.webp 1600w, ./assets/site/home-banner-2400.webp 2400w", sizes: "(max-width: 1200px) calc(100vw - 32px), 1120px", width: 1600, height: 900, alt: "賽爾號角色聚會場景", position: "50% 25%" },
     { src: "./assets/site/home-banner-2-1600.webp", srcset: "./assets/site/home-banner-2-960.webp 960w, ./assets/site/home-banner-2-1600.webp 1600w, ./assets/site/home-banner-2-2400.webp 2400w", sizes: "(max-width: 1200px) calc(100vw - 32px), 1120px", width: 1600, height: 933, alt: "賽爾號紅髮角色與暮色水面", position: "50% 20%" }
@@ -13,6 +13,7 @@ export function initHomeCarousel(home, slides = homeCarouselSlides) {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     let current = 0, timer = null, paused = reducedMotion.matches, hovering = false;
     let touchStart = null;
+    let transition = null;
     const panels = slides.map((slide, index) => {
         const panel = document.createElement("div");
         panel.className = "home-carousel-slide";
@@ -28,7 +29,7 @@ export function initHomeCarousel(home, slides = homeCarouselSlides) {
             image.alt = slide.alt;
             image.style.objectPosition = slide.position || "50% 50%";
             image.draggable = false;
-            image.loading = index === 0 ? "eager" : "lazy";
+            image.loading = "eager";
             image.addEventListener("load", () => { placeholder.hidden = true; });
             image.addEventListener("error", () => {
                 image.hidden = true;
@@ -59,12 +60,44 @@ export function initHomeCarousel(home, slides = homeCarouselSlides) {
         timer = null;
         if (!paused && !hovering && !home.hidden && !document.hidden && slides.length > 1 &&
             !carousel.contains(document.activeElement)) {
-            timer = window.setTimeout(() => show(current + 1), 5000);
+            timer = window.setTimeout(() => show(current + 1), 7000);
         }
     }
     function show(index) {
-        current = (index + slides.length) % slides.length;
-        panels.forEach((panel, i) => { panel.hidden = i !== current; });
+        const next = (index + slides.length) % slides.length;
+        const previous = current;
+        const direction = index < current ? 1 : -1;
+        transition?.finish();
+        current = next;
+        panels.forEach((panel, i) => {
+            panel.hidden = i !== current;
+            panel.setAttribute("aria-hidden", String(i !== current));
+            panel.inert = i !== current;
+        });
+        if (previous !== current && !reducedMotion.matches) {
+            const outgoing = panels[previous], incoming = panels[current];
+            outgoing.hidden = false;
+            const options = { duration: 550, easing: "cubic-bezier(0.22, 1, 0.36, 1)" };
+            const exit = outgoing.animate([
+                { transform: "translateX(0)" },
+                { transform: `translateX(${direction * 100}%)` },
+            ], options);
+            const enter = incoming.animate([
+                { transform: `translateX(${-direction * 100}%)` },
+                { transform: "translateX(0)" },
+            ], options);
+            // Finish an interrupted transition before starting the next one.
+            const active = {
+                finish() {
+                    exit.cancel();
+                    enter.cancel();
+                    outgoing.hidden = true;
+                    if (transition === active) transition = null;
+                },
+            };
+            transition = active;
+            enter.onfinish = () => active.finish();
+        }
         dots.forEach((dot, i) => dot.setAttribute("aria-pressed", String(i === current)));
         count.textContent = `${current + 1} / ${slides.length}`;
         schedule();
@@ -99,7 +132,11 @@ export function initHomeCarousel(home, slides = homeCarouselSlides) {
     stage.addEventListener("touchcancel", () => { touchStart = null; });
     document.addEventListener("visibilitychange", schedule);
     new MutationObserver(schedule).observe(home, { attributes: true, attributeFilter: ["hidden"] });
-    reducedMotion.addEventListener("change", () => { paused = reducedMotion.matches; updatePause(); });
+    reducedMotion.addEventListener("change", () => {
+        transition?.finish();
+        paused = reducedMotion.matches;
+        updatePause();
+    });
     if (!slides.length) { carousel.hidden = true; return; }
     carousel.querySelector("[data-carousel-prev]").disabled = slides.length < 2;
     carousel.querySelector("[data-carousel-next]").disabled = slides.length < 2;

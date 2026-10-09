@@ -23,13 +23,16 @@
 }
 
 .home-carousel-stage {
+    position: relative;
     height: 220px;
     overflow: hidden;
     background: #10212e;
 }
 
 .home-carousel-slide {
-    position: relative;
+    position: absolute;
+    inset: 0;
+    width: 100%;
     height: 100%;
 }
 
@@ -41,6 +44,8 @@
 }
 
 .home-carousel-placeholder {
+    position: absolute;
+    inset: 0;
     display: grid;
     place-items: center;
     height: 100%;
