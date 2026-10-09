@@ -1,6 +1,7 @@
 // Homepage artwork and responsive image sources.
 export const homeCarouselSlides = [
     { src: "./assets/site/home-banner-1600.webp", srcset: "./assets/site/home-banner-960.webp 960w, ./assets/site/home-banner-1600.webp 1600w, ./assets/site/home-banner-2400.webp 2400w", sizes: "(max-width: 1200px) calc(100vw - 32px), 1120px", width: 1600, height: 900, alt: "賽爾號角色聚會場景", position: "50% 25%" },
+    { src: "./assets/site/home-banner-3-1600.webp", srcset: "./assets/site/home-banner-3-960.webp 960w, ./assets/site/home-banner-3-1600.webp 1600w, ./assets/site/home-banner-3-2400.webp 2400w", sizes: "(max-width: 1200px) calc(100vw - 32px), 1120px", width: 1600, height: 762, alt: "賽爾號角色與金色星環場景", position: "32% 20%" },
     { src: "./assets/site/home-banner-2-1600.webp", srcset: "./assets/site/home-banner-2-960.webp 960w, ./assets/site/home-banner-2-1600.webp 1600w, ./assets/site/home-banner-2-2400.webp 2400w", sizes: "(max-width: 1200px) calc(100vw - 32px), 1120px", width: 1600, height: 933, alt: "賽爾號紅髮角色與暮色水面", position: "50% 20%" }
 ];
 

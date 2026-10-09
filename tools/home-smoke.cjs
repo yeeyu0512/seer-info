@@ -45,15 +45,17 @@ const server = http.createServer((req,res) => {
             assert.match(await carousel.locator('img').first().evaluate(img => img.currentSrc), /home-banner-\d+\.webp$/);
 
             await carousel.locator('[data-carousel-next]').click();
-            assert.equal(await carousel.locator('[data-carousel-count]').textContent(),'2 / 2');
+            assert.equal(await carousel.locator('[data-carousel-count]').textContent(),'2 / 3');
             await carousel.locator('img').nth(1).evaluate(img => img.decode());
-            assert.match(await carousel.locator('img').nth(1).evaluate(img => img.currentSrc), /home-banner-2-\d+\.webp$/);
+            assert.match(await carousel.locator('img').nth(1).evaluate(img => img.currentSrc), /home-banner-3-\d+\.webp$/);
             await carousel.locator('[data-carousel-prev]').click();
             await carousel.locator('[data-carousel-prev]').click();
-            assert.equal(await carousel.locator('[data-carousel-count]').textContent(),'2 / 2');
+            assert.equal(await carousel.locator('[data-carousel-count]').textContent(),'3 / 3');
+            await carousel.locator('img').nth(2).evaluate(img => img.decode());
+            assert.match(await carousel.locator('img').nth(2).evaluate(img => img.currentSrc), /home-banner-2-\d+\.webp$/);
             await carousel.locator('[data-carousel-pages] button').nth(0).click();
             await carousel.locator('[data-carousel-pages] button').nth(0).press('ArrowRight');
-            assert.equal(await carousel.locator('[data-carousel-count]').textContent(),'2 / 2');
+            assert.equal(await carousel.locator('[data-carousel-count]').textContent(),'2 / 3');
             await carousel.locator('[data-carousel-pause]').click();
             assert.equal(await carousel.locator('[data-carousel-pause]').textContent(),'播放輪播');
             await page.evaluate(() => {
@@ -65,21 +67,21 @@ const server = http.createServer((req,res) => {
                 Object.defineProperty(end,'changedTouches',{value:[{clientX:100,clientY:52}]});
                 stage.dispatchEvent(end);
             });
-            assert.equal(await carousel.locator('[data-carousel-count]').textContent(),'1 / 2');
+            assert.equal(await carousel.locator('[data-carousel-count]').textContent(),'3 / 3');
             await carousel.locator('[data-carousel-pages] button').nth(0).click();
             // Autoplay stops while hidden and resumes only after returning to home.
             if (width === 1440) {
                 await carousel.locator('[data-carousel-pause]').click();
                 await page.locator('.logo').focus();
                 await page.mouse.move(0,0);
-                await page.waitForTimeout(5200);
-                assert.equal(await carousel.locator('[data-carousel-count]').textContent(),'2 / 2');
+                await page.waitForTimeout(7200);
+                assert.equal(await carousel.locator('[data-carousel-count]').textContent(),'2 / 3');
                 await page.locator('[data-main-target="about"]').click();
-                await page.waitForTimeout(5200);
-                assert.equal(await carousel.locator('[data-carousel-count]').textContent(),'2 / 2');
+                await page.waitForTimeout(7200);
+                assert.equal(await carousel.locator('[data-carousel-count]').textContent(),'2 / 3');
                 await page.locator('.logo').click();
-                await page.waitForTimeout(5200);
-                assert.equal(await carousel.locator('[data-carousel-count]').textContent(),'1 / 2');
+                await page.waitForTimeout(7200);
+                assert.equal(await carousel.locator('[data-carousel-count]').textContent(),'3 / 3');
             }
             await page.emulateMedia({reducedMotion:'reduce'});
             assert.equal(await carousel.locator('[data-carousel-pause]').textContent(),'播放輪播');
