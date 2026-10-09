@@ -1,4 +1,5 @@
 // 賽爾號屬性資料與克制矩陣（自動生成自 Seer_Type_Chart.xlsx 與 SeerAPI）
+// 次元關係校正：邪靈 2×、神靈 0.5×；https://wiki.biligame.com/seer/次元系
 export const SEER_TYPE_DATA = {
   "singleTypes": [
     "草",
@@ -316,7 +317,7 @@ export const SEER_TYPE_DATA = {
         "冰",
         "王",
         "混沌",
-        "邪靈",
+        "神靈",
         "輪迴"
       ],
       "eff_0x": [

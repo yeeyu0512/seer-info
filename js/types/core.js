@@ -9,10 +9,15 @@ const skillStoneTypeNames = new Set([
     "戰鬥", "光", "暗影", "神秘", "龍", "聖靈", "次元", "遠古", "邪靈", "自然", "蟲",
 ]);
 
-export function getSkillStoneMatchupAnalysis(targetId) {
-    const target = combinationsById.get(targetId) || combinations[0];
+export function getSkillStoneTypes() {
     return combinations
         .filter((type) => type.types.length === 1 && skillStoneTypeNames.has(type.name))
+        .sort((a, b) => a.id - b.id);
+}
+
+export function getSkillStoneMatchupAnalysis(targetId) {
+    const target = combinationsById.get(targetId) || combinations[0];
+    return getSkillStoneTypes()
         .map((type) => ({ type, multiplier: calculateTypeMultiplier(type.types, target.types) }))
         .sort((a, b) => b.multiplier - a.multiplier || a.type.id - b.type.id);
 }
@@ -132,4 +137,3 @@ export function getTypeEffectClass(multiplier) {
     if (multiplier > 0.0) return "is-weak";
     return "is-zero";
 }
-

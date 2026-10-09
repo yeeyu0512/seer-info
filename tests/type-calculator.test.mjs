@@ -55,6 +55,36 @@ test("related filtering can use the encyclopedia API catalog", () => {
 });
 
 // Regression cases from https://www.bilibili.com/opus/393640212312106869
+test("single type relations contain only known targets with no duplicate or conflicting multipliers", () => {
+    const types = SEER_TYPE_DATA.singleTypes;
+    assert.equal(new Set(types).size, types.length);
+    assert.deepEqual(Object.keys(SEER_TYPE_DATA.singleRelations).sort(), [...types].sort());
+    for (const [attacker, relations] of Object.entries(SEER_TYPE_DATA.singleRelations)) {
+        const seen = new Set();
+        for (const key of ["eff_2x", "eff_05x", "eff_0x"]) {
+            for (const target of relations[key]) {
+                assert(types.includes(target), `${attacker}: unknown target ${target}`);
+                assert(!seen.has(target), `${attacker} → ${target}: duplicate or conflicting multiplier`);
+                seen.add(target);
+            }
+        }
+    }
+});
+
+// https://wiki.biligame.com/seer/次元系
+test("dimension matchups distinguish evil spirit from divine spirit in lookup and skill stones", () => {
+    const id = name => SEER_TYPE_DATA.combinations.find(type => type.name === name).id;
+    const dimension = id("次元");
+    for (const [target, expected] of [["邪靈", 2], ["神靈", 0.5]]) {
+        assert.equal(calculateTypeMultiplier(["次元"], [target]), expected);
+        assert.equal(getTypeMatchupAnalysis(dimension).attackResults.find(row => row.type.id === id(target)).multiplier, expected);
+        assert.equal(getTypeMatchupAnalysis(id(target)).defenseResults.find(row => row.type.id === dimension).multiplier, expected);
+        assert.equal(getSkillStoneMatchupAnalysis(id(target)).find(row => row.type.id === dimension).multiplier, expected);
+    }
+    assert.equal(calculateTypeMultiplier(["次元", "電"], ["神靈"]), 0.5);
+    assert.equal(calculateTypeMultiplier(["次元"], ["邪靈", "神靈"]), 1.25);
+});
+
 const examples = [
     [["次元"], ["暗影"], 0],
     [["聖靈"], ["電", "火"], 4],
@@ -162,6 +192,56 @@ test("all supported matchups stay within 0–4 and ignore component order", () =
             assert.equal(calculateTypeMultiplier(attack.types, [...defense.types].reverse()), value);
         }
     }
+});
+
+test("skill stone picker renders all choices and supports selecting, changing, and clearing", (t) => {
+    const previousDocument = globalThis.document;
+    function element() {
+        return {
+            children: [], attributes: {}, events: {},
+            classList: { toggle() {}, remove() {} },
+            append(...children) { this.children.push(...children); },
+            replaceChildren(...children) { this.children = children; },
+            setAttribute(name, value) { this.attributes[name] = value; },
+            addEventListener(name, handler) { this.events[name] = handler; },
+        };
+    }
+    globalThis.document = { createElement: element, createDocumentFragment: element };
+    t.after(() => { globalThis.document = previousDocument; });
+    const view = Object.create(SeerTypeCalculatorController.prototype);
+    for (const key of ["pickerOptionsContainer", "vsStoneSelect", "vsStoneResult", "vsStoneTitle", "vsStoneMult", "vsStoneBadge"]) {
+        view[key] = element();
+    }
+    view.currentPickerTarget = "stone";
+    view.selectedSkillStoneId = null;
+    view.vsTypeBId = SEER_TYPE_DATA.combinations.find(type => type.name === "草").id;
+    let closeCount = 0;
+    view.closePickerModal = () => { closeCount++; };
+    const choices = () => {
+        view.renderPickerOptions();
+        return view.pickerOptionsContainer.children[0].children;
+    };
+    const initial = choices();
+    assert.equal(initial.length, 22);
+    assert.equal(initial[0].textContent, "不攜帶");
+    assert.equal(initial[0].attributes["aria-pressed"], "true");
+    assert.deepEqual(initial.slice(1).map(button => button.children[1].textContent),
+        ["草", "水", "火", "飛行", "電", "機械", "地面", "普通", "冰", "超能", "戰鬥", "光", "暗影", "神秘", "龍", "聖靈", "次元", "遠古", "邪靈", "自然", "蟲"]);
+    for (const [name, multiplier] of [["火", "2×"], ["水", "0.5×"]]) {
+        choices().find(button => button.children[1]?.textContent === name).events.click();
+        assert.equal(view.selectedSkillStoneId, SEER_TYPE_DATA.combinations.find(type => type.name === name).id);
+        assert.equal(view.vsStoneMult.textContent, multiplier);
+        assert.equal(view.vsStoneResult.hidden, false);
+        const selected = choices().filter(button => button.attributes["aria-pressed"] === "true");
+        assert.equal(selected.length, 1);
+        assert.equal(selected[0].children[1].textContent, name);
+    }
+    choices()[0].events.click();
+    assert.equal(view.selectedSkillStoneId, null);
+    assert.equal(view.vsStoneSelect.textContent, "不攜帶 ▾");
+    assert.equal(view.vsStoneResult.hidden, true);
+    assert.equal(choices()[0].attributes["aria-pressed"], "true");
+    assert.equal(closeCount, 3);
 });
 
 test("lookup and skill stone calculations use the corrected formula", () => {

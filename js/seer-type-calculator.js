@@ -2,7 +2,7 @@ import { typeIconUrl } from "./shared/assets.js";
 import {createTypeLabel, renderAttackTitle} from "./types/labels.js";
 import { typePickerMethods } from "./types/picker-view.js";
 import { TYPE_CALCULATOR_TEMPLATE } from "./types/template.js";
-import { getSkillStoneMatchupAnalysis, calculateTypeMultiplier, getTypeMatchupAnalysis, formatMultiplier, formatCardMultiplier, getTypeEffectLabel, getTypeEffectClass } from "./types/core.js";
+import { getSkillStoneTypes, calculateTypeMultiplier, getTypeMatchupAnalysis, formatMultiplier, formatCardMultiplier, getTypeEffectLabel, getTypeEffectClass } from "./types/core.js";
 export { getSkillStoneMatchupAnalysis, calculateTypeMultiplier, getTypeMatchupAnalysis, formatMultiplier, formatCardMultiplier, getTypeEffectLabel, getTypeEffectClass } from "./types/core.js";
 import { getRelatedTypeOptions } from "./shared/type-options.js";
 export { getRelatedTypeOptions } from "./shared/type-options.js";
@@ -29,7 +29,7 @@ export class SeerTypeCalculatorController {
         this.vsTypeAId = null;
         this.vsTypeBId = null;
         this.selectedSkillStoneId = null;
-        this.currentPickerTarget = "lookup"; // 'lookup' | 'vsA' | 'vsB'
+        this.currentPickerTarget = "lookup"; // 'lookup' | 'vsA' | 'vsB' | 'stone'
         this.currentMode = "attack"; // 'attack' | 'defense'
         this.currentFilter = "all"; // 'all' | 'counter' | 'normal' | 'weak' | 'zero'
         this.searchQuery = "";
@@ -405,10 +405,7 @@ export class SeerTypeCalculatorController {
         none.classList.toggle("is-active", this.selectedSkillStoneId === null);
         none.addEventListener("click", () => this.selectSkillStone(null));
         fragment.append(none);
-        const stoneTypes = combinations
-            .filter((type) => type.types.length === 1 && skillStoneTypeNames.has(type.name))
-            .sort((a, b) => a.id - b.id);
-        for (const type of stoneTypes) {
+        for (const type of getSkillStoneTypes()) {
             const item = document.createElement("button");
             item.type = "button";
             item.className = "seer-pet-type-option";
