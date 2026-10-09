@@ -3,7 +3,7 @@ export const PLAYER_LOOKUP_API_ENDPOINT = "https://seer-info-tw-api.koreacentral
 
 const elements = typeof document === "undefined" ? {} : {
     form: document.getElementById("player-lookup-form"),
-    mimiId: document.getElementById("mimi-id"),
+    mimiId: document.getElementById("player-lookup-mimi-id"),
     submit: document.getElementById("lookup-submit"),
     status: document.getElementById("player-lookup-status"),
     progress: document.getElementById("lookup-progress"),
@@ -283,10 +283,6 @@ if (elements.form) {
         }
         submitLookup(elements.captchaAnswer.value.trim());
     });
-}
-
-if (typeof document !== 'undefined' && new URLSearchParams(location.search).get('embedded') === '1') {
-    document.body.classList.add('player-lookup-embedded');
 }
 
 async function refreshServiceStatus() {

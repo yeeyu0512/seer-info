@@ -1,9 +1,5 @@
 /* Player tools share the catalog's panel and typography styles. */
-.player-lookup-page { padding: 24px 0 48px; }
 .player-lookup-card { --lookup-accent: var(--primary-light); }
-.player-lookup-header { align-items: start; }
-.player-lookup-back-link { color: var(--text-secondary); font-size: 13px; text-decoration: none; }
-.player-lookup-back-link:hover { color: var(--primary-light); }
 .player-lookup-form { max-width: 620px; }
 .player-lookup-form label, .captcha-panel label { display: block; margin-bottom: 7px; font-size: 13px; color: var(--text-secondary); }
 .player-lookup-input-row { display: flex; gap: 9px; }
@@ -43,12 +39,9 @@
 .player-pet-card strong { display: block; font-size: 12px; font-weight: 500; overflow-wrap: anywhere; }
 .player-pet-card small { display: block; font-size: 11px; color: var(--text-muted); margin-top: 3px; }
 @media (max-width: 680px) {
- .player-lookup-page { padding-top: 16px; }
  .player-peak-modes { grid-template-columns: 1fr; gap: 20px; }
  .player-bags { grid-template-columns: 1fr; gap: 24px; }
  .player-peak-mode + .player-peak-mode { border-left: 0; border-top: 1px solid var(--border); padding: 20px 0 0; }
- .site-header .logo { font-size: 15px; }
- .player-lookup-back-link { font-size: 12px; }
  .player-presence { flex-wrap: wrap; }
 }
 
@@ -59,11 +52,8 @@
 @keyframes lookup-progress-slide { from { transform: translateX(-110%); } to { transform: translateX(390%); } }
 @media (prefers-reduced-motion: reduce) { .lookup-progress span { animation: none; width: 100%; opacity: .65; } }
 
-body.player-lookup-embedded { background: var(--surface-solid); }
-.player-lookup-embedded::before, .player-lookup-embedded::after, .player-lookup-embedded .site-header { display: none; }
-.player-lookup-embedded .player-lookup-page { width: 100%; padding: 0; }
-.player-lookup-embedded .player-lookup-card { margin: 0; border: 0; border-radius: 0; box-shadow: none; background: transparent; }
-.player-lookup-embedded .player-lookup-card::before { display: none; }
+.player-lookup-card { margin: 0; border: 0; border-radius: 0; box-shadow: none; background: transparent; }
+.player-lookup-card::before { display: none; }
 
 /* Keep the search and identity compact inside the shared lookup view. */
 .player-lookup-form { max-width: 380px; }
@@ -77,14 +67,10 @@ body.player-lookup-embedded { background: var(--surface-solid); }
 .player-online-badge[data-online="true"] { color: var(--success); }
 .player-identity-meta { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 5px; font-size: 12px; color: var(--text-secondary); }
 .player-identity-meta .player-result-id { margin: 0; font-size: inherit; }
-.player-lookup-embedded .player-lookup-header { margin-bottom: 14px; padding-bottom: 0; border-bottom: 0; }
-.player-lookup-embedded .player-lookup-header h1 { display: none; }
-.player-lookup-embedded .player-lookup-header p { margin: 0; }
-.player-lookup-embedded .player-lookup-card { padding: 20px; }
-@media (max-width: 420px) { .player-lookup-form { max-width: 100%; } .player-lookup-embedded .player-lookup-card { padding: 16px; } }
+.player-lookup-card { padding: 20px; }
+@media (max-width: 420px) { .player-lookup-form { max-width: 100%; } .player-lookup-card { padding: 16px; } }
 
-.player-lookup-embedded .player-lookup-card { padding-top: 10px; }
-.player-lookup-embedded .player-lookup-header { margin-bottom: 12px; }
+.player-lookup-card { padding-top: 10px; }
 .player-online-badge[data-online="true"] { animation: player-online-pulse 1.8s ease-in-out infinite; }
 @keyframes player-online-pulse {
     0%, 100% { background: rgba(93,214,160,.09); box-shadow: 0 0 0 0 rgba(93,214,160,0); }
@@ -92,7 +78,6 @@ body.player-lookup-embedded { background: var(--surface-solid); }
 }
 @media (prefers-reduced-motion: reduce) { .player-online-badge[data-online="true"] { animation: none; } }
 
-.player-lookup-embedded .player-lookup-header { display: none; }
 
 .player-search-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .player-search-toolbar .player-lookup-form { flex: 1; }
