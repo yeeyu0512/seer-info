@@ -1468,6 +1468,14 @@ export function initSeerLookup(dependencies) {
         lookupInstance = {
             setMode: setSeerLookupMode,
             getMode: () => seerLookupMode,
+            searchPetById: (petId) => {
+                const id = String(petId || '').trim();
+                if (!/^[1-9][0-9]{0,9}$/.test(id)) return;
+                setSeerLookupMode('pet');
+                setSeerPetSearchMethod('query');
+                seerLookupIdInput.value = id;
+                startSeerPetLookup(id);
+            },
             openPetInfo: (petId) => {
                 const normalizedPetId = String(petId || "").trim();
                 if (!normalizedPetId) return;

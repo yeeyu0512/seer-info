@@ -182,6 +182,9 @@ export function createNavigation({
             seerLookup.setMode(route.mode);
         }
 
+        if (tab === 'pet' && /^[1-9][0-9]{0,9}$/.test(params.get('id') || '')) {
+            seerLookup.searchPetById(params.get('id'));
+        }
         activateTab(route.section, { updateUrl: false });
         if (tab === "training" && params.has("build")) seerTraining.restoreBuild(params.get("build"));
         else seerTraining.cancelRestore?.();
