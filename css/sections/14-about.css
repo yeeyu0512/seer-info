@@ -90,3 +90,21 @@
 .about-copy-status { display: block; color: #bcb3ff; font-size: 12px; }
 .about-copy-status:empty { display: none; }
 #about-section .about-copy-status:not(:empty) { margin: -8px 0 18px; }
+
+/* Privacy links in the existing About and global footer areas. */
+#about-section .about-footer { align-items: center; justify-content: space-between; gap: 16px; }
+#about-section .about-privacy-link {
+    color: #bcb3ff; font-size: 12px; text-decoration: none; font-weight: 600;
+    text-underline-offset: 3px;
+}
+#about-section .about-privacy-link:hover { color: #ede8ff; text-decoration: underline; }
+#about-section .about-privacy-link:focus-visible,
+.site-footer .site-privacy-link:focus-visible { outline: 2px solid #bcb3ff; outline-offset: 4px; }
+.site-footer .site-privacy-link {
+    display: inline-block; margin-left: 12px;
+    color: #bcb3ff; text-decoration: none; font-weight: 600;
+}
+.site-footer .site-privacy-link:hover { color: #ede8ff; text-decoration: underline; }
+@media (max-width: 600px) {
+    .site-footer .site-privacy-link { display: block; width: fit-content; margin: 8px auto 0; }
+}

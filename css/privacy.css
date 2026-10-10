@@ -1,0 +1,133 @@
+/* Privacy policy page. Scoped to avoid changes to the main site's UI. */
+.privacy-page { min-height: 100vh; }
+.privacy-page .site-header { position: sticky; top: 0; }
+.privacy-page .header-inner { gap: 20px; }
+.privacy-page .privacy-header-nav { display: flex; align-items: center; flex-wrap: wrap; gap: 18px; }
+.privacy-page .privacy-header-nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    transition: color .2s ease;
+}
+.privacy-page .privacy-header-nav a:last-child { color: #c6bdff; }
+.privacy-page .privacy-header-nav a:hover,
+.privacy-page .privacy-header-nav a:focus-visible { color: #fff; }
+.privacy-skip {
+    position: fixed; z-index: 300; top: -100px; left: 12px; padding: 10px 16px;
+    border: 1px solid var(--border); border-radius: 10px;
+    color: #fff; background: #222744;
+}
+.privacy-skip:focus { top: 10px; }
+
+.privacy-page .privacy-shell { max-width: 1120px; padding: 42px 0 44px; }
+.privacy-page .privacy-heading { margin-bottom: 30px; }
+.privacy-page .privacy-eyebrow {
+    margin: 0 0 9px; color: #bdb1ff;
+    font-size: 11px; font-weight: 800; letter-spacing: .16em;
+}
+.privacy-page .privacy-heading h1 {
+    margin: 0; font-size: clamp(30px, 4vw, 46px);
+    font-weight: 800; line-height: 1.25; letter-spacing: -.035em;
+}
+.privacy-page .privacy-lead {
+    max-width: 720px; margin: 13px 0 14px;
+    color: #c0c8dd; font-size: 15px; line-height: 1.85;
+}
+.privacy-page .privacy-updated { margin: 0; color: #8e99b8; font-size: 12px; }
+.privacy-page .privacy-grid {
+    display: grid; grid-template-columns: 220px minmax(0, 1fr);
+    align-items: start; gap: 22px;
+}
+.privacy-page .privacy-toc,
+.privacy-page .privacy-document {
+    border: 1px solid rgba(196,191,255,.15);
+    border-radius: 16px;
+    background: linear-gradient(155deg, rgba(26,32,55,.93), rgba(17,22,39,.94));
+    box-shadow: 0 18px 44px rgba(0,0,0,.16);
+}
+.privacy-page .privacy-toc {
+    position: sticky; top: 86px; padding: 22px 18px;
+}
+.privacy-page .privacy-toc-title {
+    margin: 0 0 13px; color: #c8c0ff;
+    font-size: 11px; font-weight: 700; letter-spacing: .08em;
+}
+.privacy-page .privacy-toc ol { list-style: none; padding: 0; margin: 0; display: grid; gap: 3px; }
+.privacy-page .privacy-toc a {
+    display: block; padding: 8px 10px; border-radius: 8px;
+    color: #aebad3; text-decoration: none; font-size: 13px; line-height: 1.5;
+}
+.privacy-page .privacy-toc a:hover,
+.privacy-page .privacy-toc a:focus-visible { background: rgba(147,135,255,.12); color: #f0edff; }
+.privacy-page .privacy-document { min-width: 0; padding: 30px 38px 38px; }
+.privacy-page .privacy-intro {
+    padding: 0 0 24px; border-bottom: 1px solid rgba(196,191,255,.13);
+}
+.privacy-page .privacy-document p,
+.privacy-page .privacy-document li {
+    color: #b8c2d8; font-size: 14px; line-height: 1.95; overflow-wrap: anywhere;
+}
+.privacy-page .privacy-document p { margin: 0 0 13px; }
+.privacy-page .privacy-document p:last-child { margin-bottom: 0; }
+.privacy-page .privacy-document a { color: #c7bbff; text-decoration-color: rgba(199,187,255,.48); text-underline-offset: 3px; }
+.privacy-page .privacy-document a:hover { color: #f2efff; }
+.privacy-page .privacy-section { padding-top: 30px; scroll-margin-top: 90px; }
+.privacy-page .privacy-section + .privacy-section {
+    margin-top: 26px; border-top: 1px solid rgba(196,191,255,.11);
+}
+.privacy-page .privacy-section h2 {
+    display: flex; align-items: baseline; gap: 13px;
+    margin: 0 0 15px; color: #f0eeff;
+    font-size: 20px; font-weight: 700; line-height: 1.4;
+}
+.privacy-page .privacy-section h2 span {
+    color: #a59bfb; font-size: 12px; font-weight: 700; letter-spacing: .06em;
+}
+.privacy-page .privacy-section h3 {
+    margin: 24px 0 9px; color: #e1e6f8; font-size: 15px; font-weight: 700;
+}
+.privacy-page .privacy-section ul { margin: 10px 0 16px; padding-left: 1.3em; }
+.privacy-page .privacy-section li { padding-left: 4px; }
+.privacy-page .privacy-section li + li { margin-top: 7px; }
+.privacy-page .privacy-section strong { color: #e3e6f5; }
+.privacy-page .privacy-contact-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 7px; padding: 10px 16px;
+    border: 1px solid rgba(188,179,255,.35); border-radius: 9px;
+    background: rgba(147,135,255,.11); color: #ddd5ff;
+    text-decoration: none; font-size: 13px; font-weight: 600;
+}
+.privacy-page .privacy-contact-link:hover { border-color: #a99eff; background: rgba(147,135,255,.22); }
+.privacy-page .privacy-footer {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 18px;
+    padding: 26px 14px 38px; border-top: 1px solid rgba(196,191,255,.1);
+}
+.privacy-page .privacy-footer a { color: #c6bdff; text-decoration: none; }
+.privacy-page .privacy-footer a:hover { color: #fff; }
+.privacy-page a:focus-visible { outline: 2px solid #c7bfff; outline-offset: 3px; }
+
+@media (max-width: 820px) {
+    .privacy-page .privacy-grid { grid-template-columns: 1fr; gap: 15px; }
+    .privacy-page .privacy-toc { position: static; padding: 17px 18px; }
+    .privacy-page .privacy-toc ol { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 3px 10px; }
+    .privacy-page .privacy-document { padding: 26px 24px 32px; }
+}
+@media (max-width: 540px) {
+    .privacy-page .header-inner { gap: 8px; }
+    .privacy-page .logo { font-size: 14px; gap: 7px; }
+    .privacy-page .privacy-header-nav { gap: 10px; }
+    .privacy-page .privacy-header-nav a { font-size: 11px; }
+    .privacy-page .privacy-shell { padding: 28px 0 32px; }
+    .privacy-page .privacy-heading { margin-bottom: 22px; }
+    .privacy-page .privacy-lead { font-size: 13px; line-height: 1.8; }
+    .privacy-page .privacy-toc ol { grid-template-columns: 1fr 1fr; }
+    .privacy-page .privacy-toc a { font-size: 12px; padding: 8px 5px; }
+    .privacy-page .privacy-document { padding: 23px 18px 28px; }
+    .privacy-page .privacy-section { padding-top: 25px; }
+    .privacy-page .privacy-section h2 { gap: 10px; font-size: 17px; }
+    .privacy-page .privacy-document p, .privacy-page .privacy-document li { font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .privacy-page .privacy-header-nav a { transition: none; }
+}
