@@ -40,16 +40,31 @@ export function initHome({ seerLookup, activateTab }) {
         activateTab("home-section");
     });
     home.querySelectorAll("[data-home-target]").forEach((button) => {
-        button.addEventListener("click", () => {
-            if (button.dataset.homeMode) seerLookup.setMode(button.dataset.homeMode);
-            activateTab(button.dataset.homeTarget);
-            document.querySelector(`[data-main-target][aria-selected="true"]`).focus({ preventScroll: true });
-            window.scrollTo({ top: 0 });
-        });
+        button.addEventListener("click", () => openHomeShortcut(button, { seerLookup, activateTab }));
     });
     home.querySelectorAll("[data-home-pet-id]").forEach((button) => {
         button.addEventListener("click", () => seerLookup.openPetInfo(button.dataset.homePetId));
     });
+}
+
+export function openHomeShortcut(button, { seerLookup, activateTab }) {
+    if (button.dataset.homeMode) seerLookup.setMode(button.dataset.homeMode);
+    activateTab(button.dataset.homeTarget);
+    focusHomeShortcutTarget(button.dataset.homeTarget);
+    window.scrollTo({ top: 0 });
+}
+
+export function focusHomeShortcutTarget(targetId) {
+    const activeNav = document.querySelector('.primary-main-tabs [aria-selected="true"]');
+    if (activeNav) {
+        activeNav.focus({ preventScroll: true });
+        return;
+    }
+    const section = document.getElementById(targetId);
+    if (section) {
+        section.tabIndex = -1;
+        section.focus({ preventScroll: true });
+    }
 }
 
 async function loadOfficialNews(home) {
