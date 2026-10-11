@@ -4,6 +4,7 @@ import { createGameAccountController } from "./account/game-account-controller.j
 import { createVotingController } from "./voting/controller.js";
 import { createRankingController } from "./voting/ranking-controller.js";
 import { createNavigation } from "./app/navigation.js";
+import { typePageUrl } from "./app/types-route.js";
 import { initHome } from "./app/home.js";
 import { createAuthView } from "./account/auth-view.js";
 import { createSessionController } from "./app/session-controller.js";
@@ -77,10 +78,7 @@ const { convertToTraditionalChinese, convertToSimplifiedChinese } = createChines
 const seerLookup = initSeerLookup({
     activateTab: (...args) => activateTab(...args),
     openTypeLookup(typeId) {
-        if (!seerTypeCalculator.openLookup(typeId)) return;
-        activateTab("type-chart-section");
-        typeChartSection.scrollIntoView({ behavior: "smooth", block: "start" });
-        document.getElementById("type-calc-tab-lookup").focus({ preventScroll: true });
+        window.location.assign(typePageUrl(typeId).href);
     },
     convertToTraditionalChinese,
     convertToSimplifiedChinese,

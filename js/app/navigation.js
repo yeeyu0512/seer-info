@@ -1,3 +1,5 @@
+import { typePageUrl } from "./types-route.js";
+
 export function createNavigation({
     primaryMainTabs,
     seerLookup,
@@ -83,6 +85,10 @@ export function createNavigation({
     }
 
     function activateTab(targetId, { updateUrl = true } = {}) {
+        if (targetId === "type-chart-section") {
+            window.location.assign(typePageUrl().href);
+            return;
+        }
         if (!getIsAdministrator() && votePanels.has(targetId)) targetId = "seer-lookup-section";
         const isLookup = targetId === "seer-lookup-section";
         const isSealEncyclopedia = targetId === "seal-encyclopedia-section";
@@ -195,6 +201,11 @@ export function createNavigation({
     function restoreRouteFromUrl({ initial = false } = {}) {
         const params = new URLSearchParams(window.location.search);
         const tab = params.get("tab");
+
+        if (tab === "types") {
+            window.location.replace(typePageUrl(params.get("id")).href);
+            return;
+        }
 
         if (!tab && initial) return;
 

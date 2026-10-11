@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>屬性克制與對局屬性助手｜賽爾號資訊站</title>
+    <meta name="description" content="查詢賽爾號單屬性與雙屬性的進攻、受擊倍率，使用對局屬性助手與技能石克制分析。">
+    <link rel="canonical" href="https://seerinfo.app/types/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="賽爾號資訊站">
+    <meta property="og:title" content="屬性克制與對局屬性助手｜賽爾號資訊站">
+    <meta property="og:description" content="查詢賽爾號屬性克制倍率、對局屬性與技能石效果。">
+    <meta property="og:url" content="https://seerinfo.app/types/">
+    <link rel="icon" href="../favicon.ico" sizes="any">
+    <link rel="stylesheet" href="../css/style.css?v=20261008_home_icons2">
+    <link rel="stylesheet" href="../css/types-page.css">
+</head>
+<body class="types-page">
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="../" class="logo" aria-label="首頁">
+                <img class="logo-mark" src="../favicon.ico" alt="">
+                <span>賽爾號資訊站</span>
+            </a>
+            <nav class="main-tabs primary-main-tabs" aria-label="主要功能">
+                <a class="main-tab" href="../">首頁</a>
+                <a class="main-tab" href="../?tab=pet">精靈圖鑑</a>
+                <a class="main-tab" href="../?tab=skin">皮膚圖鑑</a>
+                <a class="main-tab is-active" href="./" aria-current="page">屬性克制</a>
+                <a class="main-tab" href="../?tab=training">模擬培養</a>
+                <a class="main-tab" href="../?tab=about">關於本站</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="types-intro">
+            <h1>屬性克制</h1>
+            <p>選擇單屬性或雙屬性，查看進攻與受擊倍率；也可比較對局屬性及技能石效果。</p>
+        </div>
+        <nav id="type-chart-sub-tabs" class="main-tabs view-sub-tabs" role="tablist" aria-label="屬性克制功能">
+            <button id="type-calc-tab-lookup" class="main-tab is-active" type="button" role="tab" aria-selected="true"
+                aria-controls="type-calc-view-lookup" data-calc-feature="lookup">屬性倍率查詢</button>
+            <button id="type-calc-tab-vs" class="main-tab" type="button" role="tab" aria-selected="false"
+                aria-controls="type-calc-view-vs" data-calc-feature="vs">對局屬性助手</button>
+        </nav>
+        <section id="type-chart-section" class="panel type-calculator-panel" role="tabpanel" aria-label="屬性克制計算機"></section>
+    </main>
+
+    <div id="type-calc-modal" class="admin-confirm-modal seer-pet-type-modal type-related-picker" role="presentation" hidden>
+        <section class="admin-confirm-dialog seer-pet-type-dialog" role="dialog" aria-modal="true"
+            aria-labelledby="type-calc-modal-title">
+            <header class="seer-related-skins-header seer-pet-type-modal-header">
+                <div>
+                    <h2 id="type-calc-modal-title">選擇計算屬性</h2>
+                    <p class="seer-pet-info-message">點選屬性後立即計算克制與受擊倍率</p>
+                </div>
+                <button id="type-calc-modal-close" class="seer-pet-info-close" type="button" aria-label="關閉屬性選擇">×</button>
+            </header>
+            <div class="seer-pet-type-modal-body">
+                <div id="type-calc-picker-search-row" class="type-picker-search-row">
+                    <label class="field-label" for="type-calc-picker-search">搜尋屬性</label>
+                    <input id="type-calc-picker-search" class="type-calc-picker-search-input type-picker-search"
+                        type="search" placeholder="輸入屬性名稱，例如：聖靈超能" autocomplete="off">
+                </div>
+                <div class="type-calc-picker-layout">
+                    <section id="type-calc-picker-base-panel" class="type-calc-picker-column" aria-labelledby="type-calc-picker-base-title">
+                        <h3 id="type-calc-picker-base-title">單屬性</h3>
+                        <div id="type-calc-picker-bases" class="seer-pet-type-options type-picker-bases" role="group" aria-label="單屬性分類"></div>
+                    </section>
+                    <section class="type-calc-picker-column">
+                        <h3 id="type-calc-picker-options-title">選擇屬性</h3>
+                        <div id="type-calc-modal-options" class="seer-pet-type-options type-picker-options" role="group" aria-label="計算屬性選項"></div>
+                    </section>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="site-footer">
+        <span>賽爾號資訊站 · Hosted on GitHub Pages</span>
+        <a class="site-privacy-link" href="../privacy.html">隱私權政策</a>
+    </footer>
+    <script type="module" src="../js/pages/types.js"></script>
+</body>
+</html>
