@@ -257,6 +257,8 @@
 .training-preset-action { flex:none; color:#c6baff; font-size:12px; }
 
 .training-export-dialog { width:min(1100px,calc(100vw - 40px)); }
+.training-export-background { display:flex; align-items:center; gap:10px; align-self:flex-start; margin:0; color:#c8d5ea; font-size:13px; }
+.training-export-background select { width:auto; min-width:150px; min-height:38px; padding:7px 10px; border:1px solid #50496f; border-radius:8px; background:#1a1d30; color:#f0eff8; font:inherit; }
 .training-export-preview { min-height:0; overflow:auto; border-radius:10px; }
 .training-export-preview img { display:block; width:100%; height:auto; }
 .training-export-preview img[hidden] { display:none; }

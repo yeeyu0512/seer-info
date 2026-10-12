@@ -12,7 +12,7 @@ function loadImage(url) {
 }
 
 const portraits = new Map();
-let backgroundImage;
+const backgroundImages = new Map();
 let logoImage;
 function loadExportLogo() {
     if (!logoImage) {
@@ -21,12 +21,16 @@ function loadExportLogo() {
     }
     return logoImage;
 }
-function loadExportBackground() {
-    if (!backgroundImage) {
-        backgroundImage = loadImage(new URL("../assets/seer-infobg.png", import.meta.url).href)
-            .catch(() => { backgroundImage = null; return null; });
+function loadExportBackground(choice = "original") {
+    const selected = choice === "cafe" ? "cafe" : "original";
+    if (!backgroundImages.has(selected)) {
+        const path = selected === "cafe" ? "../assets/seer-infobg2.png" : "../assets/seer-infobg.png";
+        const pending = loadImage(new URL(path, import.meta.url).href)
+            .catch(error => selected === "original" ? loadImage(new URL("../assets/site/background-scene-1718.png", import.meta.url).href) : Promise.reject(error))
+            .catch(() => { backgroundImages.delete(selected); throw new Error("匯出底圖載入失敗，請稍後重新產生圖片。"); });
+        backgroundImages.set(selected, pending);
     }
-    return backgroundImage;
+    return backgroundImages.get(selected);
 }
 async function loadPortrait(url) {
     // Official character images do not provide CORS headers. Use a public image
@@ -45,7 +49,7 @@ async function loadPortrait(url) {
 // Draw a standalone card so controls and page scroll positions do not affect export.
 export async function createTrainingImage(data) {
     const [background, logo, portrait, art, ...marks] = await Promise.all([
-        loadExportBackground(),
+        loadExportBackground(data.background),
         loadExportLogo(),
         loadPortrait(data.portrait),
         data.art ? loadPortrait(data.art).catch(() => null) : null,
