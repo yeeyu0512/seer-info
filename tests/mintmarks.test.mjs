@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { selectMintmarks, fetchMintmarkCatalog, fetchMintmarkSeries, mintmarkCornerCount } from "../js/seer-mintmarks.js";
+import { matchingMintmarkSeries } from "../js/data/mintmark-series-search.js";
 
 const records = [
     { id: 1, name: "攻擊", searchName: "攻击", type: { id: 3 }, max_attr_value: { atk: 30, total: 100 } },
@@ -80,4 +81,11 @@ test("series loader follows validated pagination, deduplicates and keeps only ID
     await assert.rejects(fetchMintmarkSeries(async () => ({ results: [], next: "https://example.com/v1/mintmark_class" })), /分頁/);
     await assert.rejects(fetchMintmarkSeries(async url => ({ results: [], next: url })), /分頁/);
     await assert.rejects(fetchMintmarkSeries(async () => ({ results: null })), /格式/);
+});
+
+test("series combobox narrows options by name or ID and keeps the reset option", () => {
+    const choices = [{value:"all",label:"全部系列"},{value:"61",label:"英雄之證"},{value:"62",label:"另一系列"}];
+    assert.deepEqual(matchingMintmarkSeries(choices,"英雄").map(item=>item.value),["all","61"]);
+    assert.deepEqual(matchingMintmarkSeries(choices,"62").map(item=>item.value),["all","62"]);
+    assert.deepEqual(matchingMintmarkSeries(choices,"沒有結果").map(item=>item.value),["all"]);
 });

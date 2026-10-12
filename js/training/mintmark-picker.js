@@ -3,10 +3,12 @@ import { fetchMintmarkCatalog, fetchMintmarkSeries, mintmarkCornerCount, selectM
 import { observeMintmarkImage, unobserveMintmarkImages } from "../seer-mintmark-images.js";
 import { mintmarkFinalStats } from "../seer-mintmark-stats.js";
 import { canEquipMintmark } from "./mintmark-limit.js";
+import { createMintmarkSeriesSearch } from "../data/mintmark-series-search.js";
 export function createTrainingMintmarkPicker({root, query, selected, name, traditional, simplified, fetchCached, choose, recalculate}) {
     const mintDialog = query(".training-mint-dialog"), mintGrid = query(".training-dialog-grid");
     let mintCatalog = [], mintPending, mintSlot = 0, mintPage = 1, mintReady = false, slotInvoker;
     const mintSearch = mintDialog.querySelector("input"), mintCorners = mintDialog.querySelector('[aria-label="刻印角數"]'), mintSeries = mintDialog.querySelector('[aria-label="刻印系列"]');
+    const seriesSearch = createMintmarkSeriesSearch(mintDialog.querySelector('[data-training-series-combobox]'));
     const mintSort = mintDialog.querySelector('[aria-label="刻印排序"]');
     function renderMintSlot(index) {
         const slot = query(`[data-mint-slot="${index}"]`), record = selected.get(`mint${index}`);
@@ -56,10 +58,14 @@ export function createTrainingMintmarkPicker({root, query, selected, name, tradi
         if (mintReady) { renderMintChoices(); return; }
         query("[data-mint-prev]").disabled = true; query("[data-mint-next]").disabled = true;
         query("[data-mint-dialog-retry]").hidden = true;
-        if (!mintPending) mintPending = Promise.all([fetchMintmarkCatalog(fetchCached,(count,total) => { if (mintDialog.open) query("[data-mint-dialog-status]").textContent = `載入刻印資料 ${count} / ${total ?? "…"}`; }),fetchMintmarkSeries(fetchCached)]).then(([records,series]) => {
-            mintCatalog = records; mintReady = true;
-            for (const item of series) mintSeries.append(new Option(traditional(item.name),String(item.id)));
-        }).catch(error => { mintPending = null; if (mintDialog.open) { query("[data-mint-dialog-status]").textContent = "刻印資料載入失敗，請重試。"; query("[data-mint-dialog-retry]").hidden = false; } });
+        if (!mintPending) {
+            const seriesPending = fetchMintmarkSeries(fetchCached).then(series => {
+                seriesSearch.setOptions([{value:"all",label:"全部系列"},...series.map(item => ({value:String(item.id),label:traditional(item.name)}))]);
+            }).catch(error => {seriesSearch.setError("系列載入失敗，請重試。");throw error;});
+            mintPending = Promise.all([fetchMintmarkCatalog(fetchCached,(count,total) => { if (mintDialog.open) query("[data-mint-dialog-status]").textContent = `載入刻印資料 ${count} / ${total ?? "…"}`; }),seriesPending]).then(([records]) => {
+                mintCatalog = records; mintReady = true;
+            }).catch(error => { mintPending = null; if (mintDialog.open) { query("[data-mint-dialog-status]").textContent = "刻印資料載入失敗，請重試。"; query("[data-mint-dialog-retry]").hidden = false; } });
+        }
         query("[data-mint-dialog-status]").textContent = "正在載入刻印資料…";
         await mintPending; renderMintChoices();
     }

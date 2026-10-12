@@ -1,5 +1,6 @@
 import { mintmarkCornerCount, selectMintmarks, fetchMintmarkSeries, fetchMintmarkCatalog } from "./data/mintmark-catalog.js";
 export { mintmarkCornerCount, selectMintmarks, fetchMintmarkSeries, fetchMintmarkCatalog } from "./data/mintmark-catalog.js";
+import { createMintmarkSeriesSearch } from "./data/mintmark-series-search.js";
 import { observeMintmarkImage, unobserveMintmarkImages } from "./seer-mintmark-images.js";
 import { downloadMintmarkWorkbook } from "./seer-mintmark-export.js";
 import { mintmarkFinalStats } from "./seer-mintmark-stats.js";
@@ -12,7 +13,7 @@ export function initSeerMintmarks(root, { fetchSeerJson, convertToTraditionalChi
     const content = root.querySelector("#seal-encyclopedia-content");
     content.innerHTML = `<div class="seal-toolbar">
         <label class="seal-search">名稱或 ID<input type="search" placeholder="搜尋刻印…" autocomplete="off"></label>
-        <label class="seal-series-filter">系列<select data-seal-series><option value="all">全部系列</option></select></label>
+        <div class="seal-series-filter"><label for="seal-series-search">系列</label><div class="mint-series-combobox" data-seal-series-combobox><input id="seal-series-search" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" autocomplete="off" value="全部系列" placeholder="搜尋或選擇系列…"><div class="mint-series-options" role="listbox" hidden></div><select data-seal-series hidden aria-hidden="true" tabindex="-1"><option value="all">全部系列</option></select></div></div>
         <label>分類<select data-seal-type><option value="3">全能刻印</option><option value="0">能力刻印</option><option value="1">技能刻印</option><option value="all">全部刻印</option></select></label>
         <label>排序<select data-seal-sort><option value="id">ID 由大到小</option><option value="total">能力總和</option>${STATS.map(([key, label]) => `<option value="${key}">${label}由高到低</option>`).join("")}</select></label>
     </div><div class="seal-filter-options">
@@ -25,6 +26,7 @@ export function initSeerMintmarks(root, { fetchSeerJson, convertToTraditionalChi
     const sort = content.querySelector("[data-seal-sort]");
     const cornerButtons = [...content.querySelectorAll("[data-seal-corner]")];
     const series = content.querySelector("[data-seal-series]");
+    const seriesSearch = createMintmarkSeriesSearch(content.querySelector("[data-seal-series-combobox]"));
     const exclusive = content.querySelector("[data-seal-exclusive]");
     const taiwanOnly = root.querySelector("#seal-taiwan-progress-only");
     if (taiwanOnly) content.querySelector(".seal-filter-toggles").prepend(taiwanOnly.closest("label"));
@@ -92,9 +94,9 @@ export function initSeerMintmarks(root, { fetchSeerJson, convertToTraditionalChi
 
     function populateSeries() {
         const ids = [...new Set(records.filter(record => !record.is_hidden).map(record => record.mintmark_class?.id).filter(id => Number.isSafeInteger(id) && id > 0))].sort((a, b) => a - b);
-        series.replaceChildren(new Option("全部系列", "all"));
-        ids.forEach(id => series.append(new Option(seriesNames.get(id) || `系列 #${id}`, String(id))));
-        if (records.some(record => !record.is_hidden && !record.mintmark_class?.id)) series.append(new Option("未分類", "none"));
+        const choices = [{value:"all",label:"全部系列"},...ids.map(id => ({value:String(id),label:seriesNames.get(id) || `系列 #${id}`}))];
+        if (records.some(record => !record.is_hidden && !record.mintmark_class?.id)) choices.push({value:"none",label:"未分類"});
+        seriesSearch.setOptions(choices);
     }
 
     function imageSlot(record) {
@@ -278,15 +280,20 @@ export function initSeerMintmarks(root, { fetchSeerJson, convertToTraditionalChi
         content.setAttribute("aria-busy", "true");
         pending = (async () => {
             try {
-                const [catalog, classes] = await Promise.all([fetchMintmarkCatalog(fetchSeerJson, (count, total) => {
-                    status.textContent = `正在載入刻印… ${count.toLocaleString()} / ${Number(total).toLocaleString()}`;
-                }), fetchMintmarkSeries(fetchSeerJson).catch(error => {
+                const seriesPending = fetchMintmarkSeries(fetchSeerJson).then(classes => {
+                    seriesNames = new Map(classes.map(item => [item.id, convertToTraditionalChinese(item.name)]));
+                    seriesSearch.setOptions([{value:"all",label:"全部系列"},...classes.map(item => ({value:String(item.id),label:seriesNames.get(item.id)}))]);
+                    return classes;
+                }).catch(error => {
                     console.warn("Mintmark series names unavailable:", error);
-                    series.title = "系列名稱讀取失敗，暫以系列編號顯示；重新整理可重試。";
+                    seriesSearch.setError("系列名稱載入失敗，暫以編號顯示。");
+                    content.querySelector("[data-seal-series-combobox] input").title = "系列名稱讀取失敗，暫以系列編號顯示；重新整理可重試。";
                     return [];
-                })]);
+                });
+                const [catalog] = await Promise.all([fetchMintmarkCatalog(fetchSeerJson, (count, total) => {
+                    status.textContent = `正在載入刻印… ${count.toLocaleString()} / ${Number(total).toLocaleString()}`;
+                }), seriesPending]);
                 records = catalog.map(record => ({ ...record, searchName: record.name, name: convertToTraditionalChinese(record.name) }));
-                seriesNames = new Map(classes.map(item => [item.id, convertToTraditionalChinese(item.name)]));
                 populateSeries();
                 loaded = true;
                 if (taiwanOnly?.checked) await updateTaiwanFilter();

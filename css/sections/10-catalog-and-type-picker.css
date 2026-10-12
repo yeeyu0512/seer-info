@@ -15,9 +15,20 @@
 .seal-technical-note a { color: inherit; text-underline-offset: 3px; }
 .seal-toolbar { display: grid; grid-template-columns: minmax(200px, 1.6fr) minmax(180px, 1.2fr) minmax(130px, .8fr) minmax(150px, .9fr); gap: 16px; align-items: end; }
 .seal-toolbar label { display: grid; gap: 6px; color: var(--text-secondary); font-size: 14px; }
+.seal-series-filter { display:grid; gap:6px; min-width:0; }
+.seal-series-filter label { display:block; }
 .seal-toolbar .seal-search { flex: 1; min-width: 180px; }
-.seal-toolbar input[type="search"], .seal-toolbar select { width: 100%; min-height: 46px; border: 1px solid var(--border); border-radius: 12px; background: #111525; color: var(--text); padding: 10px 14px; font: inherit; }
+.seal-toolbar input[type="search"], .seal-toolbar .mint-series-combobox input, .seal-toolbar select { width: 100%; min-height: 46px; border: 1px solid var(--border); border-radius: 12px; background: #111525; color: var(--text); padding: 10px 14px; font: inherit; }
 .seal-toolbar select { min-width: 0; }
+.mint-series-combobox { position:relative; min-width:0; }
+.mint-series-combobox::after { content:"▾"; position:absolute; right:13px; top:50%; transform:translateY(-50%); color:var(--text-secondary); pointer-events:none; }
+.mint-series-combobox input { box-sizing:border-box; padding-right:32px !important; }
+.mint-series-options { position:absolute; z-index:30; left:0; right:0; top:calc(100% + 5px); display:grid; max-height:240px; overflow:auto; padding:5px; border:1px solid var(--border); border-radius:10px; background:#1a1d30; box-shadow:var(--shadow); }
+.mint-series-options[hidden] { display:none; }
+.mint-series-options button { width:100%; margin:0; padding:9px 10px; border:0; border-radius:6px; background:transparent; color:var(--text); text-align:left; font:inherit; font-size:13px; box-shadow:none; }
+.mint-series-options button:hover,.mint-series-options button.is-active { background:#35304f; }
+.mint-series-options button[aria-selected="true"] { color:#c6baff; font-weight:700; }
+.mint-series-loading { padding:9px 10px; color:var(--text-secondary); font-size:12px; }
 .seal-filter-options { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 24px; margin-top: 18px; }
 .seal-corner-filter { display: flex; align-items: center; gap: 12px; color: var(--text-secondary); font-size: 14px; }
 .seal-corner-buttons { display: flex; gap: 6px; }
