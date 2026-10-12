@@ -73,6 +73,7 @@ export function createMintmarkSeriesSearch(container) {
     input.addEventListener("input",() => {searching = true;renderList();});
     input.addEventListener("keydown",event => {
         if (event.key === "Escape") {close();return;}
+        if (event.key === "Tab") {close();return;}
         if (event.key === "ArrowDown" || event.key === "ArrowUp") {
             event.preventDefault();
             if (list.hidden) renderList();
@@ -84,11 +85,15 @@ export function createMintmarkSeriesSearch(container) {
             list.querySelectorAll('[role="option"]')[activeIndex >= 0 ? activeIndex : 0]?.click();
         }
     });
-    container.addEventListener("focusout",event => {
-        if (!container.contains(event.relatedTarget)) close();
-    });
+    // 點擊清單捲軸可能讓輸入框失焦，但仍是在操作清單，不應因此關閉。
     document.addEventListener("pointerdown",event => {
-        if (!container.contains(event.target)) close();
+        if (container.contains(event.target)) return;
+        if (!list.hidden) {
+            const bounds = list.getBoundingClientRect();
+            if (event.clientX >= bounds.left && event.clientX <= bounds.right
+                && event.clientY >= bounds.top && event.clientY <= bounds.bottom) return;
+        }
+        close();
     });
     return {
         setOptions(next) {
