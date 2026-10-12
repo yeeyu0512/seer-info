@@ -26,7 +26,6 @@ function loadExportBackground(choice = "original") {
     if (!backgroundImages.has(selected)) {
         const path = selected === "cafe" ? "../assets/seer-infobg2.png" : "../assets/seer-infobg.png";
         const pending = loadImage(new URL(path, import.meta.url).href)
-            .catch(error => selected === "original" ? loadImage(new URL("../assets/site/background-scene-1718.png", import.meta.url).href) : Promise.reject(error))
             .catch(() => { backgroundImages.delete(selected); throw new Error("匯出底圖載入失敗，請稍後重新產生圖片。"); });
         backgroundImages.set(selected, pending);
     }

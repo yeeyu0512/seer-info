@@ -14,7 +14,7 @@ test("PNG export includes the selected portrait and all three cached mintmark im
     globalThis.Image=class {
         naturalWidth=100; naturalHeight=100;
         set src(url) { images.push(url);assert.equal(this.crossOrigin,"anonymous");
-            if (url.startsWith("https://newseer.61.com") || url.endsWith("/assets/seer-infobg.png")) this.onerror(); else this.onload(); }
+            if (url.startsWith("https://newseer.61.com")) this.onerror(); else this.onload(); }
     };
     const link={click(){clicked=true;},remove(){}};
     const ctx={fillRect(){},fillText(value){texts.push(value);},drawImage(...args){drawn.push(args);},
@@ -30,7 +30,7 @@ test("PNG export includes the selected portrait and all three cached mintmark im
     await downloadTrainingImage(data);
     assert.equal(drawn.length,7); // Background, logo, portrait/body fallback and three mintmarks.
     assert.ok(images.some(url=>url.endsWith("/assets/seer-infobg.png")));
-    assert.ok(images.some(url=>url.endsWith("/assets/site/background-scene-1718.png")));
+    assert.ok(!images.some(url=>url.endsWith("/assets/site/background-scene-1718.png")));
     assert.ok(images.some(url=>url.endsWith("/assets/site/export-logo.png")));
     assert.equal(images.filter(url=>url.startsWith("data:image/png")).length,3);
     assert.ok(images.some(url=>url.startsWith("https://wsrv.nl/")));
