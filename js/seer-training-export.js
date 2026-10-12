@@ -21,8 +21,9 @@ function loadExportLogo() {
     }
     return logoImage;
 }
-function loadExportBackground(choice = "original") {
-    const selected = choice === "cafe" ? "cafe" : "original";
+function loadExportBackground(choice = "none") {
+    if (choice !== "original" && choice !== "cafe") return Promise.resolve(null);
+    const selected = choice;
     if (!backgroundImages.has(selected)) {
         const path = selected === "cafe" ? "../assets/seer-infobg2.png" : "../assets/seer-infobg.png";
         const pending = loadImage(new URL(path, import.meta.url).href)

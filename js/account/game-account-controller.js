@@ -1,3 +1,4 @@
+// 舊版米米號綁定流程僅供既有帳號與站務使用；一般訪客不需提供或綁定自己的米米號。
 export function createGameAccountController({
     bindGameAccount,
     loadPool,

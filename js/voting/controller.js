@@ -1,3 +1,5 @@
+// 已廢棄：公開投票不再提供，一般訪客無須註冊或留下自己的米米號。
+// 此控制器僅為既有資料與站務流程保留，不應視為現行公開功能。
 export function createVotingController({
     publicLoginPrompt,
     mimiBindingPrompt,
@@ -328,7 +330,7 @@ export function createVotingController({
             console.error("Submit vote error:", error);
             voteMessage.textContent = `投票失敗：${error.message}`;
             submitButton.disabled = false;
-            submitButton.textContent = "提交投票";
+            submitButton.textContent = "提交投票（舊版）";
         }
     });
     return { loadPool, renderVoteCharacters, renderCurrentVoteCharacters, restoreSavedVote, renderPublicCharacterPage, sortCharactersByIdDescending, updateCharacterPagination, renderCurrentCharacterPage, createCharacterPortrait, appendCharacterName, renderPoolMeta, renderNoActivePool, updateSelectionCount, getCurrentPool: () => currentPool, getCharacters: () => currentCharacters, resetPool: () => { currentPool = null; } };

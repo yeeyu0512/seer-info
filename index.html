@@ -223,7 +223,7 @@
 
 
         <!-- ==================== -->
-        <!-- Login -->
+        <!-- 站務登入：一般訪客瀏覽本站與使用公開工具，不需註冊、登入或綁定自己的米米號。 -->
         <!-- ==================== -->
 
         <div id="login-modal" hidden>
@@ -234,7 +234,7 @@
                     <button id="login-close" class="modal-close" type="button" aria-label="關閉登入視窗">×</button>
                 </div>
 
-                <h1 id="auth-title">登入投票</h1>
+                <h1 id="auth-title">站務登入</h1>
 
                 <p id="auth-description" class="panel-description">
                     本站目前暫停登入與新帳號註冊。
@@ -278,10 +278,13 @@
 
 
         <!-- ==================== -->
-        <!-- Voting -->
+        <!-- 投票功能已廢棄：一般訪客不需註冊或留下自己的米米號，也不開放公開投票。
+             以下舊版介面與事件處理保留供既有資料及站務流程使用，不應摘要為現行公開功能。 -->
         <!-- ==================== -->
 
-        <section id="vote-section" hidden>
+        <section id="vote-section" data-feature-status="deprecated" hidden>
+
+            <p class="panel-description">投票功能已廢棄；此區僅保留舊版介面與管理資料。</p>
 
 
             <!-- Pool Information -->
@@ -332,9 +335,9 @@
 
             </div>
 
-            <nav id="voting-sub-tabs" class="main-tabs view-sub-tabs" aria-label="投票功能" role="tablist">
+            <nav id="voting-sub-tabs" class="main-tabs view-sub-tabs" aria-label="舊版投票功能（已廢棄）" role="tablist">
                 <button class="main-tab is-active" type="button" role="tab" aria-selected="true"
-                    aria-controls="selection-panel" data-tab-target="selection-panel">限制池投票</button>
+                    aria-controls="selection-panel" data-tab-target="selection-panel">限制池投票（舊版）</button>
                 <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="ranking-section"
                     data-tab-target="ranking-section">即時排名</button>
                 <button class="main-tab" type="button" role="tab" aria-selected="false"
@@ -372,12 +375,12 @@
                 </div>
 
                 <div id="public-login-prompt" class="public-login-prompt" hidden>
-                    <span>想參與本期投票？登入後即可選擇角色。</span>
-                    <button id="public-login-button" class="compact-button" type="button">登入投票</button>
+                    <span>投票功能已廢棄；此登入提示僅保留供舊版介面使用。</span>
+                    <button id="public-login-button" class="compact-button" type="button">舊版登入</button>
                 </div>
 
                 <div id="mimi-binding-prompt" class="public-login-prompt" hidden>
-                    <span>綁定米米號後才能參與本期投票。</span>
+                    <span>投票功能已廢棄；米米號綁定提示僅保留供舊版介面使用。</span>
                     <button id="mimi-binding-button" class="compact-button" type="button">前往綁定</button>
                 </div>
 
@@ -410,7 +413,7 @@
 
 
                     <button id="submit-button" type="button">
-                        提交投票
+                        提交投票（舊版）
                     </button>
 
                 </div>
@@ -745,6 +748,7 @@
             <footer class="about-footer"><a class="about-privacy-link" href="./privacy.html">隱私權政策 <span aria-hidden="true">↗</span></a><button id="about-login-trigger" type="button" aria-haspopup="dialog" aria-controls="login-modal">站務登入</button></footer>
         </section>
 
+        <!-- 米米號綁定為舊版投票流程保留；目前不要求任何訪客註冊或綁定自己的米米號。 -->
         <section id="account-section" class="panel account-panel" hidden>
 
             <div class="panel-header">
@@ -769,7 +773,7 @@
             <div id="game-account-bound" class="game-account-bound" hidden>
                 <span>已綁定米米號</span>
                 <strong id="bound-game-account"></strong>
-                <p>此綁定為永久設定，無法修改或解除；綁定後才能投票。</p>
+                <p>此綁定為永久設定，無法修改或解除；原投票功能已廢棄。</p>
             </div>
 
         </section>
@@ -956,6 +960,7 @@
         <p>查詢共用冷卻時間，資料以遊戲伺服器回傳為準。台服連線狀態僅表示測試帳號目前有沒有建立遊戲連線，無法據此判定官方是否開服。</p>
         <button id="close-lookup-explanation" type="button">知道了</button>
     </dialog>
+    <!-- 玩家查詢中的米米號是訪客自行指定的查詢目標；不用此功能的訪客無須輸入，且這不是註冊或帳號綁定。 -->
     <dialog id="player-lookup-dialog" class="player-lookup-dialog" aria-label="玩家資料查詢">
         <div class="player-lookup-dialog-bar"><div class="player-dialog-title"><strong>玩家資料查詢</strong><span>輸入米米號，查詢台服玩家的巔峰戰績與出戰、待戰精靈。</span><button id="open-lookup-explanation" type="button">查詢原理 ⓘ</button></div><button id="close-player-lookup" type="button" aria-label="關閉玩家查詢">✕</button></div>
         <div class="player-lookup-content">

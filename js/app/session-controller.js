@@ -66,6 +66,7 @@ export function createSessionController({
 
     }
 
+    // 公開頁面不要求訪客註冊、登入或留下自己的米米號；舊投票提示維持隱藏。
     async function initializePublicPage() {
         if (isAuthenticated) return;
         stopRankingRefresh();
@@ -129,7 +130,7 @@ export function createSessionController({
         setAuthMode(false);
         loginMessage.textContent = "";
         voteMessage.textContent = "";
-        submitButton.textContent = "提交投票";
+        submitButton.textContent = "提交投票（舊版）";
     }
 
     async function syncAdminLink() {

@@ -29,6 +29,7 @@ export function createAuthView({
 
     const LOGIN_ENABLED = true;
 
+    // 訪客不需註冊、登入或留下自己的米米號；新帳號註冊目前關閉，登入僅供站務使用。
     const REGISTRATION_ENABLED = false;
 
     if (!LOGIN_ENABLED) {
