@@ -52,15 +52,17 @@ const { initializeDateTimePickers, initializeTimeSelects, setPoolDateValue, setP
 const { activateAdminTool } = createAdminNavigation({
     adminToolTabs
 });
-const { loadCharacterTypeIcon } = createPetTypeIcons({ fetchSeerJson: fetchJson });
+const { observeCharacterTypeIcon, clearObservedTypeIcons } = createPetTypeIcons({ fetchSeerJson: fetchJson });
 function requestCharacterTypeIcon(characterId, icon) {
     icon.addEventListener("load", () => { icon.hidden = false; }, { once: true });
-    loadCharacterTypeIcon(characterId, icon);
+    icon.dataset.characterId = String(characterId);
+    observeCharacterTypeIcon(icon);
 }
 const { openCompetitivePoolPreview, closeCompetitivePoolPreview, selectCompetitivePoolPreviewType, handleCompetitivePoolPreviewKeydown, handleCompetitivePoolPreviewTabKeydown, formatCompetitivePoolPreviewDate } = createCompetitivePreview({
     competitivePoolNameInput,
     toIsoDate: (...args) => toIsoDate(...args),
     requestCharacterTypeIcon: (...args) => requestCharacterTypeIcon(...args),
+    clearObservedTypeIcons,
     getPreviewCharacters: (...args) => getPreviewCharacters(...args)
 });
 const { loadAdminCompetitivePools, renderAdminCompetitivePools, showNewCompetitivePoolEditor, closeCompetitivePoolEditor, openCompetitivePoolEditor, saveCompetitivePool, deleteSelectedCompetitivePool, loadCompetitivePoolCharacters, exportCompetitivePoolCsv, renderCompetitivePoolCharacters, lookupCompetitivePet, fetchCompetitivePet, clearCompetitivePetPreview, addSelectedCompetitivePet, updateCompetitivePoolImportCount, resetCompetitivePoolImport, importCompetitivePoolCharacters, removeCompetitivePoolCharacter, getPreviewCharacters } = createCompetitiveEditor({

@@ -33,9 +33,15 @@ export function createPetTypeIcons({
         icon.title = "精靈屬性";
         icon.dataset.characterId = String(characterId);
         icon.addEventListener("error", () => { icon.hidden = true; }, { once: true });
+        observeCharacterTypeIcon(icon);
+        return icon;
+    }
+
+    function observeCharacterTypeIcon(icon) {
+        // CSS keeps unloaded icons invisible while preserving a box for observation.
+        icon.hidden = false;
         observedTypeIconElements.add(icon);
         typeIconObserver.observe(icon);
-        return icon;
     }
 
     function clearObservedTypeIcons(container = document) {
@@ -123,5 +129,5 @@ export function createPetTypeIcons({
         }
         return typeIconUrl(resolvedTypeId);
     }
-    return { createCharacterTypeIcon, clearObservedTypeIcons, loadCharacterTypeIcon, processCharacterTypeIconQueue, fetchCharacterTypeIconUrl };
+    return { createCharacterTypeIcon, observeCharacterTypeIcon, clearObservedTypeIcons, loadCharacterTypeIcon, processCharacterTypeIconQueue, fetchCharacterTypeIconUrl };
 }

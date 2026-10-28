@@ -253,7 +253,7 @@ sitemap.xml
 首頁讀取 `data/official-news.json`，避免瀏覽器跨來源限制。只收錄「○月○日維護與活動更新公告」，日期不固定；找不到符合標題的公告時保留舊版。
 
 - 本機更新：`npm run news:refresh`。
-- `.github/workflows/update-official-news.yml` 每小時抓取台服官網，也可在 Actions 手動執行。
+- `.github/workflows/update-official-news.yml` 每小時抓取台服官網，也可在 Actions 手動執行；一般網站發布完成後會再抓取並發布公告，避免公告資料回退。
 - 流程驗證公告內容後重新部署靜態網站；抓取失敗會中止部署，線上版本保持原樣。
 - 啟用條件：將流程提交到預設分支，並把 GitHub Pages 的 Source 設為 **GitHub Actions**。排程由 GitHub 執行，可能延遲。
 - 自動擷取資料只進入 Pages 部署產物，不會自動提交或修改 Git 分支。

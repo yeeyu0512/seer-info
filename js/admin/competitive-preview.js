@@ -2,6 +2,7 @@ export function createCompetitivePreview({
     competitivePoolNameInput,
     toIsoDate,
     requestCharacterTypeIcon,
+    clearObservedTypeIcons,
     getPreviewCharacters
 }) {
     const previewCompetitivePoolButton = document.getElementById("preview-competitive-pool-button");
@@ -81,6 +82,7 @@ export function createCompetitivePreview({
 
         const type = types[poolType];
         const entries = getPreviewCharacters().filter((character) => character.pool_type === poolType);
+        clearObservedTypeIcons(competitivePoolPreviewList);
         competitivePoolPreviewList.replaceChildren();
         competitivePoolPreviewList.setAttribute("aria-labelledby", `competitive-pool-preview-tab-${poolType.replace("_", "-")}`);
         if (entries.length === 0) {
