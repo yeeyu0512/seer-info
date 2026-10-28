@@ -23,15 +23,3 @@ export async function getSession() {
 
     return session;
 }
-
-export async function register(email, password, mimiId) {
-    return await supabaseClient.auth.signUp({
-        email,
-        password,
-        options: {
-            data: {
-                mimi_id: mimiId
-            }
-        }
-    });
-}

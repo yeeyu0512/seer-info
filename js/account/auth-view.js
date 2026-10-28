@@ -1,69 +1,16 @@
-export function createAuthView({
-    loginTrigger,
-    activateTab,
-    loginModal,
-    emailInput,
-    loginMessage,
-    passwordInput,
-    login,
-    showAuthenticatedView,
-    initializeAuthenticatedPage,
-    passwordConfirmInput,
-    mimiIdInput,
-    register
-}) {
+export function createAuthView({ login, onAuthenticated, document = globalThis.document }) {
+    const loginModal = document.getElementById("login-modal");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const loginMessage = document.getElementById("login-message");
     const loginButton = document.getElementById("login-button");
-    const authTitle = document.getElementById("auth-title");
-    const authDescription = document.getElementById("auth-description");
-    const passwordConfirmGroup = document.getElementById("password-confirm-group");
-    const mimiIdGroup = document.getElementById("mimi-id-group");
-    const registerButton = document.getElementById("register-button");
-    const authModeToggle = document.getElementById("auth-mode-toggle");
-    const loginClose = document.getElementById("login-close");
-    const publicLoginButton = document.getElementById("public-login-button");
-    const mimiBindingButton = document.getElementById("mimi-binding-button");
-
-    let isRegisterMode = false;
-
     let modalPointerStartedOnBackdrop = false;
-
-    const LOGIN_ENABLED = true;
-
-    // 訪客不需註冊、登入或留下自己的米米號；新帳號註冊目前關閉，登入僅供站務使用。
-    const REGISTRATION_ENABLED = false;
-
-    if (!LOGIN_ENABLED) {
-        loginButton.disabled = true;
-        loginButton.textContent = "本站暫時不開放登入";
-    }
-    if (!REGISTRATION_ENABLED) {
-        registerButton.hidden = true;
-        authModeToggle.hidden = true;
-    }
-
-    loginTrigger.addEventListener("click", openLoginModal);
-
-    publicLoginButton.addEventListener("click", openLoginModal);
-
-    mimiBindingButton.addEventListener("click", () => activateTab("account-section"));
-
-    loginClose.addEventListener("click", closeLoginModal);
-
-    loginModal.addEventListener("pointerdown", (event) => {
-        modalPointerStartedOnBackdrop = event.target === loginModal;
-    });
-
-    loginModal.addEventListener("click", (event) => {
-        if (modalPointerStartedOnBackdrop && event.target === loginModal) closeLoginModal();
-        modalPointerStartedOnBackdrop = false;
-    });
 
     function openLoginModal() {
         loginModal.classList.remove("is-closing");
         loginModal.hidden = false;
         emailInput.focus();
     }
-
     function closeLoginModal() {
         if (loginModal.hidden || loginModal.classList.contains("is-closing")) return;
         loginModal.classList.add("is-closing");
@@ -73,110 +20,42 @@ export function createAuthView({
             loginModal.classList.remove("is-closing");
         }, 180);
     }
-
+    document.getElementById("about-login-trigger").addEventListener("click", openLoginModal);
+    document.getElementById("login-close").addEventListener("click", closeLoginModal);
+    loginModal.addEventListener("pointerdown", event => { modalPointerStartedOnBackdrop = event.target === loginModal; });
+    loginModal.addEventListener("click", event => {
+        if (modalPointerStartedOnBackdrop && event.target === loginModal) closeLoginModal();
+        modalPointerStartedOnBackdrop = false;
+    });
     loginButton.addEventListener("click", async () => {
-        if (!LOGIN_ENABLED) return;
-
         const email = emailInput.value.trim();
         const password = passwordInput.value;
         if (!email || !password) {
             loginMessage.textContent = "請輸入 Email 和密碼";
             return;
         }
-
         loginButton.disabled = true;
         loginButton.textContent = "登入中…";
         loginMessage.textContent = "正在驗證帳號…";
         try {
-            const { data, error } = await login(email, password);
+            const { error } = await login(email, password);
             if (error) throw error;
-            console.log("Login success:", data.user);
-            showAuthenticatedView();
-            await initializeAuthenticatedPage();
+            await onAuthenticated();
+            loginModal.classList.remove("is-closing");
+            loginModal.hidden = true;
+            passwordInput.value = "";
+            loginMessage.textContent = "";
         } catch (error) {
-            console.error("Login error:", error);
             loginMessage.textContent = getChineseAuthError(error, "login");
         } finally {
             loginButton.disabled = false;
             loginButton.textContent = "登入";
         }
     });
-
-    registerButton.addEventListener("click", async () => {
-        if (!REGISTRATION_ENABLED) return;
-
-        const email = emailInput.value.trim();
-        const password = passwordInput.value;
-        const passwordConfirm = passwordConfirmInput.value;
-        const mimiId = mimiIdInput.value.trim();
-        if (!email || !password || !passwordConfirm || !mimiId) {
-            loginMessage.textContent = "請完整填寫 Email、密碼、確認密碼 與米米號。";
-            return;
-        }
-        if (password !== passwordConfirm) {
-            loginMessage.textContent = "兩次輸入的密碼不一致。";
-            return;
-        }
-        if (!/^\d+$/.test(mimiId)) {
-            loginMessage.textContent = "米米號只能輸入數字。";
-            return;
-        }
-
-        registerButton.disabled = true;
-        registerButton.textContent = "建立帳號中…";
-        loginMessage.textContent = "正在建立帳號…";
-        try {
-            const { data, error } = await register(email, password, mimiId);
-            if (error) throw error;
-
-            if (data.session) {
-                loginMessage.textContent = "帳號建立成功，正在登入…";
-                showAuthenticatedView();
-                await initializeAuthenticatedPage();
-            } else {
-                loginMessage.textContent = "帳號建立成功，請前往信箱完成驗證後再登入。";
-            }
-        } catch (error) {
-            console.error("Register error:", error);
-            loginMessage.textContent = getChineseAuthError(error, "register");
-        } finally {
-            registerButton.disabled = false;
-            registerButton.textContent = "建立帳號";
-        }
-    });
-
-    authModeToggle.addEventListener("click", () => {
-        if (!REGISTRATION_ENABLED) return;
-        setAuthMode(!isRegisterMode);
-    });
-
-    function setAuthMode(registerMode) {
-        if (registerMode && !REGISTRATION_ENABLED) return;
-        isRegisterMode = registerMode;
-        passwordConfirmGroup.hidden = !isRegisterMode;
-        mimiIdGroup.hidden = !isRegisterMode;
-        loginButton.hidden = isRegisterMode;
-        registerButton.hidden = !isRegisterMode;
-        passwordInput.autocomplete = isRegisterMode ? "new-password" : "current-password";
-        authTitle.textContent = isRegisterMode ? "建立帳號" : "站務登入";
-        authDescription.textContent = isRegisterMode
-            ? "建立帳號完成後等待站長驗證後即可使用管理員功能。"
-            : "登入後即可使用管理員功能。";
-        authModeToggle.textContent = isRegisterMode
-            ? "已有帳號？返回登入"
-            : "還沒有帳號？建立帳號";
-        loginMessage.textContent = "";
-        passwordConfirmInput.value = "";
-        mimiIdInput.value = "";
-    }
-
     function getChineseAuthError(error, action) {
         const message = String(error?.message || "").toLowerCase();
         const code = String(error?.code || "").toLowerCase();
 
-        if (/database error saving new user/.test(message)) {
-            return "此米米號已被其他帳號綁定，請確認後使用另一組米米號。";
-        }
         if (/invalid login credentials|invalid credentials/.test(message)) {
             return "Email 或密碼錯誤，請重新輸入。";
         }
@@ -206,5 +85,5 @@ export function createAuthView({
             ? "登入失敗，請稍後再試。"
             : "建立帳號失敗，請稍後再試。";
     }
-    return { openLoginModal, closeLoginModal, setAuthMode, getChineseAuthError };
+    return { openLoginModal, closeLoginModal };
 }

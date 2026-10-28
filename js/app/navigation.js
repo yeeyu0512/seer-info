@@ -1,7 +1,7 @@
 export function createNavigation({
     primaryMainTabs,
+    getIsAdministrator = () => false,
     seerLookup,
-    votePanels,
     sealEncyclopediaSection,
     seerMintmarks,
     suitEncyclopediaSection,
@@ -9,26 +9,21 @@ export function createNavigation({
     typeChartSection,
     trainingSection,
     seerTraining,
-    accountSection,
-    votingSubTabs,
     encyclopediaSubTabs,
     loadCurrentCompetitivePool,
-    getIsAdministrator
 }) {
-    const voteSection = document.getElementById("vote-section");
+    const competitivePoolSection = document.getElementById("competitive-pool-section");
     const aboutSection = document.getElementById("about-section");
     const homeSection = document.getElementById("home-section");
-    const voteSubTabs = Array.from(votingSubTabs.querySelectorAll("[data-tab-target]"));
     const encyclopediaModeTabs = Array.from(encyclopediaSubTabs.querySelectorAll("[data-lookup-mode]"));
     const encyclopediaNav = document.getElementById("encyclopedia-nav");
     const encyclopediaNavSummary = encyclopediaNav?.querySelector?.("summary");
     const encyclopediaNavOptions = Array.from(encyclopediaNav?.querySelectorAll?.("[data-lookup-mode]") ?? []);
     const seerLookupSection = document.getElementById("seer-lookup-section");
 
-    let currentVotePanelId = "selection-panel";
-
     const publicRoutes = {
         home: { section: "home-section" },
+        competitive: { section: "competitive-pool-section" },
         pet: { section: "seer-lookup-section", mode: "pet" },
         skin: { section: "seer-lookup-section", mode: "skin" },
         mintmark: { section: "seal-encyclopedia-section" },
@@ -41,23 +36,15 @@ export function createNavigation({
     primaryMainTabs.forEach((tab) => {
         tab.addEventListener("click", () => {
             const target = tab.dataset.mainTarget;
-            activateTab(target === "home" ? "home-section" : target === "voting"
-                ? currentVotePanelId
+            activateTab(target === "home" ? "home-section" : target === "competitive"
+                ? "competitive-pool-section"
                 : target === "encyclopedia"
                     ? "seer-lookup-section"
                     : target === "type-chart"
                         ? "type-chart-section"
                         : target === "training"
                             ? "training-section"
-                            : target === "account"
-                                ? "account-section"
-                                : "about-section");
-        });
-    });
-
-    voteSubTabs.forEach((tab) => {
-        tab.addEventListener("click", () => {
-            activateTab(tab.dataset.tabTarget);
+                            : "about-section");
         });
     });
 
@@ -83,29 +70,28 @@ export function createNavigation({
     }
 
     function activateTab(targetId, { updateUrl = true } = {}) {
-        if (!getIsAdministrator() && votePanels.has(targetId)) targetId = "seer-lookup-section";
+        if (targetId === "competitive-pool-section" && !getIsAdministrator()) targetId = "home-section";
         const isLookup = targetId === "seer-lookup-section";
         const isSealEncyclopedia = targetId === "seal-encyclopedia-section";
         const isSuitEncyclopedia = targetId === "suit-encyclopedia-section";
         const isTypeChart = targetId === "type-chart-section";
         const isTraining = targetId === "training-section";
-        const isAccount = targetId === "account-section";
+        const isCompetitive = targetId === "competitive-pool-section";
         const isAbout = targetId === "about-section";
         const isHome = targetId === "home-section";
         const mainTarget = isHome ? "home" : isAbout
             ? "about"
-            : isAccount
-                ? "account"
+            : isCompetitive
+                ? "competitive"
                 : isTraining
                     ? "training"
                     : isTypeChart
                         ? "type-chart"
                         : isLookup || isSealEncyclopedia || isSuitEncyclopedia
                             ? "encyclopedia"
-                            : "voting";
-        if (!isLookup && !isAccount && !isTypeChart && votePanels.has(targetId)) currentVotePanelId = targetId;
+                            : "home";
 
-        voteSection.hidden = mainTarget !== "voting";
+        competitivePoolSection.hidden = !isCompetitive;
         homeSection.hidden = !isHome;
         seerLookupSection.hidden = !isLookup;
         sealEncyclopediaSection.hidden = !isSealEncyclopedia;
@@ -116,23 +102,15 @@ export function createNavigation({
         trainingSection.hidden = !isTraining;
         if (isTraining) seerTraining.load();
         else seerTraining.cancelRestore?.();
-        accountSection.hidden = !isAccount;
+
         aboutSection.hidden = !isAbout;
-        votingSubTabs.hidden = mainTarget !== "voting";
+
         encyclopediaSubTabs.hidden = mainTarget !== "encyclopedia";
         encyclopediaNavSummary?.classList.toggle("is-active", mainTarget === "encyclopedia");
         encyclopediaNavSummary?.setAttribute("aria-selected", String(mainTarget === "encyclopedia"));
         document.getElementById("type-chart-sub-tabs").hidden = !isTypeChart;
-        votePanels.forEach((panel, panelId) => {
-            panel.hidden = panelId !== currentVotePanelId;
-        });
         primaryMainTabs.forEach((tab) => {
             const isActive = tab.dataset.mainTarget === mainTarget;
-            tab.classList.toggle("is-active", isActive);
-            tab.setAttribute("aria-selected", String(isActive));
-        });
-        voteSubTabs.forEach((tab) => {
-            const isActive = mainTarget === "voting" && tab.dataset.tabTarget === currentVotePanelId;
             tab.classList.toggle("is-active", isActive);
             tab.setAttribute("aria-selected", String(isActive));
         });

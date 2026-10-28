@@ -5,10 +5,8 @@ export function createAdminSession({
     login,
     isAdmin,
     getSession,
-    poolList,
-    loadPools,
-    loadAdminCompetitivePools,
-    loadTaiwanSeerSettings
+    errorContainer,
+    loadWorkspace
 }) {
     const adminWorkspace = document.getElementById("admin-workspace");
     const accessDenied = document.getElementById("access-denied");
@@ -104,7 +102,7 @@ export function createAdminSession({
                 adminLoginMessage.textContent = `無法確認管理權限：${getAdminErrorMessage(error)}`;
                 return;
             }
-            poolList.innerHTML = "<p class=\"empty-state\">載入管理資料失敗，請重新整理後再試。</p>";
+            errorContainer.innerHTML = "<p class=\"empty-state\">載入管理資料失敗，請重新整理後再試。</p>";
             showAdminNotification(`載入管理資料失敗：${getAdminErrorMessage(error)}`, "error");
         }
     }
@@ -115,9 +113,7 @@ export function createAdminSession({
         accessDenied.hidden = true;
         adminWorkspace.hidden = false;
         logoutButton.hidden = false;
-        await loadPools();
-        await loadAdminCompetitivePools();
-        await loadTaiwanSeerSettings();
+        await loadWorkspace();
     }
     return { loadAdminPage, showAdminWorkspace };
 }

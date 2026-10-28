@@ -1,85 +1,46 @@
+// Staff session and administrator-only navigation.
 export function createSessionController({
     document = globalThis.document,
-    publicLoginPrompt,
-    stopRankingRefresh,
-    activateTab,
-    loadGameAccount,
-    selectionPanel,
-    selectionBar,
-    loadPool,
-    loadRanking,
-    startRankingRefresh,
-    alreadyVoted,
-    submitButton,
-    voteMessage,
-    mimiBindingPrompt,
-    selectionCount,
-    selectionMax,
-    logout,
-    loginModal,
-    loginTrigger,
-    primaryMainTabs,
-    accountSection,
-    resetPool,
-    renderGameAccount,
-    emailInput,
-    passwordInput,
-    passwordConfirmInput,
-    mimiIdInput,
-    setAuthMode,
-    loginMessage,
+    getSession,
     isAdmin,
+    logout,
     supabaseClient,
-    getSession
+    activateTab,
+    defer = callback => setTimeout(callback, 0)
 }) {
-    const logoutButton = document.getElementById("logout-button");
-    const adminLink = document.getElementById("admin-link");
-    const aboutLoginTrigger = document.getElementById("about-login-trigger");
     const adminTools = document.getElementById("admin-tools");
-    const accountTab = document.getElementById("account-tab");
+    const adminLink = document.getElementById("admin-link");
+    const competitiveTrigger = document.getElementById("competitive-pool-trigger");
+    const logoutButton = document.getElementById("logout-button");
+    const loginTrigger = document.getElementById("about-login-trigger");
+    let administrator = false;
+    let revision = 0;
 
-    let isAuthenticated = false;
-
-    let isAdministrator = false;
-
-    async function initializeAuthenticatedPage() {
-        await syncAdminLink();
-        if (!isAuthenticated) return;
-        accountTab.hidden = false;
-        publicLoginPrompt.hidden = true;
-        if (!isAdministrator) {
-            stopRankingRefresh();
-            activateTab("home-section", { updateUrl: false });
-            await loadGameAccount();
-            return;
+    function renderAccess(allowed) {
+        administrator = allowed;
+        adminTools.hidden = !allowed;
+        adminLink.hidden = !allowed;
+        competitiveTrigger.hidden = !allowed;
+        logoutButton.hidden = !allowed;
+        loginTrigger.hidden = allowed;
+        if (!allowed) {
+            adminTools.open = false;
+            if (!document.getElementById("competitive-pool-section").hidden) {
+                activateTab("home-section");
+            }
         }
-        stopRankingRefresh();
-        activateTab("home-section", { updateUrl: false });
-        selectionPanel.hidden = false;
-        selectionBar.hidden = false;
-        publicLoginPrompt.hidden = true;
-        accountTab.hidden = false;
-        await loadGameAccount();
-        await loadPool();
-        await loadRanking();
-        startRankingRefresh();
-
     }
 
-    // 公開頁面不要求訪客註冊、登入或留下自己的米米號；舊投票提示維持隱藏。
-    async function initializePublicPage() {
-        if (isAuthenticated) return;
-        stopRankingRefresh();
-        activateTab("home-section", { updateUrl: false });
-        selectionBar.hidden = true;
-        alreadyVoted.hidden = true;
-        submitButton.hidden = true;
-        voteMessage.textContent = "";
-        publicLoginPrompt.hidden = true;
-        mimiBindingPrompt.hidden = true;
-        selectionCount.textContent = "0";
-        selectionMax.textContent = "—";
-
+    async function checkSession() {
+        const currentRevision = ++revision;
+        try {
+            const session = await getSession();
+            const allowed = session ? (await isAdmin()) === true : false;
+            if (currentRevision === revision) renderAccess(allowed);
+        } catch (error) {
+            if (currentRevision === revision) renderAccess(false);
+            console.error("Staff session error:", error);
+        }
     }
 
     logoutButton.addEventListener("click", async () => {
@@ -88,86 +49,26 @@ export function createSessionController({
             console.error("Logout error:", error);
             return;
         }
-        stopRankingRefresh();
-        showLoggedOutView();
+        revision += 1;
+        renderAccess(false);
+        const modal = document.getElementById("login-modal");
+        modal.hidden = true;
+        modal.classList.remove("is-closing");
+        document.getElementById("email").value = "";
+        document.getElementById("password").value = "";
+        document.getElementById("login-message").textContent = "";
+        activateTab("home-section");
     });
 
-    function showAuthenticatedView() {
-        isAuthenticated = true;
-        aboutLoginTrigger.hidden = true;
-        loginModal.classList.remove("is-closing");
-        loginModal.hidden = true;
-        loginTrigger.hidden = true;
-        logoutButton.hidden = false;
-        accountTab.hidden = false;
-    }
-
-    function showLoggedOutView() {
-        isAuthenticated = false;
-        aboutLoginTrigger.hidden = false;
-        isAdministrator = false;
-        adminTools.hidden = true;
-        adminTools.open = false;
-        primaryMainTabs.find((tab) => tab.dataset.mainTarget === "voting").hidden = true;
-        activateTab("home-section", { updateUrl: false });
-        loginModal.classList.remove("is-closing");
-        loginModal.hidden = true;
-        loginTrigger.hidden = true;
-        selectionBar.hidden = true;
-        logoutButton.hidden = true;
-        accountTab.hidden = true;
-        accountSection.hidden = true;
-        publicLoginPrompt.hidden = true;
-        mimiBindingPrompt.hidden = true;
-        resetPool();
-        adminLink.hidden = true;
-        renderGameAccount(null);
-        alreadyVoted.hidden = true;
-        emailInput.value = "";
-        passwordInput.value = "";
-        passwordConfirmInput.value = "";
-        mimiIdInput.value = "";
-        setAuthMode(false);
-        loginMessage.textContent = "";
-        voteMessage.textContent = "";
-        submitButton.textContent = "提交投票（舊版）";
-    }
-
-    async function syncAdminLink() {
-        try {
-            isAdministrator = (await isAdmin()) === true && isAuthenticated;
-        } catch (error) {
-            console.error("Admin status error:", error);
-            isAdministrator = false;
-        }
-        adminTools.hidden = !isAdministrator;
-        if (!isAdministrator) adminTools.open = false;
-        adminLink.hidden = !isAdministrator;
-        primaryMainTabs.find((tab) => tab.dataset.mainTarget === "voting").hidden = !isAdministrator;
-    }
-
-    supabaseClient.auth.onAuthStateChange((event) => {
+    supabaseClient.auth.onAuthStateChange(event => {
         if (event === "SIGNED_OUT") {
-            stopRankingRefresh();
-            showLoggedOutView();
-            initializePublicPage();
+            revision += 1;
+            renderAccess(false);
+        } else if (["SIGNED_IN", "TOKEN_REFRESHED", "USER_UPDATED"].includes(event)) {
+            // Query auth/RPC after the Supabase callback releases its auth lock.
+            defer(() => { void checkSession(); });
         }
     });
 
-    async function checkSession() {
-        try {
-            const session = await getSession();
-            if (!session) {
-                showLoggedOutView();
-                await initializePublicPage();
-                return;
-            }
-            showAuthenticatedView();
-            await initializeAuthenticatedPage();
-        } catch (error) {
-            console.error("Session error:", error);
-            showLoggedOutView();
-        }
-    }
-    return { initializeAuthenticatedPage, initializePublicPage, showAuthenticatedView, showLoggedOutView, syncAdminLink, checkSession, getIsAuthenticated: () => isAuthenticated, getIsAdministrator: () => isAdministrator };
+    return { checkSession, getIsAdministrator: () => administrator };
 }

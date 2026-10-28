@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createNavigation } from '../js/app/navigation.js';
 
-function setup(search, { menuSummary, menuOptions } = {}) {
+function setup(search, { menuSummary, menuOptions, isAdministrator = false } = {}) {
     const calls = [], elements = new Map();
     const element = () => ({ hidden: true, querySelectorAll: () => [] });
     globalThis.document = { getElementById(id) {
@@ -18,18 +18,46 @@ function setup(search, { menuSummary, menuOptions } = {}) {
     };
     let mode = 'pet';
     const navigation = createNavigation({
-        primaryMainTabs: [], votePanels: new Map(),
+        primaryMainTabs: [],
+        getIsAdministrator: () => isAdministrator,
         seerLookup: { setMode(value) { mode = value; }, getMode: () => mode,
             searchPetById: id => calls.push(['pet', id]), searchSkinById: id => calls.push(['skin', id]), browseLatestIfEmpty() {} },
         sealEncyclopediaSection: element(), suitEncyclopediaSection: element(),
         seerMintmarks: { load() {}, searchById: id => calls.push(['mintmark', id]) },
         seerSuits: { load() {}, searchById: id => calls.push(['suit', id]) },
-        trainingSection: element(), accountSection: element(),
-        seerTraining: { cancelRestore() {} }, votingSubTabs: element(), encyclopediaSubTabs: element(),
-        getIsAdministrator: () => false
+        trainingSection: element(),
+        seerTraining: { cancelRestore() {} }, encyclopediaSubTabs: element(),
+        loadCurrentCompetitivePool: () => calls.push(['competitive'])
     });
-    return { navigation, calls };
+    return { navigation, calls, elements };
 }
+
+test('admins can open and restore the competitive pool route from management', () => {
+    try {
+        const { navigation, calls, elements } = setup('?tab=competitive', { isAdministrator: true });
+        navigation.restoreRouteFromUrl({ initial: true });
+        assert.deepEqual(calls, [['competitive']]);
+        assert.equal(elements.get('competitive-pool-section').hidden, false);
+        assert.equal(elements.get('home-section').hidden, true);
+        navigation.activateTab('home-section');
+        assert.equal(elements.get('competitive-pool-section').hidden, true);
+        navigation.activateTab('competitive-pool-section');
+        assert.equal(new URL(window.location.href).searchParams.get('tab'), 'competitive');
+        assert.deepEqual(calls, [['competitive'], ['competitive']]);
+    } finally { delete globalThis.document; delete globalThis.window; }
+});
+
+test('guests cannot load competitive pool data through direct routes', () => {
+    try {
+        const { navigation, calls, elements } = setup('?tab=competitive');
+        navigation.restoreRouteFromUrl({ initial: true });
+        assert.deepEqual(calls, []);
+        assert.equal(elements.get('competitive-pool-section').hidden, true);
+        assert.equal(elements.get('home-section').hidden, false);
+        navigation.activateTab('competitive-pool-section');
+        assert.deepEqual(calls, []);
+    } finally { delete globalThis.document; delete globalThis.window; }
+});
 
 test('all four encyclopedia routes restore their own ID without confusing resource types', () => {
     try {

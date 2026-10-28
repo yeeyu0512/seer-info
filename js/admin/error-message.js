@@ -16,13 +16,7 @@ export function getAdminErrorMessage(error) {
         }
         return "找不到這筆資料，可能已被刪除或編號有誤；請重新整理後再試。";
     }
-    if (/pool not found/i.test(message)) return "找不到這個票選活動，請重新整理管理頁面後再試。";
-    if (/only a closed pool can be returned to draft/i.test(message)) {
-        return "只有狀態為 closed 的票選活動才能退回草稿，請重新整理並確認活動狀態。";
-    }
-    if (/a pool with vote records cannot be returned to draft/i.test(message)) {
-        return "這個票選活動已有投票紀錄，為保護既有資料，不能退回草稿。";
-    }
+    if (/pool not found/i.test(message)) return "找不到這個競技池期間，請重新整理管理頁面後再試。";
     if (/admin access required|authentication required/i.test(message)) {
         return "登入狀態或管理員權限已失效，請重新登入後再試。";
     }

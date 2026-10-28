@@ -2,34 +2,18 @@ import { createAdminDialogs } from "./admin/confirm-dialog.js";
 import { createAdminServerSettings } from "./admin/server-settings.js";
 import { createAdminDateInputs } from "./admin/date-inputs.js";
 import { createAdminNavigation } from "./admin/navigation.js";
-import { createVoteRecordsController } from "./admin/vote-records.js";
-import { createCharacterManager } from "./admin/character-manager.js";
-import { createPoolEditor } from "./admin/pool-editor.js";
 import { createCompetitivePreview } from "./admin/competitive-preview.js";
 import { createCompetitiveEditor } from "./admin/competitive-editor.js";
 import { createAdminSession } from "./admin/session-controller.js";
 import { getAdminErrorMessage } from "./admin/error-message.js";
 import { mapWithConcurrency } from "./shared/concurrency.js";
 import { toCsvCell } from "./shared/csv.js";
-import { parseImportedCharacters, parseCompetitivePoolPetIds } from "./admin/import-parsers.js";
+import { parseCompetitivePoolPetIds } from "./admin/import-parsers.js";
 import { createChineseConverters } from "./shared/chinese.js";
 import { fetchAdminJson as fetchJson } from "./shared/http.js";
 import { Converter } from "https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/esm/full.js";
 import { getSession, login, logout } from "./auth.js";
-import { getPoolCharacters } from "./pool.js";
-import {
-    isAdmin,
-    getAdminPools,
-    createPool,
-    updatePoolDraft,
-    addPoolCharacter,
-    deletePoolCharacter,
-    startPool,
-    closePool,
-    returnPoolToDraft,
-    deletePool,
-    getPoolVoteDetails
-} from "./admin.js";
+import { isAdmin } from "./admin.js";
 import {
     getAdminCompetitivePools,
     createCompetitivePool,
@@ -41,19 +25,12 @@ import {
     deleteCompetitivePoolCharacter
 } from "./competitive-pool.js";
 import { getSeerServerSettings, updateSeerServerSettings } from "./seer-server-settings.js";
+import { createPetTypeIcons } from "./shared/pet-type-icons.js";
 import { preloadSeerIcons } from "./seer-icons.js";
-
-const adminContent = document.getElementById("admin-content");
 
 const adminToolTabs = Array.from(document.querySelectorAll("[data-admin-tab]"));
 
-const poolList = document.getElementById("admin-pool-list");
-
-const characterForm = document.getElementById("character-form");
-
-const characterImportForm = document.getElementById("character-import-form");
-
-const deleteAllCharactersProgress = document.getElementById("delete-all-characters-progress");
+const poolList = document.getElementById("competitive-pool-admin-list");
 
 const competitivePoolNameInput = document.getElementById("competitive-pool-name");
 
@@ -75,55 +52,11 @@ const { initializeDateTimePickers, initializeTimeSelects, setPoolDateValue, setP
 const { activateAdminTool } = createAdminNavigation({
     adminToolTabs
 });
-const { loadVoteRecords, exportVoteRecords, renderVoteRecords } = createVoteRecordsController({
-    getPoolVoteDetails: (...args) => getPoolVoteDetails(...args),
-    showAdminNotification: (...args) => showAdminNotification(...args),
-    getAdminErrorMessage: (...args) => getAdminErrorMessage(...args),
-    formatDate: (...args) => formatDate(...args),
-    toCsvCell: (...args) => toCsvCell(...args),
-    getSelectedPool: (...args) => getSelectedPool(...args)
-});
-const { renderSeerPreview, clearSeerPreview, lookupSeerPet, loadCharacters, renderCharacters, deleteAllPoolCharacters, exportCharacters, renderCharacter, requestCharacterTypeIcon, processCharacterTypeMetadataQueue, fetchCharacterTypeIconUrl } = createCharacterManager({
-    characterForm,
-    showAdminNotification: (...args) => showAdminNotification(...args),
-    addPoolCharacter: (...args) => addPoolCharacter(...args),
-    getAdminErrorMessage: (...args) => getAdminErrorMessage(...args),
-    parseImportedCharacters: (...args) => parseImportedCharacters(...args),
-    characterImportForm,
-    mapWithConcurrency: (...args) => mapWithConcurrency(...args),
-    fetchJson: (...args) => fetchJson(...args),
-    toTraditionalChinese,
-    getPoolCharacters: (...args) => getPoolCharacters(...args),
-    showConfirmDialog: (...args) => showConfirmDialog(...args),
-    deleteAllCharactersProgress,
-    deletePoolCharacter: (...args) => deletePoolCharacter(...args),
-    toCsvCell: (...args) => toCsvCell(...args),
-    getSelectedPool: (...args) => getSelectedPool(...args)
-});
-const { changePoolStatus, deleteSelectedPool, loadPools, renderPools, selectPool, showCreatePoolEditor, getSelectedPool } = createPoolEditor({
-    toIsoDate: (...args) => toIsoDate(...args),
-    showAdminNotification: (...args) => showAdminNotification(...args),
-    updatePoolDraft: (...args) => updatePoolDraft(...args),
-    createPool: (...args) => createPool(...args),
-    getAdminErrorMessage: (...args) => getAdminErrorMessage(...args),
-    showConfirmDialog: (...args) => showConfirmDialog(...args),
-    startPool: (...args) => startPool(...args),
-    closePool: (...args) => closePool(...args),
-    returnPoolToDraft: (...args) => returnPoolToDraft(...args),
-    deletePool: (...args) => deletePool(...args),
-    getAdminPools: (...args) => getAdminPools(...args),
-    poolList,
-    formatDate: (...args) => formatDate(...args),
-    deleteAllCharactersProgress,
-    characterForm,
-    clearSeerPreview: (...args) => clearSeerPreview(...args),
-    setPoolDateValue: (...args) => setPoolDateValue(...args),
-    toLocalDateTime: (...args) => toLocalDateTime(...args),
-    setPoolDatePickersDisabled: (...args) => setPoolDatePickersDisabled(...args),
-    characterImportForm,
-    loadCharacters: (...args) => loadCharacters(...args),
-    loadVoteRecords: (...args) => loadVoteRecords(...args)
-});
+const { loadCharacterTypeIcon } = createPetTypeIcons({ fetchSeerJson: fetchJson });
+function requestCharacterTypeIcon(characterId, icon) {
+    icon.addEventListener("load", () => { icon.hidden = false; }, { once: true });
+    loadCharacterTypeIcon(characterId, icon);
+}
 const { openCompetitivePoolPreview, closeCompetitivePoolPreview, selectCompetitivePoolPreviewType, handleCompetitivePoolPreviewKeydown, handleCompetitivePoolPreviewTabKeydown, formatCompetitivePoolPreviewDate } = createCompetitivePreview({
     competitivePoolNameInput,
     toIsoDate: (...args) => toIsoDate(...args),
@@ -161,10 +94,11 @@ const { loadAdminPage, showAdminWorkspace } = createAdminSession({
     login: (...args) => login(...args),
     isAdmin: (...args) => isAdmin(...args),
     getSession: (...args) => getSession(...args),
-    poolList,
-    loadPools: (...args) => loadPools(...args),
-    loadAdminCompetitivePools: (...args) => loadAdminCompetitivePools(...args),
-    loadTaiwanSeerSettings: (...args) => loadTaiwanSeerSettings(...args)
+    errorContainer: poolList,
+    loadWorkspace: async () => {
+        await loadAdminCompetitivePools();
+        await loadTaiwanSeerSettings();
+    }
 });
 
 initializeTimeSelects();

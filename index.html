@@ -73,13 +73,12 @@
                     data-main-target="training">模擬培養</button>
                 <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="about-section"
                     data-main-target="about">關於本站</button>
-                <button id="login-trigger" class="main-tab nav-action" type="button" aria-haspopup="dialog" hidden>登入</button>
+
                 <details id="admin-tools" class="admin-nav" hidden>
                     <summary class="main-tab">管理 <span aria-hidden="true">▾</span></summary>
                     <div class="admin-nav-menu" aria-label="管理選單">
                         <a id="admin-link" href="./admin.html" hidden>後台</a>
-                        <button type="button" data-main-target="voting" aria-controls="vote-section" hidden>投票</button>
-                        <button id="account-tab" type="button" data-main-target="account" aria-controls="account-section" hidden>帳號</button>
+                        <button id="competitive-pool-trigger" type="button" data-main-target="competitive" aria-controls="competitive-pool-section" hidden>競技池</button>
                         <button id="logout-button" type="button" hidden>登出</button>
                     </div>
                 </details>
@@ -91,6 +90,56 @@
 
 
     <main class="container">
+
+        <div id="login-modal" hidden>
+            <section id="login-section" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+
+                <div class="auth-modal-topbar">
+                    <span class="auth-modal-brand">賽爾號資訊站</span>
+                    <button id="login-close" class="modal-close" type="button" aria-label="關閉登入視窗">×</button>
+                </div>
+
+                <h1 id="auth-title">站務登入</h1>
+
+                <p id="auth-description" class="panel-description">
+                    登入後即可使用管理員功能。
+                </p>
+
+                <label class="field-label" for="email">Email</label>
+                <input id="email" type="email" placeholder="name@example.com" autocomplete="email">
+
+                <label class="field-label" for="password">密碼</label>
+                <input id="password" type="password" placeholder="輸入密碼" autocomplete="current-password">
+
+                <div id="password-confirm-group" hidden>
+                    <label class="field-label" for="password-confirm">確認密碼</label>
+                    <input id="password-confirm" type="password" placeholder="再次輸入密碼" autocomplete="new-password">
+                </div>
+
+                <div id="mimi-id-group" hidden>
+                    <label class="field-label" for="mimi-id">米米號</label>
+                    <input id="mimi-id" type="text" inputmode="numeric" pattern="[0-9]+" placeholder="請輸入純數字米米號"
+                        autocomplete="off">
+                </div>
+
+                <button id="login-button" type="button">
+                    登入
+                </button>
+
+                <button id="register-button" class="secondary-button" type="button" hidden>
+                    建立帳號
+                </button>
+
+                <p id="login-message"></p>
+
+                <p class="registration-closed-notice">本站沒有提供一般用戶註冊功能。</p>
+
+                <button id="auth-mode-toggle" class="text-button" type="button" hidden>
+                    還沒有帳號？建立帳號
+                </button>
+
+            </section>
+        </div>
 
         <section id="home-section" aria-labelledby="home-title">
             <section class="home-carousel" aria-label="首頁圖片" aria-roledescription="輪播">
@@ -226,248 +275,13 @@
         <!-- 站務登入：一般訪客瀏覽本站與使用公開工具，不需註冊、登入或綁定自己的米米號。 -->
         <!-- ==================== -->
 
-        <div id="login-modal" hidden>
-            <section id="login-section" role="dialog" aria-modal="true" aria-labelledby="auth-title">
 
-                <div class="auth-modal-topbar">
-                    <span class="auth-modal-brand">賽爾號資訊站</span>
-                    <button id="login-close" class="modal-close" type="button" aria-label="關閉登入視窗">×</button>
-                </div>
-
-                <h1 id="auth-title">站務登入</h1>
-
-                <p id="auth-description" class="panel-description">
-                    本站目前暫停登入與新帳號註冊。
-                </p>
-
-                <label class="field-label" for="email">Email</label>
-                <input id="email" type="email" placeholder="name@example.com" autocomplete="email">
-
-                <label class="field-label" for="password">密碼</label>
-                <input id="password" type="password" placeholder="輸入密碼" autocomplete="current-password">
-
-                <div id="password-confirm-group" hidden>
-                    <label class="field-label" for="password-confirm">確認密碼</label>
-                    <input id="password-confirm" type="password" placeholder="再次輸入密碼" autocomplete="new-password">
-                </div>
-
-                <div id="mimi-id-group" hidden>
-                    <label class="field-label" for="mimi-id">米米號</label>
-                    <input id="mimi-id" type="text" inputmode="numeric" pattern="[0-9]+" placeholder="請輸入純數字米米號"
-                        autocomplete="off">
-                </div>
-
-                <button id="login-button" type="button">
-                    登入
-                </button>
-
-                <button id="register-button" class="secondary-button" type="button" hidden>
-                    建立帳號
-                </button>
-
-                <p id="login-message"></p>
-
-                <p class="registration-closed-notice">目前不開放任何新帳號註冊。<br>如有需要，請聯絡站長。</p>
-
-                <button id="auth-mode-toggle" class="text-button" type="button" hidden>
-                    還沒有帳號？建立帳號
-                </button>
-
-            </section>
-        </div>
 
 
         <!-- ==================== -->
-        <!-- 投票功能已廢棄：一般訪客不需註冊或留下自己的米米號，也不開放公開投票。
-             以下舊版介面與事件處理保留供既有資料及站務流程使用，不應摘要為現行公開功能。 -->
         <!-- ==================== -->
 
-        <section id="vote-section" data-feature-status="deprecated" hidden>
-
-            <p class="panel-description">投票功能已廢棄；此區僅保留舊版介面與管理資料。</p>
-
-
-            <!-- Pool Information -->
-
-            <div class="pool-info">
-
-                <div class="info-card">
-
-                    <div class="info-label">
-                        Pool
-                    </div>
-
-                    <div id="pool-name" class="info-value">
-                        -
-                    </div>
-
-                </div>
-
-
-                <div class="info-card">
-
-                    <div class="info-label">
-                        Required Votes
-                    </div>
-
-                    <div id="vote-limit" class="info-value">
-                        -
-                    </div>
-
-                </div>
-
-
-                <div class="info-card">
-
-                    <div class="info-label">
-                        Status
-                    </div>
-
-                    <div class="info-value">
-
-                        <span id="pool-status" class="status-badge">
-                            Voting
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            <nav id="voting-sub-tabs" class="main-tabs view-sub-tabs" aria-label="舊版投票功能（已廢棄）" role="tablist">
-                <button class="main-tab is-active" type="button" role="tab" aria-selected="true"
-                    aria-controls="selection-panel" data-tab-target="selection-panel">限制池投票（舊版）</button>
-                <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="ranking-section"
-                    data-tab-target="ranking-section">即時排名</button>
-                <button class="main-tab" type="button" role="tab" aria-selected="false"
-                    aria-controls="competitive-pool-section" data-tab-target="competitive-pool-section">當前競技池</button>
-            </nav>
-
-
-            <!-- Character Selection -->
-
-            <section id="selection-panel" class="panel">
-
-                <div class="panel-header">
-
-                    <div>
-
-                        <h2 class="panel-title">
-                            選擇角色
-                        </h2>
-
-                        <p id="vote-rule" class="panel-description">請選擇指定數量的角色後提交。</p>
-
-                    </div>
-
-                </div>
-
-                <div id="character-pagination" class="character-pagination" hidden>
-                    <button id="character-previous-page" class="secondary-button compact-button"
-                        type="button">上一頁</button>
-                    <span id="character-page">第 1 / 1 頁</span>
-                    <button id="character-next-page" class="secondary-button compact-button" type="button">下一頁</button>
-                </div>
-
-                <div id="character-list">
-                    <!-- main.js 會在這裡產生角色 -->
-                </div>
-
-                <div id="public-login-prompt" class="public-login-prompt" hidden>
-                    <span>投票功能已廢棄；此登入提示僅保留供舊版介面使用。</span>
-                    <button id="public-login-button" class="compact-button" type="button">舊版登入</button>
-                </div>
-
-                <div id="mimi-binding-prompt" class="public-login-prompt" hidden>
-                    <span>投票功能已廢棄；米米號綁定提示僅保留供舊版介面使用。</span>
-                    <button id="mimi-binding-button" class="compact-button" type="button">前往綁定</button>
-                </div>
-
-
-                <!-- Selection / Submit -->
-
-                <div id="selection-bar" class="selection-bar">
-
-                    <div>
-
-                        <div class="selection-count">
-
-                            已選擇
-
-                            <strong id="selection-count">
-                                0
-                            </strong>
-
-                            /
-
-                            <span id="selection-max">
-                                0
-                            </span>
-
-                        </div>
-
-                        <div id="vote-message" class="vote-message"></div>
-
-                    </div>
-
-
-                    <button id="submit-button" type="button">
-                        提交投票（舊版）
-                    </button>
-
-                </div>
-
-                <!-- Already Voted -->
-                <section id="already-voted" hidden aria-live="polite">
-                    <div class="already-voted">
-                        <strong>✓ 已完成投票</strong>
-                        <span id="already-voted-message">本期投票已成功提交。</span>
-                    </div>
-                </section>
-
-            </section>
-
-            <!-- ==================== -->
-            <!-- Ranking -->
-            <!-- ==================== -->
-
-            <section id="ranking-section" class="panel" hidden>
-
-                <div class="panel-header">
-
-                    <div>
-
-                        <h2 class="panel-title">
-                            目前排名
-                        </h2>
-
-                        <p class="panel-description">
-                            排名會即時更新。
-                        </p>
-
-                    </div>
-
-                    <span class="header-status">
-                        LIVE
-                    </span>
-
-                </div>
-
-
-                <div id="ranking-list">
-                    <!-- main.js 產生排名 -->
-                </div>
-                <div id="ranking-pagination" class="ranking-pagination" hidden>
-                    <button id="ranking-previous-page" class="secondary-button compact-button"
-                        type="button">上一頁</button>
-                    <span id="ranking-page">第 1 / 1 頁</span>
-                    <button id="ranking-next-page" class="secondary-button compact-button" type="button">下一頁</button>
-                </div>
-
-            </section>
-
-            <section id="competitive-pool-section" class="panel competitive-pool-view" hidden>
+        <section id="competitive-pool-section" class="panel competitive-pool-view" hidden>
                 <div class="panel-header">
                     <div>
                         <h2 id="competitive-pool-message" class="panel-title competitive-pool-name" aria-live="polite">
@@ -497,7 +311,6 @@
                 <div id="competitive-pool-groups" class="competitive-pool-pet-list" role="tabpanel"
                     aria-labelledby="competitive-pool-tab-banned" hidden></div>
             </section>
-        </section>
 
         <nav id="encyclopedia-sub-tabs" hidden class="main-tabs view-sub-tabs encyclopedia-sub-tabs" aria-label="圖鑑種類"
             role="tablist">
@@ -748,35 +561,6 @@
             <footer class="about-footer"><a class="about-privacy-link" href="./privacy.html">隱私權政策 <span aria-hidden="true">↗</span></a><button id="about-login-trigger" type="button" aria-haspopup="dialog" aria-controls="login-modal">站務登入</button></footer>
         </section>
 
-        <!-- 米米號綁定為舊版投票流程保留；目前不要求任何訪客註冊或綁定自己的米米號。 -->
-        <section id="account-section" class="panel account-panel" hidden>
-
-            <div class="panel-header">
-                <div>
-                    <h2 class="panel-title">米米號綁定</h2>
-                    <p class="panel-description">每個帳號只能綁定一組米米號，綁定後無法修改或解除。</p>
-                </div>
-            </div>
-
-            <div id="game-account-unbound">
-                <form id="game-account-form" class="game-account-form">
-                    <label class="field-label" for="game-account-input">米米號</label>
-                    <div class="game-account-controls">
-                        <input id="game-account-input" type="text" inputmode="numeric" pattern="[0-9]+"
-                            autocomplete="off" placeholder="請輸入純數字米米號" required>
-                        <button id="bind-game-account-button" class="compact-button" type="submit">綁定</button>
-                    </div>
-                </form>
-                <p id="game-account-message" class="vote-message" aria-live="polite"></p>
-            </div>
-
-            <div id="game-account-bound" class="game-account-bound" hidden>
-                <span>已綁定米米號</span>
-                <strong id="bound-game-account"></strong>
-                <p>此綁定為永久設定，無法修改或解除；原投票功能已廢棄。</p>
-            </div>
-
-        </section>
 
     </main>
 
