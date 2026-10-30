@@ -6,6 +6,7 @@ import { supabaseClient } from "./supabase.js";
 import { createPetTypeIcons } from "./shared/pet-type-icons.js";
 import { createCompetitiveView } from "./competitive/view-controller.js";
 import { createNavigation } from "./app/navigation.js";
+import { initDamageCalculator } from "./damage/view.js";
 import { initHome } from "./app/home.js";
 import { createChineseConverters } from "./shared/chinese.js";
 import { fetchSeerJson } from "./shared/http.js";
@@ -23,6 +24,14 @@ const sealEncyclopediaSection = document.getElementById("seal-encyclopedia-secti
 const suitEncyclopediaSection = document.getElementById("suit-encyclopedia-section");
 const typeChartSection = document.getElementById("type-chart-section");
 const trainingSection = document.getElementById("training-section");
+const damageSection = document.getElementById("damage-calculator-section");
+const damageCalculator = { load() {
+    if (!damageSection.hasChildNodes()) initDamageCalculator(damageSection);
+    queueMicrotask(() => {
+        const notice = document.getElementById("damage-testing-notice");
+        if (!damageSection.hidden && !notice.open) notice.showModal();
+    });
+} };
 const encyclopediaSubTabs = document.getElementById("encyclopedia-sub-tabs");
 const { convertToTraditionalChinese, convertToSimplifiedChinese } = createChineseConverters(Converter);
 
@@ -53,7 +62,6 @@ const { loadCurrentCompetitivePool, updateCompetitivePoolTypeTabs, renderCompeti
 });
 const { activateTab, restoreRouteFromUrl } = createNavigation({
     primaryMainTabs,
-    getIsAdministrator: () => session.getIsAdministrator(),
     seerLookup,
     sealEncyclopediaSection,
     seerMintmarks,
@@ -62,6 +70,7 @@ const { activateTab, restoreRouteFromUrl } = createNavigation({
     typeChartSection,
     trainingSection,
     seerTraining,
+    damageCalculator,
     encyclopediaSubTabs,
     loadCurrentCompetitivePool: (...args) => loadCurrentCompetitivePool(...args),
 });

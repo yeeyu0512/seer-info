@@ -4,26 +4,26 @@ import { initAbout } from "./about.js";
 // Home only routes to the existing tools; lookup remains owned by seer-lookup.
 export function initHome({ seerLookup, activateTab }) {
     initAbout();
-    const adminTools = document.getElementById("admin-tools");
-    const encyclopediaNav = document.getElementById("encyclopedia-nav");
-    adminTools.addEventListener("click", (event) => {
-        if (event.target.closest(".admin-nav-menu a, .admin-nav-menu button")) adminTools.open = false;
-    });
-    encyclopediaNav.addEventListener("click", (event) => {
-        if (event.target.closest(".encyclopedia-nav-menu button")) {
-            encyclopediaNav.open = false;
-            encyclopediaNav.querySelector("summary").focus({ preventScroll: true });
-        }
+    const navMenus = ["admin-tools", "encyclopedia-nav", "tools-nav"].map(id => document.getElementById(id));
+    navMenus.forEach(menu => {
+        menu.addEventListener("click", (event) => {
+            if (event.target.closest(".admin-nav-menu a, .admin-nav-menu button")) {
+                menu.open = false;
+                if (menu.id !== "admin-tools") menu.querySelector("summary").focus({ preventScroll: true });
+            }
+        });
     });
     document.addEventListener("click", (event) => {
-        if (!adminTools.contains(event.target)) adminTools.open = false;
-        if (!encyclopediaNav.contains(event.target)) encyclopediaNav.open = false;
+        navMenus.forEach(menu => {
+            if (!menu.contains(event.target)) menu.open = false;
+        });
     });
     document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape" && (adminTools.open || encyclopediaNav.open)) {
-            adminTools.open = false;
-            encyclopediaNav.open = false;
-            (event.target.closest?.("#encyclopedia-nav") ? encyclopediaNav : adminTools).querySelector("summary").focus();
+        const openMenus = navMenus.filter(menu => menu.open);
+        if (event.key === "Escape" && openMenus.length) {
+            const focusedMenu = openMenus.find(menu => menu.contains(event.target)) ?? openMenus[0];
+            openMenus.forEach(menu => { menu.open = false; });
+            focusedMenu.querySelector("summary").focus();
         }
     });
     const home = document.getElementById("home-section");

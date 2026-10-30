@@ -1,6 +1,5 @@
 export function createNavigation({
     primaryMainTabs,
-    getIsAdministrator = () => false,
     seerLookup,
     sealEncyclopediaSection,
     seerMintmarks,
@@ -9,6 +8,7 @@ export function createNavigation({
     typeChartSection,
     trainingSection,
     seerTraining,
+    damageCalculator,
     encyclopediaSubTabs,
     loadCurrentCompetitivePool,
 }) {
@@ -19,6 +19,7 @@ export function createNavigation({
     const encyclopediaNav = document.getElementById("encyclopedia-nav");
     const encyclopediaNavSummary = encyclopediaNav?.querySelector?.("summary");
     const encyclopediaNavOptions = Array.from(encyclopediaNav?.querySelectorAll?.("[data-lookup-mode]") ?? []);
+    const toolsNavSummary = document.getElementById("tools-nav")?.querySelector?.("summary");
     const seerLookupSection = document.getElementById("seer-lookup-section");
 
     const publicRoutes = {
@@ -30,13 +31,14 @@ export function createNavigation({
         suit: { section: "suit-encyclopedia-section" },
         types: { section: "type-chart-section" },
         training: { section: "training-section" },
+        damage: { section: "damage-calculator-section" },
         about: { section: "about-section" }
     };
 
     primaryMainTabs.forEach((tab) => {
         tab.addEventListener("click", () => {
             const target = tab.dataset.mainTarget;
-            activateTab(target === "home" ? "home-section" : target === "competitive"
+            activateTab(target === "damage" ? "damage-calculator-section" : target === "home" ? "home-section" : target === "competitive"
                 ? "competitive-pool-section"
                 : target === "encyclopedia"
                     ? "seer-lookup-section"
@@ -70,16 +72,16 @@ export function createNavigation({
     }
 
     function activateTab(targetId, { updateUrl = true } = {}) {
-        if (targetId === "competitive-pool-section" && !getIsAdministrator()) targetId = "home-section";
         const isLookup = targetId === "seer-lookup-section";
         const isSealEncyclopedia = targetId === "seal-encyclopedia-section";
         const isSuitEncyclopedia = targetId === "suit-encyclopedia-section";
         const isTypeChart = targetId === "type-chart-section";
         const isTraining = targetId === "training-section";
+        const isDamage = targetId === "damage-calculator-section";
         const isCompetitive = targetId === "competitive-pool-section";
         const isAbout = targetId === "about-section";
         const isHome = targetId === "home-section";
-        const mainTarget = isHome ? "home" : isAbout
+        const mainTarget = isDamage ? "damage" : isHome ? "home" : isAbout
             ? "about"
             : isCompetitive
                 ? "competitive"
@@ -100,6 +102,9 @@ export function createNavigation({
         if (isSuitEncyclopedia) seerSuits.load();
         if (typeChartSection) typeChartSection.hidden = !isTypeChart;
         trainingSection.hidden = !isTraining;
+        const damageSection = document.getElementById("damage-calculator-section");
+        if (damageSection) damageSection.hidden = !isDamage;
+        if (isDamage) damageCalculator?.load();
         if (isTraining) seerTraining.load();
         else seerTraining.cancelRestore?.();
 
@@ -108,11 +113,14 @@ export function createNavigation({
         encyclopediaSubTabs.hidden = mainTarget !== "encyclopedia";
         encyclopediaNavSummary?.classList.toggle("is-active", mainTarget === "encyclopedia");
         encyclopediaNavSummary?.setAttribute("aria-selected", String(mainTarget === "encyclopedia"));
+        const isTool = isTypeChart || isTraining || isCompetitive || isDamage;
+        toolsNavSummary?.classList.toggle("is-active", isTool);
+        toolsNavSummary?.setAttribute("aria-selected", String(isTool));
         document.getElementById("type-chart-sub-tabs").hidden = !isTypeChart;
         primaryMainTabs.forEach((tab) => {
             const isActive = tab.dataset.mainTarget === mainTarget;
             tab.classList.toggle("is-active", isActive);
-            tab.setAttribute("aria-selected", String(isActive));
+            tab.setAttribute(tab.closest?.("#tools-nav") ? "aria-pressed" : "aria-selected", String(isActive));
         });
         encyclopediaModeTabs.forEach((tab) => {
             const isActive = mainTarget === "encyclopedia" && (

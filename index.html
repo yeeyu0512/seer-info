@@ -67,10 +67,15 @@
                         <button type="button" data-lookup-mode="suit">套裝</button>
                     </div>
                 </details>
-                <button class="main-tab" type="button" role="tab" aria-selected="false"
-                    aria-controls="type-chart-section" data-main-target="type-chart">屬性克制</button>
-                <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="training-section"
-                    data-main-target="training">模擬培養</button>
+                <details id="tools-nav" class="admin-nav">
+                    <summary class="main-tab" role="tab" aria-selected="false" aria-controls="type-chart-section training-section competitive-pool-section damage-calculator-section">工具 <span aria-hidden="true">▾</span></summary>
+                    <div class="admin-nav-menu" aria-label="工具選單">
+                        <button id="competitive-pool-trigger" type="button" data-main-target="competitive" aria-controls="competitive-pool-section">競技池</button>
+                        <button type="button" aria-controls="type-chart-section" data-main-target="type-chart">屬性克制</button>
+                        <button type="button" aria-controls="training-section" data-main-target="training">模擬培養</button>
+                        <button type="button" aria-controls="damage-calculator-section" data-main-target="damage">傷害計算</button>
+                    </div>
+                </details>
                 <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="about-section"
                     data-main-target="about">關於本站</button>
 
@@ -78,7 +83,6 @@
                     <summary class="main-tab">管理 <span aria-hidden="true">▾</span></summary>
                     <div class="admin-nav-menu" aria-label="管理選單">
                         <a id="admin-link" href="./admin.html" hidden>後台</a>
-                        <button id="competitive-pool-trigger" type="button" data-main-target="competitive" aria-controls="competitive-pool-section" hidden>競技池</button>
                         <button id="logout-button" type="button" hidden>登出</button>
                     </div>
                 </details>
@@ -470,6 +474,15 @@
         <section id="type-chart-section" class="panel type-calculator-panel" role="tabpanel" aria-label="屬性克制計算機"
             hidden>
         </section>
+
+        <section id="damage-calculator-section" class="panel damage-calculator" role="tabpanel" aria-label="PVE 傷害計算" hidden></section>
+
+        <dialog id="damage-testing-notice" class="damage-testing-notice" aria-labelledby="damage-testing-title">
+            <h2 id="damage-testing-title">本功能正在測試中</h2>
+            <form method="dialog">
+                <button class="primary-button" autofocus>我知道了</button>
+            </form>
+        </dialog>
 
         <section id="training-section" class="panel training-panel" role="tabpanel" aria-label="精靈模擬培養" hidden>
         </section>

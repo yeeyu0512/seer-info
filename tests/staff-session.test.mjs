@@ -29,14 +29,14 @@ test('management remains hidden for guests and regular users, visible only to co
         const state = setup({ signedIn, admin });
         await state.checkSession();
         assert.equal(state.getIsAdministrator(), visible);
-        for (const id of ['admin-tools', 'admin-link', 'competitive-pool-trigger', 'logout-button']) {
+        for (const id of ['admin-tools', 'admin-link', 'logout-button']) {
             assert.equal(state.nodes.get(id).hidden, !visible);
         }
         assert.equal(state.nodes.get('about-login-trigger').hidden, visible);
     }
 });
 
-test('sign-out hides and closes management and exits the competitive pool', async () => {
+test('sign-out hides and closes management while keeping the public competitive pool open', async () => {
     const state = setup({ signedIn: true, admin: true });
     await state.checkSession();
     state.nodes.get('admin-tools').open = true;
@@ -45,7 +45,8 @@ test('sign-out hides and closes management and exits the competitive pool', asyn
     assert.equal(state.getIsAdministrator(), false);
     assert.equal(state.nodes.get('admin-tools').hidden, true);
     assert.equal(state.nodes.get('admin-tools').open, false);
-    assert.deepEqual(state.calls, ['home-section']);
+    assert.equal(state.document.getElementById('competitive-pool-section').hidden, false);
+    assert.deepEqual(state.calls, []);
 });
 
 test('an admin check completing after sign-out cannot restore the management menu', async () => {

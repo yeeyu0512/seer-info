@@ -166,7 +166,7 @@ export function initSeerTraining(root, { fetchSeerJson, convertToTraditionalChin
     root.addEventListener("input", event => {
         const input = event.target;
         if (!input.matches('input[type="number"]')) return;
-        if (input.closest("[data-ev]") && input.value !== "") input.value = Math.max(0,Math.min(255,Math.trunc(Number(input.value))));
+        if (input.closest("[data-ev]")) input.value = Math.max(0,Math.min(255,Math.trunc(Number(input.value))));
         if (input.closest("[data-extra]") && input.value !== "") input.value = Math.max(0,Math.min(teamLimits[input.dataset.stat],Math.trunc(Number(input.value))));
         if (input.matches("[data-hp-training]") && input.value !== "") input.value = Math.max(0,Math.min(20,Math.trunc(Number(input.value))));
         recalculate();

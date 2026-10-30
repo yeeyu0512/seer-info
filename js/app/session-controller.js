@@ -10,7 +10,6 @@ export function createSessionController({
 }) {
     const adminTools = document.getElementById("admin-tools");
     const adminLink = document.getElementById("admin-link");
-    const competitiveTrigger = document.getElementById("competitive-pool-trigger");
     const logoutButton = document.getElementById("logout-button");
     const loginTrigger = document.getElementById("about-login-trigger");
     let administrator = false;
@@ -20,14 +19,10 @@ export function createSessionController({
         administrator = allowed;
         adminTools.hidden = !allowed;
         adminLink.hidden = !allowed;
-        competitiveTrigger.hidden = !allowed;
         logoutButton.hidden = !allowed;
         loginTrigger.hidden = allowed;
         if (!allowed) {
             adminTools.open = false;
-            if (!document.getElementById("competitive-pool-section").hidden) {
-                activateTab("home-section");
-            }
         }
     }
 

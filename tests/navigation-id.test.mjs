@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createNavigation } from '../js/app/navigation.js';
 
-function setup(search, { menuSummary, menuOptions, isAdministrator = false } = {}) {
+function setup(search, { menuSummary, menuOptions } = {}) {
     const calls = [], elements = new Map();
     const element = () => ({ hidden: true, querySelectorAll: () => [] });
     globalThis.document = { getElementById(id) {
@@ -19,7 +19,6 @@ function setup(search, { menuSummary, menuOptions, isAdministrator = false } = {
     let mode = 'pet';
     const navigation = createNavigation({
         primaryMainTabs: [],
-        getIsAdministrator: () => isAdministrator,
         seerLookup: { setMode(value) { mode = value; }, getMode: () => mode,
             searchPetById: id => calls.push(['pet', id]), searchSkinById: id => calls.push(['skin', id]), browseLatestIfEmpty() {} },
         sealEncyclopediaSection: element(), suitEncyclopediaSection: element(),
@@ -32,9 +31,9 @@ function setup(search, { menuSummary, menuOptions, isAdministrator = false } = {
     return { navigation, calls, elements };
 }
 
-test('admins can open and restore the competitive pool route from management', () => {
+test('the competitive pool route can be opened and restored publicly', () => {
     try {
-        const { navigation, calls, elements } = setup('?tab=competitive', { isAdministrator: true });
+        const { navigation, calls, elements } = setup('?tab=competitive');
         navigation.restoreRouteFromUrl({ initial: true });
         assert.deepEqual(calls, [['competitive']]);
         assert.equal(elements.get('competitive-pool-section').hidden, false);
@@ -47,15 +46,15 @@ test('admins can open and restore the competitive pool route from management', (
     } finally { delete globalThis.document; delete globalThis.window; }
 });
 
-test('guests cannot load competitive pool data through direct routes', () => {
+test('guests can load competitive pool data through direct routes', () => {
     try {
         const { navigation, calls, elements } = setup('?tab=competitive');
         navigation.restoreRouteFromUrl({ initial: true });
-        assert.deepEqual(calls, []);
-        assert.equal(elements.get('competitive-pool-section').hidden, true);
-        assert.equal(elements.get('home-section').hidden, false);
+        assert.deepEqual(calls, [['competitive']]);
+        assert.equal(elements.get('competitive-pool-section').hidden, false);
+        assert.equal(elements.get('home-section').hidden, true);
         navigation.activateTab('competitive-pool-section');
-        assert.deepEqual(calls, []);
+        assert.deepEqual(calls, [['competitive'], ['competitive']]);
     } finally { delete globalThis.document; delete globalThis.window; }
 });
 
@@ -106,6 +105,23 @@ test('changing encyclopedia tabs clears the previous resource ID', () => {
         navigation.activateTab('suit-encyclopedia-section');
         const url = new URL(window.location.href);
         assert.equal(url.searchParams.get('tab'), 'suit');
+        assert.equal(url.searchParams.has('id'), false);
+    } finally { delete globalThis.document; delete globalThis.window; }
+});
+
+test('damage calculator has a public deep link and leaves training share state behind', () => {
+    try {
+        const { navigation, elements } = setup('?tab=damage');
+        navigation.restoreRouteFromUrl({ initial: true });
+        assert.equal(elements.get('damage-calculator-section').hidden, false);
+        assert.equal(elements.get('home-section').hidden, true);
+        navigation.activateTab('home-section');
+        assert.equal(elements.get('damage-calculator-section').hidden, true);
+        window.location.href = 'https://example.com/?tab=training&build=old&id=123';
+        navigation.activateTab('damage-calculator-section');
+        const url = new URL(window.location.href);
+        assert.equal(url.searchParams.get('tab'), 'damage');
+        assert.equal(url.searchParams.has('build'), false);
         assert.equal(url.searchParams.has('id'), false);
     } finally { delete globalThis.document; delete globalThis.window; }
 });
