@@ -27,10 +27,6 @@ const trainingSection = document.getElementById("training-section");
 const damageSection = document.getElementById("damage-calculator-section");
 const damageCalculator = { load() {
     if (!damageSection.hasChildNodes()) initDamageCalculator(damageSection);
-    queueMicrotask(() => {
-        const notice = document.getElementById("damage-testing-notice");
-        if (!damageSection.hidden && !notice.open) notice.showModal();
-    });
 } };
 const encyclopediaSubTabs = document.getElementById("encyclopedia-sub-tabs");
 const { convertToTraditionalChinese, convertToSimplifiedChinese } = createChineseConverters(Converter);

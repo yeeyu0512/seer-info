@@ -1,18 +1,23 @@
 const dialog = document.getElementById('player-lookup-dialog');
 const card = dialog.querySelector('.player-lookup-card');
-const trigger = document.getElementById('open-player-lookup');
-trigger.addEventListener('click', () => {
+let lastTrigger;
+document.querySelectorAll('[data-open-player-lookup]').forEach(trigger => trigger.addEventListener('click', () => {
+    lastTrigger = trigger;
     import('./player-lookup.js');
     dialog.showModal();
     resizeLookup();
-});
+}));
 document.getElementById('close-player-lookup').addEventListener('click', () => dialog.close());
 dialog.addEventListener('click', (event) => {
     if (event.target !== dialog) return;
     const box = dialog.getBoundingClientRect();
     if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) dialog.close();
 });
-dialog.addEventListener('close', () => trigger.focus());
+dialog.addEventListener('close', () => {
+    const menu = lastTrigger?.closest('details');
+    const target = menu && !menu.open ? menu.querySelector('summary') : lastTrigger;
+    target?.focus({ preventScroll: true });
+});
 function resizeLookup() {
     if (!card || !dialog.open) return;
     const headerHeight = dialog.querySelector('.player-lookup-dialog-bar').getBoundingClientRect().height;
