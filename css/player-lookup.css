@@ -30,6 +30,10 @@
 .player-peak-mode h3, .player-bag h3 { margin: 0 0 12px; font-size: 15px; color: var(--primary-light); }
 .player-peak-mode p { margin: 5px 0; font-size: 14px; color: var(--text-secondary); }
 .player-peak-mode p span { color: var(--text); }
+.player-peak-mode p:has(.player-peak-rank) { display: flex; align-items: center; gap: 6px; }
+.player-peak-rank { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.player-peak-rank-icon { width: 40px; height: 40px; object-fit: contain; flex-shrink: 0; }
+.player-peak-rank-icon[hidden] { display: none; }
 .player-bags { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 28px; padding-top: 22px; }
 .player-bag { min-width: 0; }
 .player-pet-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0 14px; }

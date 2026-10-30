@@ -215,6 +215,33 @@ export function formatPeakLines(peak = {}) {
     return {current: rank(peak.current), highest: rank(peak.highest), rate: `${percent}（${stats.wins ?? '-'}／${stats.total ?? '-'}）`};
 }
 
+const PEAK_RANK_ICONS = new Map(
+    ["學徒", "猛將", "天驕", "王者", "聖皇"].map((rank) => [rank, `./assets/icons/peak-level/${rank}.png`])
+);
+
+export function getPeakRankIcon(rank) {
+    return typeof rank === "string" ? PEAK_RANK_ICONS.get(rank.trim()) ?? null : null;
+}
+
+export function renderPeakRank(container, rank, text) {
+    container.replaceChildren();
+    container.classList.add("player-peak-rank");
+    const icon = getPeakRankIcon(rank);
+    if (icon) {
+        const image = container.ownerDocument.createElement("img");
+        image.className = "player-peak-rank-icon";
+        image.src = icon;
+        image.alt = "";
+        image.width = 40;
+        image.height = 40;
+        image.addEventListener("error", () => { image.hidden = true; }, { once: true });
+        container.append(image);
+    }
+    const label = container.ownerDocument.createElement("span");
+    label.textContent = text;
+    container.append(label);
+}
+
 function renderResult(payload) {
     const result = normalizePlayerResult(payload);
     for (const [key, value] of Object.entries(result)) {
@@ -231,8 +258,8 @@ function renderResult(payload) {
     const player = payload?.player || payload?.data || payload?.result || payload || {};
     for (const [mode, rateId] of [["sport", "win-rate"], ["wild", "wild-win-rate"]]) {
         const lines = formatPeakLines(player[mode]);
-        document.getElementById(`${mode}-current-rank`).textContent = lines.current;
-        document.getElementById(`${mode}-highest-rank`).textContent = lines.highest;
+        renderPeakRank(document.getElementById(`${mode}-current-rank`), player[mode]?.current?.rank, lines.current);
+        renderPeakRank(document.getElementById(`${mode}-highest-rank`), player[mode]?.highest?.rank, lines.highest);
         document.getElementById(rateId).textContent = lines.rate;
     }
     resultFields.userId.textContent = `米米號：${display(result.userId)}`;
