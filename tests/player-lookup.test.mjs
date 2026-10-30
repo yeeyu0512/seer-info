@@ -1,10 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { normalizePlayerResult, getPeakRankIcon, renderPeakRank } from "../js/player-lookup.js";
+import { normalizePlayerResult, getPeakRankIcon, getPeakRankName, formatPeakLines, renderPeakRank } from "../js/player-lookup.js";
 import { existsSync } from "node:fs";
 
 test("maps each supported peak rank to an existing badge and skips unknown ranks", () => {
-    for (const rank of ["學徒", "猛將", "天驕", "王者", "聖皇"]) {
+    for (const rank of ["學徒", "猛將", "天驕", "王者", "聖皇", "宇宙聖皇"]) {
         const icon = getPeakRankIcon(rank);
         assert.equal(icon, `./assets/icons/peak-level/${rank}.png`);
         assert.ok(existsSync(new URL(`../${icon}`, import.meta.url)));
@@ -12,6 +12,24 @@ test("maps each supported peak rank to an existing badge and skips unknown ranks
     for (const rank of [undefined, null, "", "未知段位", "../王者", {}]) {
         assert.equal(getPeakRankIcon(rank), null);
     }
+});
+
+test("promotes Saint Emperor at 100 stars for both current and highest rank", () => {
+    for (const score of [99, 100, 101, 250, "100"]) {
+        const value = { rank: "聖皇", score, unit: "star" };
+        const name = Number(score) >= 100 ? "宇宙聖皇" : "聖皇";
+        assert.equal(getPeakRankName(value), name);
+        assert.equal(getPeakRankIcon(getPeakRankName(value)), `./assets/icons/peak-level/${name}.png`);
+        const lines = formatPeakLines({ current: value, highest: value });
+        assert.equal(lines.current, `${name}${score}星`);
+        assert.equal(lines.highest, `${name}${score}星`);
+        assert.equal(value.rank, "聖皇");
+    }
+    assert.equal(getPeakRankName({ rank: "聖皇", score: 100, unit: "score" }), "聖皇");
+    assert.equal(getPeakRankName({ rank: "王者", score: 100, unit: "star" }), "王者");
+    assert.equal(getPeakRankName(undefined), null);
+    const cosmic = { rank: "宇宙聖皇", score: 101, unit: "star" };
+    assert.equal(formatPeakLines({ current: cosmic }).current, "宇宙聖皇101星");
 });
 
 test("replaces the previous rank badge and preserves text when no badge is available", () => {

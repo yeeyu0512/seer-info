@@ -208,15 +208,24 @@ function renderPetBag(container, pets) {
     }
 }
 
+export function getPeakRankName(value) {
+    const rank = typeof value?.rank === "string" ? value.rank.trim() : null;
+    const stars = Number(value?.score);
+    if (rank === "聖皇" && value.unit === "star" && Number.isFinite(stars) && stars >= 100) {
+        return "宇宙聖皇";
+    }
+    return rank || null;
+}
+
 export function formatPeakLines(peak = {}) {
-    const rank = (value) => value ? `${value.rank || '未知段位'}${value.score ?? '-'}${value.unit === 'star' ? '星' : '分'}` : '-';
+    const rank = (value) => value ? `${getPeakRankName(value) || '未知段位'}${value.score ?? '-'}${value.unit === 'star' ? '星' : '分'}` : '-';
     const stats = peak.win_rate || {};
     const percent = stats.percent == null ? '無對戰統計' : `${Number(stats.percent).toFixed(1)}%`;
     return {current: rank(peak.current), highest: rank(peak.highest), rate: `${percent}（${stats.wins ?? '-'}／${stats.total ?? '-'}）`};
 }
 
 const PEAK_RANK_ICONS = new Map(
-    ["學徒", "猛將", "天驕", "王者", "聖皇"].map((rank) => [rank, `./assets/icons/peak-level/${rank}.png`])
+    ["學徒", "猛將", "天驕", "王者", "聖皇", "宇宙聖皇"].map((rank) => [rank, `./assets/icons/peak-level/${rank}.png`])
 );
 
 export function getPeakRankIcon(rank) {
@@ -258,8 +267,8 @@ function renderResult(payload) {
     const player = payload?.player || payload?.data || payload?.result || payload || {};
     for (const [mode, rateId] of [["sport", "win-rate"], ["wild", "wild-win-rate"]]) {
         const lines = formatPeakLines(player[mode]);
-        renderPeakRank(document.getElementById(`${mode}-current-rank`), player[mode]?.current?.rank, lines.current);
-        renderPeakRank(document.getElementById(`${mode}-highest-rank`), player[mode]?.highest?.rank, lines.highest);
+        renderPeakRank(document.getElementById(`${mode}-current-rank`), getPeakRankName(player[mode]?.current), lines.current);
+        renderPeakRank(document.getElementById(`${mode}-highest-rank`), getPeakRankName(player[mode]?.highest), lines.highest);
         document.getElementById(rateId).textContent = lines.rate;
     }
     resultFields.userId.textContent = `米米號：${display(result.userId)}`;
