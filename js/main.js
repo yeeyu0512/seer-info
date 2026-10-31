@@ -8,6 +8,7 @@ import { createCompetitiveView } from "./competitive/view-controller.js";
 import { createNavigation } from "./app/navigation.js";
 import { initDamageCalculator } from "./damage/view.js";
 import { initHome } from "./app/home.js";
+import { initHomeSearch } from "./app/home-search.js";
 import { createChineseConverters } from "./shared/chinese.js";
 import { fetchSeerJson } from "./shared/http.js";
 import { Converter } from "https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/esm/full.js";
@@ -72,6 +73,7 @@ const { activateTab, restoreRouteFromUrl } = createNavigation({
 });
 
 initHome({ seerLookup, activateTab });
+initHomeSearch({ simplified: convertToSimplifiedChinese, traditional: convertToTraditionalChinese });
 preloadSeerIcons();
 const session = createSessionController({ getSession, isAdmin, logout, supabaseClient, activateTab });
 createAuthView({ login, onAuthenticated: () => session.checkSession() });

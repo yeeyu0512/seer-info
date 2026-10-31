@@ -34,7 +34,7 @@
     </script>
 
     <link rel="icon" href="./favicon.ico" sizes="any">
-    <link rel="stylesheet" href="./css/style.css?v=20261008_home_icons2">
+    <link rel="stylesheet" href="./css/style.css?v=20261031_global_search">
 
 
 </head>
@@ -54,6 +54,11 @@
                 <img class="logo-mark" src="./favicon.ico" alt="">
                 <span>賽爾號資訊站</span>
             </a>
+
+            <button id="home-search-open" class="main-tab" type="button" aria-label="全站搜尋" aria-haspopup="dialog" aria-controls="home-search-dialog">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
+                <span>搜尋</span>
+            </button>
 
             <nav class="main-tabs primary-main-tabs" aria-label="主要功能" role="tablist">
                 <button class="main-tab is-active" type="button" role="tab" aria-selected="true"
@@ -93,6 +98,31 @@
 
     </header>
 
+
+            <dialog id="home-search-dialog" aria-labelledby="home-search-dialog-title">
+                <header class="home-search-dialog-header">
+                    <div><h2 id="home-search-dialog-title">全站搜尋</h2><p>搜尋圖鑑與工具，直接前往你要的內容。</p></div>
+                    <button id="home-search-close" type="button" aria-label="關閉全站搜尋">×</button>
+                </header>
+                <form id="home-search-form" role="search" aria-label="全站搜尋">
+                    <label class="home-search-scope-label"><span class="home-search-sr">搜尋範圍</span>
+                        <select id="home-search-scope" aria-label="搜尋範圍">
+                            <option value="all">全部分類</option>
+                            <option value="pet">精靈</option><option value="skin">皮膚</option>
+                            <option value="mintmark">刻印</option><option value="suit">套裝</option>
+                            <option value="tools">工具</option>
+                        </select>
+                    </label>
+                    <div class="home-search-field">
+                        <label for="home-search-input" class="home-search-sr">名稱、ID 或工具名稱</label>
+                        <input id="home-search-input" type="search" placeholder="輸入名稱、ID 或工具名稱…" autocomplete="off" maxlength="80" aria-describedby="home-search-status" required>
+                        <button id="home-search-clear" type="button" aria-label="清除搜尋" hidden>×</button>
+                    </div>
+                    <button class="home-search-submit" type="submit">搜尋 <span aria-hidden="true">↗</span></button>
+                </form>
+                <p id="home-search-status" role="status" aria-live="polite">支援名稱、ID 與繁簡中文；圖鑑資料包含陸服進度。</p>
+                <div id="home-search-results" aria-label="全站搜尋結果" aria-busy="false" hidden></div>
+            </dialog>
 
     <main class="container">
 
@@ -157,6 +187,7 @@
                     <button type="button" data-carousel-pause>暫停輪播</button>
                 </div>
             </section>
+
             <div class="home-overview">
                 <section class="home-shortcuts home-panel" aria-labelledby="home-title">
                     <div class="home-panel-heading"><span>SEER INFO</span>

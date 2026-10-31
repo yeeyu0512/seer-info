@@ -1018,6 +1018,13 @@
 
 /* 每筆更新的詳細內容 */
 
+.changelog-dialog .changelog-description {
+    margin: 10px 0 0;
+    color: #bdcce0;
+    font-size: 0.88rem;
+    line-height: 1.7;
+}
+
 .changelog-dialog .changelog-details {
     display: block;
     margin: 10px 0 0;

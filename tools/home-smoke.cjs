@@ -29,7 +29,7 @@ const server = http.createServer((req,res) => {
             page.on('pageerror', error => errors.push(error.message));
             await page.goto(base + '/index.html',{waitUntil:'networkidle'});
             assert.equal(await page.locator('#known-issues-modal').count(),0);
-            assert.equal(await page.locator('#home-search-form').count(),0);
+            assert.equal(await page.locator('#home-search-form').count(),1);
             assert.equal(await page.locator('.home-known-issues').isVisible(),true);
             assert.equal(await page.locator('[data-home-visibility="account-tab"]').isVisible(),false);
             assert.equal(await page.locator('[data-home-visibility="voting"]').isVisible(),false);

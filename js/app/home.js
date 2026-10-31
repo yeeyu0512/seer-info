@@ -119,18 +119,20 @@ async function loadChangelog(home) {
         content.append(title);
 
         if (showDetails && Array.isArray(entry.details)) {
-            const details = document.createElement("ul");
-            details.className = "changelog-details";
-
-            entry.details
-                .filter(detail => typeof detail === "string" && detail.trim())
-                .forEach(detail => {
+            const entries = entry.details.filter(detail => typeof detail === "string" && detail.trim());
+            const details = document.createElement(entries.length === 1 ? "p" : "ul");
+            details.className = entries.length === 1 ? "changelog-description" : "changelog-details";
+            if (entries.length === 1) {
+                details.textContent = entries[0];
+            } else {
+                entries.forEach(detail => {
                     const item = document.createElement("li");
                     item.textContent = detail;
                     details.append(item);
                 });
+            }
 
-            if (details.childElementCount > 0) {
+            if (entries.length > 0) {
                 content.append(details);
             }
         }

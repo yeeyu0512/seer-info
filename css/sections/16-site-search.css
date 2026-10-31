@@ -1,0 +1,93 @@
+/* Shared navigation entry and dialog, available on every public feature view. */
+.site-header #home-search-open {
+    display: flex; align-items: center; justify-content: center; gap: 7px; flex: 0 0 auto; min-height: 38px;
+    margin: 0; padding: 7px 12px; border: 0; border-radius: 8px;
+    background: transparent; color: var(--text-secondary); box-shadow: none;
+    text-align: left; font: inherit; font-size: 14px; font-weight: 700; transform: none;
+}
+#home-search-open svg { flex-shrink: 0; color: currentColor; }
+.site-header #home-search-open:hover { color: var(--text); background: rgba(196,191,255,.08); }
+.site-header #home-search-open:focus-visible { outline: 2px solid #b8abff; outline-offset: 3px; }
+@media (min-width: 761px) {
+    .site-header #home-search-open { position: relative; margin-left: auto; }
+    .site-header #home-search-open::after {
+        content: ""; position: absolute; right: -10px; top: 50%;
+        width: 1px; height: 18px; background: rgba(196,191,255,.24);
+        transform: translateY(-50%); pointer-events: none;
+    }
+    .site-header .primary-main-tabs { margin-left: 0; }
+}
+@media (max-width: 760px) {
+    .header-inner:has(.primary-main-tabs) { gap: 6px 12px; padding: 8px 0; }
+    .header-inner:has(.primary-main-tabs) .logo { min-width: 0; font-size: 16px; gap: 8px; }
+    .site-header #home-search-open {
+        order: 2; flex: 0 0 auto; width: auto; height: 44px; min-height: 44px;
+        justify-content: center; gap: 7px; margin-left: auto; padding: 0 12px;
+        font-size: 13px;
+    }
+    #home-search-open svg { width: 17px; height: 17px; }
+    .site-header .primary-main-tabs {
+        display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+        width: 100%; gap: 4px; padding: 0; margin: 0; overflow: visible;
+    }
+    .site-header .primary-main-tabs:has(#admin-tools:not([hidden])) { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .site-header .primary-main-tabs > * { min-width: 0; }
+    .site-header .primary-main-tabs > .main-tab,
+    .site-header .primary-main-tabs > details > .main-tab {
+        display: flex; align-items: center; justify-content: center; box-sizing: border-box;
+        width: 100%; min-height: 44px; margin: 0; padding: 8px 4px;
+        border-radius: 7px; font-size: 13px; line-height: 1.4;
+    }
+}
+#home-search-dialog {
+    box-sizing: border-box; width: min(680px, calc(100vw - 32px)); max-width: none;
+    max-height: min(780px, calc(100dvh - 48px)); margin: auto; padding: 24px;
+    border: 1px solid rgba(196,191,255,.2); border-radius: 12px; background: #1c2332; color: var(--text);
+    box-shadow: 0 24px 80px #0009; overflow-y: auto; overscroll-behavior: contain;
+}
+#home-search-dialog::backdrop { background: #050e1bc4; }
+.home-search-dialog-header { display: flex; justify-content: space-between; gap: 16px; align-items: start; margin-bottom: 20px; }
+#home-search-dialog h2 { margin: 0; font-size: 20px; }
+#home-search-dialog .home-search-dialog-header p { margin-top: 7px; color: #a8bdce; font-size: 12px; line-height: 1.6; }
+#home-search-form { display: grid; grid-template-columns: 108px minmax(0, 1fr) 72px; gap: 8px; margin: 0; }
+.home-search-field { position: relative; min-width: 0; }
+#home-search-dialog input, #home-search-dialog select, #home-search-dialog button {
+    box-sizing: border-box; margin: 0; min-height: 44px; border-radius: 5px;
+    font: inherit; font-size: 14px; box-shadow: none; transform: none;
+}
+#home-search-dialog input, #home-search-dialog select {
+    width: 100%; height: 44px; padding: 10px; border: 1px solid rgba(196,191,255,.22);
+    background: #111724; color: var(--text);
+}
+#home-search-dialog input { padding-right: 40px; }
+#home-search-dialog input::placeholder { color: #92a8bb; opacity: 1; }
+#home-search-input::-webkit-search-cancel-button { appearance: none; }
+#home-search-dialog .home-search-submit { padding: 8px 12px; border: 1px solid rgba(196,191,255,.24); background: rgba(130,113,244,.42); color: var(--text); font-weight: 700; }
+#home-search-dialog .home-search-submit span { display: none; }
+#home-search-dialog .home-search-submit:hover { background: rgba(130,113,244,.58); }
+#home-search-dialog #home-search-clear { position: absolute; top: 0; right: 0; width: 38px; padding: 0; border: 0; background: transparent; color: #bdd5e2; font-size: 22px; }
+#home-search-dialog #home-search-close { flex: 0 0 36px; min-height: 36px; padding: 0; border: 0; background: transparent; color: var(--text-secondary); font-size: 24px; }
+#home-search-dialog [hidden] { display: none; }
+#home-search-dialog #home-search-status { margin-top: 10px; color: #a8bdce; font-size: 11px; line-height: 1.6; }
+#home-search-results { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
+#home-search-results:not(:empty) { margin-top: 22px; }
+#home-search-results section { min-width: 0; }
+#home-search-results h3 { margin: 0; padding: 0 10px 8px; border-bottom: 1px solid rgba(196,191,255,.16); color: #c7c0ec; font-size: 12px; font-weight: 600; }
+#home-search-results ul { list-style: none; padding: 0; margin: 0; }
+#home-search-results a, #home-search-dialog #home-search-results button {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    width: 100%; padding: 10px; min-height: 44px; border: 0; border-bottom: 1px solid rgba(196,191,255,.1);
+    border-radius: 0; background: transparent; color: #edf2fa; text-align: left; text-decoration: none; font-size: 13px;
+}
+#home-search-results a span { overflow-wrap: anywhere; }
+#home-search-results small { flex-shrink: 0; color: #97afc3; font-size: 11px; }
+#home-search-results a:hover, #home-search-dialog #home-search-results button:hover { background: rgba(196,191,255,.08); color: var(--text); }
+#home-search-dialog :focus-visible { outline: 2px solid #b8abff; outline-offset: 2px; }
+#home-search-dialog #home-search-results p { margin: 8px 10px 0; color: #a8bdce; font-size: 11px; line-height: 1.6; }
+.home-search-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (max-width: 760px) {
+    #home-search-dialog { padding: 18px 14px; max-height: calc(100dvh - 24px); }
+    #home-search-form { grid-template-columns: 100px minmax(0, 1fr); gap: 8px; }
+    .home-search-field { grid-column: 1 / -1; grid-row: 1; }
+}
+
