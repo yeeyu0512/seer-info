@@ -1,3 +1,5 @@
+import { enableDialogBackdropClose } from "../shared/dialog-backdrop.js";
+
 export const SEARCH_CATEGORIES = [
     { key: "pet", endpoint: "pet", label: "精靈" },
     { key: "skin", endpoint: "pet_skin", label: "皮膚" },
@@ -45,6 +47,73 @@ export function initHomeSearch({ simplified, traditional }) {
     const opener = document.getElementById("home-search-open");
     let controller;
     let generation = 0;
+    const scopeTrigger = document.getElementById("home-search-scope-trigger");
+    const scopeOptions = document.getElementById("home-search-scope-options");
+    const optionButtons = Array.from(scope.options, option => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.role = "option";
+        button.tabIndex = -1;
+        button.textContent = option.text;
+        button.dataset.value = option.value;
+        button.addEventListener("click", () => {
+            scope.value = option.value;
+            syncScope();
+            closeScope();
+            scope.dispatchEvent(new Event("change"));
+        });
+        scopeOptions.append(button);
+        return button;
+    });
+    function syncScope() {
+        scopeTrigger.querySelector("span").textContent = scope.selectedOptions[0].text;
+        optionButtons.forEach(button => button.setAttribute("aria-selected", String(button.dataset.value === scope.value)));
+    }
+    function closeScope({ focus = true } = {}) {
+        scopeOptions.hidePopover();
+        scopeTrigger.setAttribute("aria-expanded", "false");
+        if (focus) scopeTrigger.focus();
+    }
+    function positionScope() {
+        const box = scopeTrigger.getBoundingClientRect();
+        const below = innerHeight - box.bottom - 12;
+        const above = box.top - 12;
+        const opensBelow = below >= 240 || below >= above;
+        const height = Math.min(270, opensBelow ? below : above);
+        Object.assign(scopeOptions.style, {
+            left: `${box.left}px`, width: `${Math.max(152, box.width)}px`, maxHeight: `${height}px`,
+            top: opensBelow ? `${box.bottom + 6}px` : "auto",
+            bottom: opensBelow ? "auto" : `${innerHeight - box.top + 6}px`
+        });
+    }
+    function openScope() {
+        positionScope();
+        scopeOptions.showPopover();
+        scopeTrigger.setAttribute("aria-expanded", "true");
+        optionButtons.find(button => button.dataset.value === scope.value).focus();
+    }
+    scopeTrigger.addEventListener("click", () => scopeOptions.matches(":popover-open") ? closeScope() : openScope());
+    scopeTrigger.addEventListener("keydown", event => {
+        if (!["ArrowDown", "ArrowUp"].includes(event.key)) return;
+        event.preventDefault(); openScope();
+    });
+    scopeOptions.addEventListener("keydown", event => {
+        if (event.key === "Escape" || event.key === "Tab") {
+            if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); }
+            closeScope(); return;
+        }
+        const index = optionButtons.indexOf(document.activeElement);
+        const next = { ArrowDown: (index + 1) % optionButtons.length, ArrowUp: (index + optionButtons.length - 1) % optionButtons.length, Home: 0, End: optionButtons.length - 1 }[event.key];
+        if (next === undefined) return;
+        event.preventDefault(); optionButtons[next].focus();
+    });
+    document.addEventListener("click", event => {
+        if (scopeOptions.matches(":popover-open") && !event.target.closest(".home-search-scope-picker")) closeScope({ focus: false });
+    });
+    window.addEventListener("resize", () => { if (scopeOptions.matches(":popover-open")) closeScope({ focus: false }); });
+    dialog.addEventListener("scroll", () => { if (scopeOptions.matches(":popover-open")) closeScope({ focus: false }); });
+    new ResizeObserver(() => { if (scopeOptions.matches(":popover-open")) positionScope(); }).observe(dialog);
+    syncScope();
 
     opener.addEventListener("click", () => {
         dialog.showModal();
@@ -58,17 +127,14 @@ export function initHomeSearch({ simplified, traditional }) {
         dialog.close();
     });
     dialog.addEventListener("close", () => {
+        closeScope({ focus: false });
         generation++;
         controller?.abort();
         results.setAttribute("aria-busy", "false");
         if (status.textContent === "正在搜尋圖鑑…") status.textContent = "搜尋已停止，可重新搜尋。";
         opener.focus({ preventScroll: true });
     });
-    dialog.addEventListener("click", event => {
-        if (event.target !== dialog) return;
-        const box = dialog.getBoundingClientRect();
-        if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) dialog.close();
-    });
+    enableDialogBackdropClose(dialog);
 
     function reset() {
         generation++;
@@ -91,7 +157,11 @@ export function initHomeSearch({ simplified, traditional }) {
         reset();
         clear.hidden = !input.value;
     });
-    scope.addEventListener("change", reset);
+    scope.addEventListener("change", () => {
+        syncScope();
+        if (input.value.trim()) form.requestSubmit();
+        else reset();
+    });
     clear.addEventListener("click", () => {
         input.value = "";
         clear.hidden = true;
@@ -157,5 +227,25 @@ export function initHomeSearch({ simplified, traditional }) {
         });
         results.setAttribute("aria-busy", "false");
         status.textContent = `${count ? `顯示 ${count} 筆結果${more ? "（各圖鑑最多 4 筆）" : ""}。` : failed.length ? "目前無法取得完整搜尋結果。" : "找不到符合的結果，請確認名稱或 ID。"}${failed.length ? ` ${failed.join("、")}暫時無法查詢，請重新搜尋。` : ""}`;
+        if (!count) {
+            const empty = document.createElement("div");
+            empty.className = "home-search-empty";
+            const heading = document.createElement("strong"), hint = document.createElement("p");
+            const label = scope.selectedOptions[0].text;
+            heading.textContent = failed.length ? "暫時無法完成搜尋" : `找不到「${query}」${scope.value === "all" ? "的搜尋結果" : `的${label}結果`}`;
+            hint.textContent = failed.length ? "資料來源暫時無法連線，請稍後重新搜尋。" : "請試試其他名稱或 ID，也可以調整搜尋分類。";
+            empty.append(heading, hint);
+            if (failed.length || scope.value !== "all") {
+                const retry = document.createElement("button");
+                retry.type = "button";
+                retry.textContent = failed.length ? "重新搜尋" : "搜尋全部分類";
+                retry.addEventListener("click", () => {
+                    if (!failed.length) { scope.value = "all"; syncScope(); }
+                    form.requestSubmit();
+                });
+                empty.append(retry);
+            }
+            results.append(empty);
+        }
     });
 }

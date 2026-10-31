@@ -50,6 +50,31 @@
 #home-search-dialog h2 { margin: 0; font-size: 20px; }
 #home-search-dialog .home-search-dialog-header p { margin-top: 7px; color: #a8bdce; font-size: 12px; line-height: 1.6; }
 #home-search-form { display: grid; grid-template-columns: 108px minmax(0, 1fr) 72px; gap: 8px; margin: 0; }
+.home-search-scope-picker { min-width: 0; }
+#home-search-dialog #home-search-scope-trigger {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    width: 100%; height: 44px; padding: 10px; border: 1px solid rgba(196,191,255,.22);
+    background: #111724; color: var(--text); text-align: left; font-weight: 600;
+}
+#home-search-dialog #home-search-scope-trigger[aria-expanded="true"] { border-color: #a89bdc; background: #272c43; }
+#home-search-scope-trigger svg { flex-shrink: 0; color: #b2aacd; transition: transform .15s; }
+#home-search-scope-trigger[aria-expanded="true"] svg { transform: rotate(180deg); }
+@media (prefers-reduced-motion: reduce) { #home-search-scope-trigger svg { transition: none; } }
+#home-search-scope-options {
+    position: fixed; inset: auto; margin: 0; padding: 6px; box-sizing: border-box;
+    border: 1px solid #514c69; border-radius: 9px; background: #22283a; color: var(--text);
+    box-shadow: 0 12px 32px #05081080; overflow-y: auto; overscroll-behavior: contain;
+}
+#home-search-dialog #home-search-scope-options button {
+    display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 40px;
+    margin: 0; padding: 9px 12px; border: 0; border-radius: 5px; background: transparent;
+    color: #c2c6d6; text-align: left; font-size: 13px;
+}
+#home-search-dialog #home-search-scope-options button[aria-selected="true"] { background: #514681; color: #faf8ff; font-weight: 700; }
+#home-search-scope-options button[aria-selected="true"]::after { content: "✓"; margin-left: 12px; color: #d7ceff; }
+#home-search-dialog #home-search-scope-options button:hover,
+#home-search-dialog #home-search-scope-options button:focus-visible { background: #38374e; color: #fff; outline: 0; }
+#home-search-dialog #home-search-scope-options button[aria-selected="true"]:focus-visible { background: #655797; }
 .home-search-field { position: relative; min-width: 0; }
 #home-search-dialog input, #home-search-dialog select, #home-search-dialog button {
     box-sizing: border-box; margin: 0; min-height: 44px; border-radius: 5px;
@@ -84,6 +109,16 @@
 #home-search-results a:hover, #home-search-dialog #home-search-results button:hover { background: rgba(196,191,255,.08); color: var(--text); }
 #home-search-dialog :focus-visible { outline: 2px solid #b8abff; outline-offset: 2px; }
 #home-search-dialog #home-search-results p { margin: 8px 10px 0; color: #a8bdce; font-size: 11px; line-height: 1.6; }
+#home-search-results .home-search-empty {
+    padding: 24px 16px; border: 1px dashed rgba(196,191,255,.2); border-radius: 8px;
+    background: rgba(196,191,255,.025); text-align: center;
+}
+.home-search-empty strong { display: block; color: #e5e0f4; font-size: 15px; overflow-wrap: anywhere; }
+#home-search-dialog #home-search-results .home-search-empty p { margin: 10px 0 0; color: #aeb5c9; font-size: 12px; }
+#home-search-dialog #home-search-results .home-search-empty button {
+    justify-content: center; width: auto; margin: 16px auto 0; padding: 8px 14px;
+    border: 1px solid rgba(196,191,255,.24); border-radius: 6px; background: rgba(130,113,244,.22); color: #e2dbff;
+}
 .home-search-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 @media (max-width: 760px) {
     #home-search-dialog { padding: 18px 14px; max-height: calc(100dvh - 24px); }

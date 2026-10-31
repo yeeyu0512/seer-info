@@ -20,6 +20,7 @@ const resultFields = typeof document === "undefined" ? {} : {
     nickname: document.getElementById("player-nickname"),
     online: document.getElementById("player-online"),
     server: document.getElementById("player-server"),
+    lastLoginTime: document.getElementById("player-last-login"),
     sportCurrentRank: document.getElementById("sport-current-rank"),
     sportHighestRank: document.getElementById("sport-highest-rank"),
     sportScoreStar: document.getElementById("sport-score-star"),
@@ -85,6 +86,7 @@ export function normalizePlayerResult(payload) {
         nickname: readPath(player, ["nickname", "name"]),
         online: readPath(player, ["online", "is_online", "status"]),
         server: readPath(player, ["server", "server_name"]),
+        lastLoginTime: readPath(player, ["last_login_time"]),
         sportCurrentRank: readPath(sport, ["current_rank", "rank", "current.rank", "current"]),
         sportHighestRank: readPath(sport, ["highest_rank", "highest.rank", "highest"]),
         sportScoreStar: formatScoreStar(sport.current || sport.score_star || sport),
@@ -101,6 +103,18 @@ export function normalizePlayerResult(payload) {
         primaryPet: readPath(pets, ["primary", "primary_name"]) ?? readPath(player, ["primary_pet", "primary_pet_name"]),
         secondaryPet: readPath(pets, ["secondary", "secondary_name"]) ?? readPath(player, ["secondary_pet", "secondary_pet_name"])
     };
+}
+
+export function formatPlayerLoginTime(value, now = Date.now()) {
+    if (!Number.isSafeInteger(value) || value <= 0 || value > now / 1000 + 300) return "未知";
+    const date = new Date(value * 1000);
+    if (!Number.isFinite(date.getTime())) return "未知";
+    const parts = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Asia/Taipei", year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23"
+    }).formatToParts(date);
+    const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+    return `${values.year}/${values.month}/${values.day} ${values.hour}:${values.minute}:${values.second}（台灣時間）`;
 }
 
 function setStatus(message, type = "") {
@@ -275,6 +289,8 @@ function renderResult(payload) {
     resultFields.online.dataset.online = String(result.online === true);
     resultFields.server.hidden = !result.online;
     resultFields.server.textContent = result.online ? `伺服器：${display(result.server)}` : '';
+    resultFields.lastLoginTime.hidden = result.online !== false;
+    resultFields.lastLoginTime.textContent = result.online === false ? `最後登入：${formatPlayerLoginTime(result.lastLoginTime)}` : "";
     elements.result.hidden = false;
 }
 

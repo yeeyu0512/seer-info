@@ -17,8 +17,101 @@ const server = http.createServer((req, res) => {
         const context = await browser.newContext({ viewport: { width: 1440, height: 1100 }, ignoreHTTPSErrors: true, reducedMotion: 'reduce' });
         const page = await context.newPage(), errors = [];
         page.on('pageerror', error => errors.push(error.message));
+        const selectScope = async value => {
+            await page.locator('#home-search-scope-trigger').click();
+            await page.locator(`#home-search-scope-options [data-value="${value}"]`).click();
+        };
         await page.goto(base + '/index.html', { waitUntil: 'networkidle' });
+        await page.locator('#open-changelog-button').click();
+        const latestLog = page.locator('#changelog-full-list > li').first();
+        const nestedList = latestLog.locator(':scope > div > .changelog-details');
+        const expectedLog = JSON.parse(fs.readFileSync(path.join(root, 'data/changelog.json'), 'utf8')).entries[0];
+        const expectedGroups = expectedLog.details.filter(item => typeof item === 'object');
+        assert.equal(await nestedList.locator(':scope > li').count(), expectedGroups.length);
+        assert.deepEqual(await nestedList.locator(':scope > li > .changelog-group-label').allTextContents(), expectedGroups.map(group => group.text));
+        assert.equal(await nestedList.locator(':scope > li > ul > li').count(), expectedGroups.reduce((count, group) => count + group.details.length, 0));
+        assert.equal(await latestLog.locator('h4').count(), 0, 'categories are bullet items, not headings');
+        assert.equal(await page.locator('#changelog-full-list > li').nth(1).locator('.changelog-details > li').count() > 0, true, 'legacy flat entries still render');
+        for (const width of [1440, 390, 320]) {
+            await page.setViewportSize({ width, height: 1000 });
+            assert.equal(await page.locator('#changelog-dialog').evaluate(node => node.scrollWidth <= node.clientWidth), true, 'nested bullets fit the viewport');
+        }
+        await page.locator('#close-changelog-button').click();
+        await page.setViewportSize({ width: 1440, height: 1100 });
+        for (const [opener, modal, field, close] of [
+            ['#home-search-open', '#home-search-dialog', '#home-search-input', '#home-search-close'],
+            ['#open-player-lookup', '#player-lookup-dialog', '#player-lookup-mimi-id', '#close-player-lookup']
+        ]) {
+            await page.locator(opener).click();
+            await page.locator(field).fill('20000001234567');
+            const inputBox = await page.locator(field).boundingBox();
+            const dialogBox = await page.locator(modal).boundingBox();
+            const outside = { x: dialogBox.x + dialogBox.width + 12, y: inputBox.y + inputBox.height / 2 };
+            await page.mouse.move(inputBox.x + 12, outside.y);
+            await page.mouse.down();
+            await page.mouse.move(outside.x, outside.y, { steps: 12 });
+            await page.mouse.up();
+            assert.equal(await page.locator(modal).isVisible(), true, `${modal}: dragging a text selection outside must not close the dialog`);
+            assert.equal(await page.locator(field).evaluate(input => input.selectionEnd > input.selectionStart), true, 'text was selected');
+            await page.mouse.click(outside.x, outside.y);
+            await page.locator(modal).waitFor({ state: 'hidden' });
+            await page.locator(opener).click();
+            await page.locator(close).click();
+            await page.locator(modal).waitFor({ state: 'hidden' });
+            await page.locator(opener).click();
+            await page.keyboard.press('Escape');
+            await page.locator(modal).waitFor({ state: 'hidden' });
+        }
+        let playerResponse;
+        const playerApi = '**/api/tw/player/query';
+        await page.route(playerApi, route => route.fulfill({ contentType: 'application/json', body: JSON.stringify(playerResponse) }));
+        for (const width of [1440, 390]) {
+            await page.setViewportSize({ width, height: 1000 });
+            await page.locator('#open-player-lookup').click();
+            for (const [online, lastLogin, expected] of [
+                [false, 1704067200, '最後登入：2024/01/01 08:00:00（台灣時間）'],
+                [false, undefined, '最後登入：未知'],
+                [true, 1704067200, ''],
+                [false, 1704067200, '最後登入：2024/01/01 08:00:00（台灣時間）']
+            ]) {
+                playerResponse = { user_id: 123, nickname: '測試玩家', online, last_login_time: lastLogin,
+                    server: online ? 1707 : null, sport: {}, wild: {}, pets: { primary: [], secondary: [] } };
+                await page.locator('#player-lookup-mimi-id').fill('123');
+                const response = page.waitForResponse(r => r.url().endsWith('/api/tw/player/query'));
+                await page.locator('#lookup-submit').click();
+                await response;
+                await page.waitForFunction(text => document.querySelector('#player-last-login').textContent === text, expected);
+                assert.equal(await page.locator('#player-last-login').isVisible(), !online);
+                assert.equal(await page.locator('#player-server').isVisible(), online);
+                assert.equal(await page.locator('#player-lookup-dialog').evaluate(node => node.scrollWidth <= node.clientWidth), true);
+            }
+            await page.locator('#close-player-lookup').click();
+        }
+        await page.unroute(playerApi);
+        await page.setViewportSize({ width: 1440, height: 1100 });
         fs.mkdirSync(path.join(root, 'artifacts', 'home-search'), { recursive: true });
+        await page.locator('#home-search-open').click();
+        await page.locator('#home-search-input').fill('競技池');
+        await selectScope('suit');
+        await page.locator('.home-search-empty strong').getByText('找不到「競技池」的套裝結果', { exact: true }).waitFor();
+        await page.screenshot({ path: path.join(root, 'artifacts/home-search/empty-results.png') });
+        await page.locator('#home-search-scope-trigger').click();
+        assert.equal(await page.locator('#home-search-scope-options').isVisible(), true);
+        await page.screenshot({ path: path.join(root, 'artifacts/home-search/category-menu.png') });
+        await page.keyboard.press('Escape');
+        assert.equal(await page.locator('#home-search-dialog').isVisible(), true, 'Escape closes category menu first');
+        await page.locator('.home-search-empty button').getByText('搜尋全部分類', { exact: true }).click();
+        await page.locator('#home-search-results button').getByText('競技池', { exact: true }).waitFor();
+        await page.waitForFunction(() => document.querySelector('#home-search-results').getAttribute('aria-busy') === 'false');
+        assert.equal(await page.locator('.home-search-empty').count(), 0);
+        await page.locator('#home-search-scope-trigger').press('ArrowDown');
+        await page.keyboard.press('End');
+        await page.keyboard.press('Enter');
+        assert.equal(await page.locator('#home-search-scope').inputValue(), 'tools');
+        await page.locator('#home-search-clear').click();
+        await selectScope('all');
+        await page.locator('#home-search-close').click();
+
         await page.locator('.home-carousel img').first().evaluate(img => img.decode());
         await page.screenshot({ path: path.join(root, 'artifacts/home-search/desktop-home.png'), fullPage: true });
         const panelTop = await page.locator('.home-overview').evaluate(node => node.getBoundingClientRect().top);
@@ -43,14 +136,14 @@ const server = http.createServer((req, res) => {
         await page.setViewportSize({ width: 1440, height: 1100 });
         await page.locator('#home-search-clear').click();
         assert.equal(await page.locator('#home-search-results').isVisible(), false);
-        await page.locator('#home-search-scope').selectOption('tools');
+        await selectScope('tools');
         await page.locator('#home-search-input').fill('傷害');
         await page.locator('.home-search-submit').click();
         await page.locator('#home-search-results button').getByText('傷害計算', { exact: true }).click();
         assert.equal(await page.locator('#damage-calculator-section').isVisible(), true);
         await page.locator('#home-search-open').click();
         assert.equal(await page.locator('#home-search-dialog').isVisible(), true, 'search opens from damage calculator');
-        await page.locator('#home-search-scope').selectOption('pet');
+        await selectScope('pet');
         await page.locator('#home-search-input').fill('5000');
         await page.locator('.home-search-submit').click();
         await page.locator('#home-search-results a[href="?tab=pet&id=5000"]').waitFor();
@@ -59,7 +152,7 @@ const server = http.createServer((req, res) => {
         await page.locator('#seer-lookup-section').waitFor({ state: 'visible' });
         await page.locator('#home-search-open').click();
         assert.equal(await page.locator('#home-search-dialog').isVisible(), true, 'search opens from pet encyclopedia');
-        await page.locator('#home-search-scope').selectOption('pet');
+        await selectScope('pet');
         // Controlled failures and out-of-order completion must not overwrite a newer query.
         await page.route('https://api.seerapi.com/v1/pet?**', async route => {
             const query = new URL(route.request().url()).searchParams.get('name');
@@ -113,6 +206,11 @@ const server = http.createServer((req, res) => {
                     await page.keyboard.press('Escape');
                 }
                 await page.locator('#home-search-open').click();
+                assert.equal(await page.locator('#home-search-dialog').isVisible(), true);
+                await page.locator('#home-search-scope-trigger').click();
+                const optionsBox = await page.locator('#home-search-scope-options').boundingBox();
+                assert.equal(optionsBox.x >= 0 && optionsBox.x + optionsBox.width <= width && optionsBox.y >= 0 && optionsBox.y + optionsBox.height <= 1000, true, 'category popover fits the mobile viewport');
+                await page.keyboard.press('Escape');
                 assert.equal(await page.locator('#home-search-dialog').isVisible(), true);
                 await page.keyboard.press('Escape');
             }

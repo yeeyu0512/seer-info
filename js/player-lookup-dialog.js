@@ -1,3 +1,5 @@
+import { enableDialogBackdropClose } from './shared/dialog-backdrop.js';
+
 const dialog = document.getElementById('player-lookup-dialog');
 const card = dialog.querySelector('.player-lookup-card');
 let lastTrigger;
@@ -8,11 +10,7 @@ document.querySelectorAll('[data-open-player-lookup]').forEach(trigger => trigge
     resizeLookup();
 }));
 document.getElementById('close-player-lookup').addEventListener('click', () => dialog.close());
-dialog.addEventListener('click', (event) => {
-    if (event.target !== dialog) return;
-    const box = dialog.getBoundingClientRect();
-    if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) dialog.close();
-});
+enableDialogBackdropClose(dialog);
 dialog.addEventListener('close', () => {
     const menu = lastTrigger?.closest('details');
     const target = menu && !menu.open ? menu.querySelector('summary') : lastTrigger;

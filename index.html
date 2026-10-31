@@ -7,13 +7,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 
-    <title>賽爾號資訊站｜圖鑑、屬性克制與模擬培養</title>
-    <meta name="description" content="賽爾號非官方玩家資訊站，提供精靈、皮膚、刻印與套裝圖鑑，支援屬性克制查詢、台服進度篩選、精靈模擬培養及配置圖片匯出。">
+    <title>賽爾號資訊站｜精靈圖鑑、模擬培養與實用工具</title>
+    <meta name="description" content="賽爾號非官方玩家資訊站，整合精靈、皮膚、刻印與套裝圖鑑，提供屬性克制、模擬培養、PVE 傷害試算、競技池與台服玩家查詢。">
     <link rel="canonical" href="https://seerinfo.app/">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="賽爾號資訊站">
-    <meta property="og:title" content="賽爾號資訊站">
-    <meta property="og:description" content="賽爾號非官方玩家資訊站，提供精靈、皮膚、刻印與套裝圖鑑，支援屬性克制查詢、台服進度篩選、精靈模擬培養及配置圖片匯出。">
+    <meta property="og:title" content="賽爾號資訊站｜精靈圖鑑、模擬培養與實用工具">
+    <meta property="og:description" content="賽爾號非官方玩家資訊站，整合精靈、皮膚、刻印與套裝圖鑑，提供屬性克制、模擬培養、PVE 傷害試算、競技池與台服玩家查詢。">
     <meta property="og:url" content="https://seerinfo.app/">
     <meta property="og:image" content="https://seerinfo.app/assets/site/about-artwork.png">
     <meta property="og:image:type" content="image/png">
@@ -22,13 +22,18 @@
     <meta property="og:image:alt" content="賽爾號精靈圖片">
     <meta property="og:locale" content="zh_TW">
     <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="賽爾號資訊站｜精靈圖鑑、模擬培養與實用工具">
+    <meta name="twitter:description" content="賽爾號非官方玩家資訊站，整合精靈、皮膚、刻印與套裝圖鑑，提供屬性克制、模擬培養、PVE 傷害試算、競技池與台服玩家查詢。">
     <meta name="twitter:image" content="https://seerinfo.app/assets/site/about-artwork.png">
+    <meta name="twitter:image:alt" content="賽爾號精靈圖片">
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
       "name": "賽爾號資訊站",
       "alternateName": "Seer Information Station",
+      "description": "賽爾號非官方玩家資訊站，整合精靈、皮膚、刻印與套裝圖鑑，提供屬性克制、模擬培養、PVE 傷害試算、競技池與台服玩家查詢。",
+      "inLanguage": "zh-Hant",
       "url": "https://seerinfo.app/"
     }
     </script>
@@ -105,14 +110,16 @@
                     <button id="home-search-close" type="button" aria-label="關閉全站搜尋">×</button>
                 </header>
                 <form id="home-search-form" role="search" aria-label="全站搜尋">
-                    <label class="home-search-scope-label"><span class="home-search-sr">搜尋範圍</span>
-                        <select id="home-search-scope" aria-label="搜尋範圍">
+                    <div class="home-search-scope-picker">
+                        <select id="home-search-scope" aria-label="搜尋範圍" hidden tabindex="-1">
                             <option value="all">全部分類</option>
                             <option value="pet">精靈</option><option value="skin">皮膚</option>
                             <option value="mintmark">刻印</option><option value="suit">套裝</option>
                             <option value="tools">工具</option>
                         </select>
-                    </label>
+                        <button id="home-search-scope-trigger" type="button" role="combobox" aria-label="搜尋範圍" aria-haspopup="listbox" aria-expanded="false" aria-controls="home-search-scope-options"><span>全部分類</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+                        <div id="home-search-scope-options" role="listbox" aria-label="搜尋範圍" popover="manual"></div>
+                    </div>
                     <div class="home-search-field">
                         <label for="home-search-input" class="home-search-sr">名稱、ID 或工具名稱</label>
                         <input id="home-search-input" type="search" placeholder="輸入名稱、ID 或工具名稱…" autocomplete="off" maxlength="80" aria-describedby="home-search-status" required>
@@ -837,20 +844,21 @@
                     <div class="player-identity">
                         <div class="player-identity-title"><h2 id="player-nickname">-</h2><span id="player-online" class="player-online-badge">-</span></div>
                         <div class="player-identity-meta"><span id="player-user-id" class="player-result-id">-</span><span id="player-server">-</span></div>
+                        <p id="player-last-login" hidden></p>
                     </div>
                 </header>
                 <div class="player-peak-modes">
                     <section class="player-peak-mode" aria-labelledby="sport-title">
                         <h3 id="sport-title">巔峰競技</h3>
-                        <p>目前：<span id="sport-current-rank">-</span></p>
-                        <p>最高：<span id="sport-highest-rank">-</span></p>
-                        <p>勝率：<span id="win-rate">-</span></p>
+                        <p>當前賽季：<span id="sport-current-rank">-</span></p>
+                        <p>歷史最高：<span id="sport-highest-rank">-</span></p>
+                        <p>本季勝率：<span id="win-rate">-</span></p>
                     </section>
                     <section class="player-peak-mode" aria-labelledby="wild-title">
                         <h3 id="wild-title">巔峰狂野</h3>
-                        <p>目前：<span id="wild-current-rank">-</span></p>
-                        <p>最高：<span id="wild-highest-rank">-</span></p>
-                        <p>勝率：<span id="wild-win-rate">-</span></p>
+                        <p>當前賽季：<span id="wild-current-rank">-</span></p>
+                        <p>歷史最高：<span id="wild-highest-rank">-</span></p>
+                        <p>本季勝率：<span id="wild-win-rate">-</span></p>
                     </section>
                 </div>
                 <div class="player-bags">

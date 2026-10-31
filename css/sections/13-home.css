@@ -1032,6 +1032,10 @@
     list-style: disc;
 }
 
+.changelog-dialog .changelog-group-label { color: #c7c0ec; font-weight: 600; }
+.changelog-dialog .changelog-details .changelog-details { margin: 6px 0 12px; padding-left: 20px; list-style: circle; }
+.changelog-dialog .changelog-details .changelog-details > li { margin: 4px 0; }
+
 .changelog-dialog .changelog-details>li {
     display: list-item;
     margin: 6px 0;

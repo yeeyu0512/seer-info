@@ -105,7 +105,31 @@ async function loadChangelog(home) {
     openButton.addEventListener("click", () => dialog.showModal());
     closeButton.addEventListener("click", () => dialog.close());
 
-    // 建立單筆更新紀錄
+    function appendDetails(parent, values, forceList = false) {
+        if (!Array.isArray(values)) return;
+        const entries = values.filter(detail => typeof detail === "string" ? detail.trim()
+            : typeof detail?.text === "string" && detail.text.trim());
+        if (!entries.length) return;
+        const paragraph = entries.length === 1 && typeof entries[0] === "string" && !forceList;
+        const details = document.createElement(paragraph ? "p" : "ul");
+        details.className = paragraph ? "changelog-description" : "changelog-details";
+        if (paragraph) details.textContent = entries[0];
+        else entries.forEach(detail => {
+            const item = document.createElement("li");
+            if (typeof detail === "string") item.textContent = detail;
+            else {
+                const label = document.createElement("span");
+                label.className = "changelog-group-label";
+                label.textContent = detail.text;
+                item.append(label);
+                appendDetails(item, detail.details, true);
+            }
+            details.append(item);
+        });
+        parent.append(details);
+    }
+
+    // details 可包含文字，或含子項目的 { text, details }。
     function createEntry(entry, showDetails = false) {
         const li = document.createElement("li");
         const time = document.createElement("time");
@@ -118,23 +142,8 @@ async function loadChangelog(home) {
         title.textContent = entry.title;
         content.append(title);
 
-        if (showDetails && Array.isArray(entry.details)) {
-            const entries = entry.details.filter(detail => typeof detail === "string" && detail.trim());
-            const details = document.createElement(entries.length === 1 ? "p" : "ul");
-            details.className = entries.length === 1 ? "changelog-description" : "changelog-details";
-            if (entries.length === 1) {
-                details.textContent = entries[0];
-            } else {
-                entries.forEach(detail => {
-                    const item = document.createElement("li");
-                    item.textContent = detail;
-                    details.append(item);
-                });
-            }
-
-            if (entries.length > 0) {
-                content.append(details);
-            }
+        if (showDetails) {
+            appendDetails(content, entry.details);
         }
 
         li.append(time, content);

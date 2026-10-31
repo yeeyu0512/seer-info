@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { normalizePlayerResult, getPeakRankIcon, getPeakRankName, formatPeakLines, renderPeakRank } from "../js/player-lookup.js";
+import { normalizePlayerResult, getPeakRankIcon, getPeakRankName, formatPeakLines, renderPeakRank, formatPlayerLoginTime } from "../js/player-lookup.js";
 import { existsSync } from "node:fs";
 
 test("maps each supported peak rank to an existing badge and skips unknown ranks", () => {
@@ -82,6 +82,7 @@ test("normalizes the approved public player fields", () => {
         nickname: "小玩家",
         online: true,
         server: "台服一區",
+        lastLoginTime: null,
         sportCurrentRank: "鑽石",
         sportHighestRank: "王者",
         sportScoreStar: "1200 分／3 星",
@@ -103,10 +104,20 @@ test("does not expose fields outside the public display contract", () => {
     });
 
     assert.deepEqual(Object.keys(result).sort(), [
-        "nickname", "online", "primaryPet", "secondaryPet", "server", "sportCurrentRank",
+        "nickname", "online", "lastLoginTime", "primaryPet", "secondaryPet", "server", "sportCurrentRank",
         "sportHighestRank", "sportScoreStar", "userId", "wildCurrentRank", "wildHighestRank",
         "wildScoreStar", "winRate", "winRecord", "wildWinRate", "wildWinRecord"
     ].sort());
+});
+
+test("formats last login Unix seconds in Taiwan time and rejects invalid dates", () => {
+    assert.equal(normalizePlayerResult({ online: false, last_login_time: 1704067200 }).lastLoginTime, 1704067200);
+    assert.equal(formatPlayerLoginTime(1704067200), "2024/01/01 08:00:00（台灣時間）");
+    assert.equal(formatPlayerLoginTime(1704124800), "2024/01/02 00:00:00（台灣時間）");
+    for (const value of [null, undefined, 0, -1, true, "1704067200", 1704067200000, NaN, Infinity]) {
+        assert.equal(formatPlayerLoginTime(value), "未知");
+    }
+    assert.equal(formatPlayerLoginTime(1704067501, 1704067200000), "未知");
 });
 
 test("matches the real API rank and separate mode statistics", () => {
