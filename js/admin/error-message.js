@@ -4,6 +4,9 @@ export function getAdminErrorMessage(error) {
     const status = Number(error?.status || message.match(/\bHTTP\s+(\d{3})\b/i)?.[1]);
     const code = String(error?.code || "").toUpperCase();
     if (code === "23P01") return "此伺服器已有時間重疊的競技池期間，請調整開始或結束時間。";
+    if (code === "23505" && /competitive_pools_season_number_key/.test(message)) return "這個賽季已建立相同期數，請選擇其他期數。";
+    if (code === "23505" && /competitive_seasons_server_name_key/.test(message)) return "這個伺服器已有同名賽季，請直接選用或改用其他名稱。";
+    if (code === "23503" && /competitive_pools_season_server_fkey/.test(message)) return "賽季不存在或不屬於目前伺服器，請重新載入後選擇。";
 
     if (/invalid login credentials|invalid credentials/.test(lowerMessage)) {
         return "Email 或密碼錯誤，請確認後再試。";

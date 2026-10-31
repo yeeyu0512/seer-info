@@ -1,4 +1,13 @@
 /* Admin page: compact toolbar and consistent controls. */
+.competitive-pool-generated-title {
+    grid-column: 1 / -1;
+}
+
+.competitive-pool-generated-title input[readonly] {
+    color: var(--primary-light);
+    background: rgba(124, 140, 255, .06);
+}
+
 .competitive-pet-search-results {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));

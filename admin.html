@@ -99,7 +99,9 @@
                     </div>
                 </div>
                 <form id="competitive-pool-form" class="admin-form">
-                    <label>期間名稱<input id="competitive-pool-name" type="text" maxlength="100" placeholder="例如：2026 年秋季競技池" required></label>
+                    <label>賽季名稱<input id="competitive-pool-season-name" type="text" maxlength="100" placeholder="例如：帝皇賽季" required></label>
+                    <label>第幾池<input id="competitive-pool-number" type="number" min="1" max="9999" step="1" value="1" required></label>
+                    <label class="competitive-pool-generated-title">自動標題<input id="competitive-pool-name" type="text" placeholder="填寫賽季名稱與期數後自動產生" readonly></label>
                     <label class="pool-date-field"><span>開始時間</span><div class="pool-date-time-control"><input id="competitive-pool-start" class="pool-datetime" type="text" required><select id="competitive-pool-start-time" class="pool-time-select" aria-label="競技池開始時間"></select></div></label>
                     <label class="pool-date-field"><span>結束時間</span><div class="pool-date-time-control"><input id="competitive-pool-end" class="pool-datetime" type="text" required><select id="competitive-pool-end-time" class="pool-time-select" aria-label="競技池結束時間"></select></div></label>
                     <div class="form-actions"><button id="save-competitive-pool-button" class="admin-action-button" type="submit">建立期間</button></div>

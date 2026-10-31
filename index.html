@@ -334,18 +334,20 @@
         <!-- ==================== -->
 
         <section id="competitive-pool-section" class="panel competitive-pool-view" hidden>
-                <div class="competitive-server-control">
-                    <label for="competitive-pool-server">伺服器</label>
-                    <select id="competitive-pool-server"><option value="tw">台服</option><option value="cn">陸服</option></select>
-                </div>
-                <div class="panel-header">
-                    <div>
+                <div class="panel-header competitive-pool-header">
+                    <div class="competitive-pool-heading">
                         <h2 id="competitive-pool-message" class="panel-title competitive-pool-name" aria-live="polite">
                             正在載入競技池資料…</h2>
                         <p id="competitive-pool-period" class="panel-description"></p>
                     </div>
-                    <button id="refresh-competitive-pool-button" class="secondary-button compact-button"
-                        type="button">重新整理</button>
+                    <div class="competitive-pool-header-actions">
+                        <div class="competitive-server-control">
+                            <label for="competitive-pool-server">伺服器</label>
+                            <select id="competitive-pool-server"><option value="tw">台服</option><option value="cn">陸服</option></select>
+                        </div>
+                        <button id="refresh-competitive-pool-button" class="secondary-button compact-button"
+                            type="button">重新整理</button>
+                    </div>
                 </div>
                 <div id="competitive-pool-type-tabs" class="competitive-pool-type-tabs" role="tablist"
                     aria-label="競技池種類" hidden>

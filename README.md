@@ -135,6 +135,18 @@ Migration 會將既有未標記期間全部歸台服，保留期間 ID 與名單
 新環境須先建立 `sql/competitive_pools.sql` 及其 `is_admin()` 權限依賴，再執行上述 migration。
 兩服皆為公開資料，沿用當期公開讀取及管理員寫入的 RLS，不以服別限制閱讀權限。
 
+賽季與期數使用 `competitive_seasons` 及 `competitive_pools.season_id / pool_number` 管理。
+後台直接填寫賽季名稱和數字期數，標題自動顯示為「帝皇賽季 第一池」；未填「賽季」字樣時自動補上。
+同服同名賽季自動沿用，不需另外建立或選擇賽季；同一賽季的期數不可重複，兩服的賽季彼此獨立。
+修改某個期間的賽季名稱會將該期間改歸到新名稱的賽季，不會改名其他期間。
+
+部署賽季功能前，先確認服別 migration 已完成，再執行 `sql/inspect_competitive_pool_seasons.sql` 檢查拆分結果，
+接著執行 `sql/competitive_pool_seasons.sql`，最後發布相符的前後台。
+Migration 保留期間 ID、時間與精靈名單，將舊標題拆成賽季和期數；無法辨識的標題或重複期數會使整筆交易回滾。
+原 `name` 欄位留存遷移前標題供核對，新功能不再讀寫該欄位。
+新增及編輯透過 `save_competitive_pool_period` RPC，在同一交易內建立／沿用賽季並儲存期間，失敗時不留下新賽季。
+這個 migration 套用後舊版後台無法建立期間，必須搭配新版程式發布。線上 SQL 與部署須另外執行。
+
 管理員另可使用以下功能：
 
 - `admin.html` 管理競技池期間、精靈名單、批次匯入、預覽與 CSV 匯出。

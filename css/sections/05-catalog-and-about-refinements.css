@@ -516,13 +516,127 @@ html:has(.site-header .primary-main-tabs) { scroll-padding-top: 84px; }
 
 .admin-tool-panel[hidden] { display: none; }
 
-.competitive-pool-view > .panel-header {
+.competitive-pool-title {
+    display: flex;
     align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.competitive-pool-title-text {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.competitive-server-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    box-sizing: border-box;
+    height: 22px;
+    padding: 0 7px;
+    border: 1px solid rgba(123, 213, 192, .18);
+    border-radius: 5px;
+    color: #9ae3cf;
+    background: rgba(73, 173, 147, .07);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0;
+    white-space: nowrap;
+    /* CJK glyphs sit slightly below the center of the heading line box. */
+    transform: translateY(2px);
+}
+
+.competitive-server-badge[data-server="cn"] {
+    border-color: rgba(174, 153, 255, .2);
+    color: #cbbcff;
+    background: rgba(151, 119, 237, .08);
+}
+
+.competitive-pool-view > .competitive-pool-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px 24px;
+    margin-bottom: 0;
+    padding-bottom: 16px;
+}
+
+.competitive-pool-heading {
+    flex: 1 1 320px;
+    min-width: 0;
+}
+
+.competitive-pool-heading .panel-description {
+    margin-top: 6px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.competitive-pool-header-actions {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+    gap: 12px;
+}
+
+.competitive-pool-header-actions .competitive-server-control {
+    flex-wrap: nowrap;
+    gap: 8px;
+    margin: 0;
+}
+
+.competitive-pool-header-actions .competitive-server-control label {
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.competitive-pool-header-actions .competitive-server-control select {
+    min-width: 88px;
+    height: 38px;
+    min-height: 38px;
+    padding: 6px 10px;
+    font-size: 13px;
+}
+
+.competitive-pool-header-actions .compact-button {
+    min-height: 38px;
+    white-space: nowrap;
+}
+
+@media (max-width: 680px) {
+    .competitive-pool-editor > .panel-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .competitive-pool-editor .editor-header-actions {
+        justify-content: flex-end;
+        flex-wrap: wrap;
+    }
+
+    .competitive-pool-heading {
+        flex-basis: 100%;
+    }
+
+    .competitive-pool-header-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
 }
 
 .competitive-pool-view .competitive-pool-name {
+    align-items: center;
     color: var(--text);
     font-size: 20px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
 }
 
 .competitive-pool-period-status {

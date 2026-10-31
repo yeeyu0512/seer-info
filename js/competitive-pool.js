@@ -1,14 +1,16 @@
 import { supabaseClient } from "./supabase.js";
 import { requireCompetitiveServer } from "./competitive/servers.js";
+import { normalizeSeasonName, requirePoolNumber, withCompetitivePoolTitle } from "./competitive/seasons.js";
 
 const COMPETITIVE_POOL_CHARACTER_FIELDS = "id, competitive_pool_id, seer_pet_id, pet_name, pool_type";
+const COMPETITIVE_POOL_FIELDS = "id, server, season_id, pool_number, start_at, end_at, season:competitive_seasons!competitive_pools_season_server_fkey(id, name)";
 
 export async function getCurrentCompetitivePool(server) {
     requireCompetitiveServer(server);
     const now = new Date().toISOString();
     const { data, error } = await supabaseClient
         .from("competitive_pools")
-        .select(`id, name, server, start_at, end_at, competitive_pool_characters(${COMPETITIVE_POOL_CHARACTER_FIELDS})`)
+        .select(`${COMPETITIVE_POOL_FIELDS}, competitive_pool_characters(${COMPETITIVE_POOL_CHARACTER_FIELDS})`)
         .eq("server", server)
         .lte("start_at", now)
         .gt("end_at", now)
@@ -17,40 +19,43 @@ export async function getCurrentCompetitivePool(server) {
         .maybeSingle();
 
     if (error) throw error;
-    return data;
+    return withCompetitivePoolTitle(data);
 }
 
 export async function getAdminCompetitivePools(server) {
     requireCompetitiveServer(server);
     const { data, error } = await supabaseClient
         .from("competitive_pools")
-        .select("id, name, server, start_at, end_at, created_at")
+        .select(`${COMPETITIVE_POOL_FIELDS}, created_at`)
         .eq("server", server)
         .order("start_at", { ascending: false });
 
     if (error) throw error;
-    return data ?? [];
+    return (data ?? []).map(withCompetitivePoolTitle);
 }
 
-export async function createCompetitivePool(name, startAt, endAt, server) {
+async function saveCompetitivePoolPeriod(poolId, seasonName, poolNumber, startAt, endAt, server) {
     requireCompetitiveServer(server);
-    const { data, error } = await supabaseClient
-        .from("competitive_pools")
-        .insert({ name, start_at: startAt, end_at: endAt, server })
-        .select("id")
-        .single();
-
+    seasonName = normalizeSeasonName(seasonName);
+    if (!seasonName || seasonName === "賽季" || seasonName.length > 100) throw new Error("請填寫 100 字以內的賽季名稱。");
+    const { data, error } = await supabaseClient.rpc("save_competitive_pool_period", {
+        p_pool_id: poolId,
+        p_server: server,
+        p_season_name: seasonName,
+        p_pool_number: requirePoolNumber(poolNumber),
+        p_start_at: startAt,
+        p_end_at: endAt
+    });
     if (error) throw error;
-    return data.id;
+    return data;
 }
 
-export async function updateCompetitivePool(poolId, name, startAt, endAt) {
-    const { error } = await supabaseClient
-        .from("competitive_pools")
-        .update({ name, start_at: startAt, end_at: endAt, updated_at: new Date().toISOString() })
-        .eq("id", poolId);
+export async function createCompetitivePool(seasonName, poolNumber, startAt, endAt, server) {
+    return saveCompetitivePoolPeriod(null, seasonName, poolNumber, startAt, endAt, server);
+}
 
-    if (error) throw error;
+export async function updateCompetitivePool(poolId, seasonName, poolNumber, startAt, endAt, server) {
+    return saveCompetitivePoolPeriod(poolId, seasonName, poolNumber, startAt, endAt, server);
 }
 
 export async function deleteCompetitivePool(poolId) {

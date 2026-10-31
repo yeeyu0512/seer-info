@@ -10,11 +10,13 @@ import { toCsvCell } from '../js/shared/csv.js';
 
 function node() {
     return {
-        value: '', hidden: true, disabled: false, textContent: '', children: [], dataset: {}, style: {}, events: {},
+        value: '', hidden: true, disabled: false, _textContent: '', children: [], dataset: {}, style: {}, events: {},
+        get textContent() { return this.children.length ? this.children.map(child => child.textContent).join('') : this._textContent; },
+        set textContent(value) { this._textContent = String(value); this.children = []; },
         classList: { toggle() {}, add() {}, remove() {} },
         addEventListener(name, fn) { this.events[name] = fn; },
         setAttribute(name, value) { this[name] = value; }, removeAttribute(name) { delete this[name]; },
-        append(...items) { this.children.push(...items); }, replaceChildren(...items) { this.children = items; },
+        append(...items) { this.children.push(...items); }, replaceChildren(...items) { this._textContent = ''; this.children = items; },
         querySelector() { return this.counter ??= node(); }, reset() {}, scrollIntoView() {},
         click() { this.clicked = true; }, focus() { this.focused = true; }
     };
@@ -40,7 +42,7 @@ function setupDocument() {
 }
 
 const deferred = () => { let resolve; const promise = new Promise(r => { resolve = r; }); return { resolve, promise }; };
-const pool = (id, server) => ({ id, server, name: `${server}期間`, start_at: '2026-10-01T00:00:00Z', end_at: '2026-11-01T00:00:00Z', competitive_pool_characters: [] });
+const pool = (id, server) => ({ id, server, name: `${server}期間`, season_id: `season-${server}`, season: { id: `season-${server}`, name: `${server}賽季` }, pool_number: 1, start_at: '2026-10-01T00:00:00Z', end_at: '2026-11-01T00:00:00Z', competitive_pool_characters: [] });
 
 test('untrusted route values default to Taiwan while data writes require an explicit valid server', () => {
     for (const value of [null, undefined, '', 'wrong', '__proto__', 'constructor']) {
@@ -64,10 +66,12 @@ test('late responses cannot replace the selected server and switching updates th
         assert.equal(new URL(window.location.href).searchParams.get('server'), 'cn');
         cn.resolve(pool('cn', 'cn'));
         await cn.promise; await Promise.resolve();
-        assert.equal(ui.get('competitive-pool-message').textContent, '陸服｜cn期間');
+        assert.equal(ui.get('competitive-pool-message').children[0].dataset.server, 'cn');
+        assert.equal(ui.get('competitive-pool-message').children[1].textContent, 'cn期間');
         assert.equal(ui.get('refresh-competitive-pool-button').disabled, false);
         tw.resolve(pool('tw', 'tw')); await first;
-        assert.equal(ui.get('competitive-pool-message').textContent, '陸服｜cn期間');
+        assert.equal(ui.get('competitive-pool-message').children[0].dataset.server, 'cn');
+        assert.equal(ui.get('competitive-pool-message').children[1].textContent, 'cn期間');
         assert.deepEqual(calls, ['tw', 'cn']);
         await view.loadCurrentCompetitivePool('cn');
     } finally { Object.assign(globalThis, original); }
@@ -136,10 +140,12 @@ test('admin switching keeps the selected server on cancel or busy operations and
         assert.equal(select.value, 'cn'); assert.deepEqual(reads, ['tw', 'cn']);
         assert.equal(ui.get('competitive-pool-editor').hidden, true);
         editor.showNewCompetitivePoolEditor();
-        ui.get('competitive-pool-name').value = '測試';
+        ui.get('competitive-pool-season-name').value = '測試';
         await editor.saveCompetitivePool({ preventDefault() {} });
-        assert.equal(writes[0][3], 'cn');
-        assert.match(ui.get('competitive-pool-editor-title').textContent, /^陸服｜/);
+        assert.equal(writes[0][0], '測試賽季');
+        assert.equal(writes[0][1], 1);
+        assert.equal(writes[0][4], 'cn');
+        assert.equal(ui.get('competitive-pool-editor-title').children[0].textContent, '陸服');
     } finally { Object.assign(globalThis, original); }
 });
 
@@ -193,7 +199,8 @@ test('preview titles show the selected server', () => {
             clearObservedTypeIcons() {}, getPreviewCharacters: () => []
         });
         preview.openCompetitivePoolPreview();
-        assert.equal(ui.get('competitive-pool-preview-title').textContent, '陸服｜測試期間｜首頁預覽');
+        assert.equal(ui.get('competitive-pool-preview-title').children[0].textContent, '陸服');
+        assert.equal(ui.get('competitive-pool-preview-title').children[1].textContent, '測試期間｜首頁預覽');
     } finally { Object.assign(globalThis, original); }
 });
 

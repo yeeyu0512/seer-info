@@ -1,5 +1,7 @@
 import { competitiveServerLabel } from "../competitive/servers.js";
+import { renderCompetitivePoolTitle } from "../competitive/pool-title.js";
 import { normalizePetQuery, searchPets } from "../shared/pet-search.js";
+import { competitivePoolTitle, normalizeSeasonName, requirePoolNumber } from "../competitive/seasons.js";
 
 export function createCompetitiveEditor({
     getAdminCompetitivePools,
@@ -34,6 +36,8 @@ export function createCompetitiveEditor({
     const competitivePoolEditor = document.getElementById("competitive-pool-editor");
     const competitivePoolEditorTitle = document.getElementById("competitive-pool-editor-title");
     const competitivePoolForm = document.getElementById("competitive-pool-form");
+    const seasonNameInput = document.getElementById("competitive-pool-season-name");
+    const poolNumberInput = document.getElementById("competitive-pool-number");
     const competitivePoolFormMessage = document.getElementById("competitive-pool-form-message");
     const createCompetitivePoolButton = document.getElementById("create-competitive-pool-button");
     const cancelCompetitivePoolButton = document.getElementById("cancel-competitive-pool-button");
@@ -110,6 +114,13 @@ export function createCompetitiveEditor({
     cancelCompetitivePoolButton.addEventListener("click", () => { if (!isBusy()) closeCompetitivePoolEditor(); });
 
     competitivePoolForm.addEventListener("submit", saveCompetitivePool);
+    seasonNameInput.addEventListener("input", updateGeneratedPoolTitle);
+    poolNumberInput.addEventListener("input", updateGeneratedPoolTitle);
+
+    function updateGeneratedPoolTitle() {
+        try { competitivePoolNameInput.value = competitivePoolTitle(seasonNameInput.value, poolNumberInput.value); }
+        catch { competitivePoolNameInput.value = ""; }
+    }
 
     deleteCompetitivePoolButton.addEventListener("click", deleteSelectedCompetitivePool);
 
@@ -140,6 +151,10 @@ export function createCompetitiveEditor({
             const pools = await getAdminCompetitivePools(server);
             if (requestId !== poolListRequestId || server !== selectedServer) return false;
             competitivePools = pools;
+            if (selectedCompetitivePool) {
+                selectedCompetitivePool = pools.find(pool => pool.id === selectedCompetitivePool.id) || null;
+                if (selectedCompetitivePool) renderCompetitivePoolTitle(competitivePoolEditorTitle, server, selectedCompetitivePool.name);
+            }
             renderAdminCompetitivePools();
             createCompetitivePoolButton.disabled = false;
             return true;
@@ -173,7 +188,7 @@ export function createCompetitiveEditor({
 
             item.className = "competitive-pool-admin-item";
             details.className = "competitive-pool-admin-details";
-            name.textContent = `${competitiveServerLabel(pool.server)}｜${pool.name}`;
+            renderCompetitivePoolTitle(name, pool.server, pool.name);
             dates.textContent = `${formatDate(pool.start_at)} → ${formatDate(pool.end_at)}`;
             status.className = "competitive-pool-period-status";
             status.textContent = startsAt <= now && endsAt > now
@@ -197,8 +212,11 @@ export function createCompetitiveEditor({
         ++competitivePoolCharacterLoadRequestId;
         exportCompetitivePoolCsvButton.disabled = true;
         competitivePoolEditor.hidden = false;
-        competitivePoolEditorTitle.textContent = `新增${competitiveServerLabel(selectedServer)}競技池期間`;
+        renderCompetitivePoolTitle(competitivePoolEditorTitle, selectedServer, "新增競技池期間");
         competitivePoolForm.reset();
+        seasonNameInput.value = "";
+        poolNumberInput.value = "1";
+        updateGeneratedPoolTitle();
         setPoolDateValue("competitive-pool-start", "");
         setPoolDateValue("competitive-pool-end", "");
         competitivePoolFormMessage.textContent = "";
@@ -226,8 +244,10 @@ export function createCompetitiveEditor({
 
         competitivePoolEditor.hidden = false;
         competitivePoolCharacters = [];
-        competitivePoolEditorTitle.textContent = `${competitiveServerLabel(selectedCompetitivePool.server)}｜${selectedCompetitivePool.name}`;
-        competitivePoolNameInput.value = selectedCompetitivePool.name;
+        renderCompetitivePoolTitle(competitivePoolEditorTitle, selectedCompetitivePool.server, selectedCompetitivePool.name);
+        seasonNameInput.value = selectedCompetitivePool.season.name;
+        poolNumberInput.value = String(selectedCompetitivePool.pool_number);
+        updateGeneratedPoolTitle();
         setPoolDateValue("competitive-pool-start", toLocalDateTime(selectedCompetitivePool.start_at));
         setPoolDateValue("competitive-pool-end", toLocalDateTime(selectedCompetitivePool.end_at));
         competitivePoolFormMessage.textContent = "";
@@ -243,11 +263,17 @@ export function createCompetitiveEditor({
 
     async function saveCompetitivePool(event) {
         event.preventDefault();
-        const name = competitivePoolNameInput.value.trim();
+        let identity;
+        try {
+            const seasonName = normalizeSeasonName(seasonNameInput.value);
+            if (!seasonName || seasonName === "賽季" || seasonName.length > 100) throw new Error("請填寫 100 字以內的賽季名稱。");
+            identity = { seasonName, poolNumber: requirePoolNumber(poolNumberInput.value) };
+        }
+        catch (error) { competitivePoolFormMessage.textContent = error.message; return; }
         const startAt = toIsoDate("competitive-pool-start");
         const endAt = toIsoDate("competitive-pool-end");
-        if (!name || !startAt || !endAt) {
-            competitivePoolFormMessage.textContent = "請填寫期間名稱、開始時間與結束時間。";
+        if (!startAt || !endAt) {
+            competitivePoolFormMessage.textContent = "請填寫開始時間與結束時間。";
             return;
         }
         if (new Date(endAt) <= new Date(startAt)) {
@@ -261,9 +287,9 @@ export function createCompetitiveEditor({
         try {
             let poolId = selectedCompetitivePool?.id;
             if (poolId) {
-                await updateCompetitivePool(poolId, name, startAt, endAt);
+                await updateCompetitivePool(poolId, identity.seasonName, identity.poolNumber, startAt, endAt, selectedServer);
             } else {
-                poolId = await createCompetitivePool(name, startAt, endAt, selectedServer);
+                poolId = await createCompetitivePool(identity.seasonName, identity.poolNumber, startAt, endAt, selectedServer);
             }
             if (!await loadAdminCompetitivePools()) {
                 competitivePoolFormMessage.textContent = "期間已儲存，但重新載入清單失敗；請重新整理管理頁面。";

@@ -1,4 +1,5 @@
-import { normalizeCompetitiveServer, competitiveServerLabel } from "./servers.js";
+import { normalizeCompetitiveServer } from "./servers.js";
+import { renderCompetitivePoolTitle } from "./pool-title.js";
 
 export function createCompetitiveView({
     getCurrentCompetitivePool,
@@ -52,9 +53,8 @@ export function createCompetitiveView({
     async function loadCurrentCompetitivePool(server = serverSelect.value) {
         server = normalizeCompetitiveServer(server);
         serverSelect.value = server;
-        const serverLabel = competitiveServerLabel(server);
         const requestId = ++competitivePoolRequestId;
-        competitivePoolMessage.textContent = `正在載入${serverLabel}競技池資料…`;
+        renderCompetitivePoolTitle(competitivePoolMessage, server, "正在載入競技池資料…");
         competitivePoolPeriod.textContent = "";
         competitivePoolTypeTabs.hidden = true;
         competitivePoolGroups.hidden = true;
@@ -68,7 +68,7 @@ export function createCompetitiveView({
             if (requestId !== competitivePoolRequestId) return;
             if (!pool) {
                 currentCompetitivePoolCharacters = [];
-                competitivePoolMessage.textContent = `${serverLabel}目前沒有進行中的競技池。`;
+                renderCompetitivePoolTitle(competitivePoolMessage, server, "目前沒有進行中的競技池。");
                 return;
             }
 
@@ -82,14 +82,14 @@ export function createCompetitiveView({
             competitivePoolTypeTabs.hidden = false;
             updateCompetitivePoolTypeTabs();
             renderCompetitivePoolCharacters();
-            competitivePoolMessage.textContent = `${serverLabel}｜${pool.name}`;
+            renderCompetitivePoolTitle(competitivePoolMessage, server, pool.name);
             competitivePoolGroups.hidden = false;
             competitivePoolGroups.setAttribute("aria-labelledby", competitivePoolTypeTabButtons
                 .find((button) => button.dataset.poolType === selectedCompetitivePoolType)?.id || "");
         } catch (error) {
             if (requestId !== competitivePoolRequestId) return;
             console.error("Load competitive pool error:", error);
-            competitivePoolMessage.textContent = `${serverLabel}競技池資料載入失敗，請稍後重新整理。`;
+            renderCompetitivePoolTitle(competitivePoolMessage, server, "競技池資料載入失敗，請稍後重新整理。");
         } finally {
             if (requestId === competitivePoolRequestId) refreshCompetitivePoolButton.disabled = false;
         }
