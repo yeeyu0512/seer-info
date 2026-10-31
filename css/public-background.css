@@ -1,0 +1,21 @@
+/* Scene 1634 is used only by the public pages that load this stylesheet. */
+body {
+    background-image:
+        linear-gradient(90deg, rgba(5, 7, 16, .36) 0%, rgba(6, 8, 18, .25) 44%, rgba(5, 7, 16, .19) 100%),
+        linear-gradient(180deg, rgba(6, 8, 18, .04), rgba(6, 8, 18, .30)),
+        url("../assets/site/background-scene-1634.png");
+}
+
+@media (max-width: 680px) {
+    body {
+        background-image: none;
+    }
+
+    /* Retain the shared fixed viewport layer on mobile. */
+    body::before {
+        background-image:
+            linear-gradient(90deg, rgba(5, 7, 16, .36), rgba(5, 7, 16, .19)),
+            linear-gradient(180deg, rgba(6, 8, 18, .04), rgba(6, 8, 18, .30)),
+            url("../assets/site/background-scene-1634.png");
+    }
+}
