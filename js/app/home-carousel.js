@@ -1,5 +1,7 @@
 // Homepage artwork and responsive image sources.
 export const homeCarouselSlides = [
+    { src: "./assets/site/home-banner-4-1600.webp", srcset: "./assets/site/home-banner-4-960.webp 960w, ./assets/site/home-banner-4-1600.webp 1600w, ./assets/site/home-banner-4-2400.webp 2400w", sizes: "(max-width: 1200px) calc(100vw - 32px), 1120px", width: 1600, height: 836, alt: "賽爾號銀髮角色與花瓣、金色光環場景", position: "50% 30%", zoom: 1.4,
+        mobile: { srcset: "./assets/site/home-banner-4-mb-480.webp 480w, ./assets/site/home-banner-4-mb-960.webp 960w, ./assets/site/home-banner-4-mb-1600.webp 1600w", sizes: "calc(100vw - 32px)", position: "50% 35%" } },
     { src: "./assets/site/home-banner-1600.webp", srcset: "./assets/site/home-banner-960.webp 960w, ./assets/site/home-banner-1600.webp 1600w, ./assets/site/home-banner-2400.webp 2400w", sizes: "(max-width: 1200px) calc(100vw - 32px), 1120px", width: 1600, height: 900, alt: "賽爾號角色聚會場景", position: "50% 25%" },
     { src: "./assets/site/home-banner-3-1600.webp", srcset: "./assets/site/home-banner-3-960.webp 960w, ./assets/site/home-banner-3-1600.webp 1600w, ./assets/site/home-banner-3-2400.webp 2400w", sizes: "(max-width: 1200px) calc(100vw - 32px), 1120px", width: 1600, height: 762, alt: "賽爾號角色與金色星環場景", position: "32% 20%" },
     { src: "./assets/site/home-banner-2-1600.webp", srcset: "./assets/site/home-banner-2-960.webp 960w, ./assets/site/home-banner-2-1600.webp 1600w, ./assets/site/home-banner-2-2400.webp 2400w", sizes: "(max-width: 1200px) calc(100vw - 32px), 1120px", width: 1600, height: 933, alt: "賽爾號紅髮角色與暮色水面", position: "50% 20%" }
@@ -28,7 +30,21 @@ export function initHomeCarousel(home, slides = homeCarouselSlides) {
         if (slide.src) {
             const image = document.createElement("img");
             image.alt = slide.alt;
-            image.style.objectPosition = slide.position || "50% 50%";
+            image.style.setProperty("--carousel-image-position", slide.position || "50% 50%");
+            image.style.setProperty("--carousel-image-zoom", slide.zoom || 1);
+            let media = image;
+            if (slide.mobile) {
+                image.classList.add("has-mobile-source");
+                image.style.setProperty("--carousel-mobile-position", slide.mobile.position || "50% 50%");
+                const picture = document.createElement("picture");
+                const source = document.createElement("source");
+                source.media = "(max-width: 760px)";
+                source.type = "image/webp";
+                source.srcset = slide.mobile.srcset;
+                source.sizes = slide.mobile.sizes || "100vw";
+                picture.append(source, image);
+                media = picture;
+            }
             image.draggable = false;
             image.loading = "eager";
             image.addEventListener("load", () => { placeholder.hidden = true; });
@@ -42,7 +58,7 @@ export function initHomeCarousel(home, slides = homeCarouselSlides) {
             if (slide.width && slide.height) { image.width = slide.width; image.height = slide.height; }
             if (slide.srcset) { image.sizes = slide.sizes || "100vw"; image.srcset = slide.srcset; }
             image.src = slide.src;
-            panel.append(image);
+            panel.append(media);
         }
         stage.append(panel);
         return panel;
