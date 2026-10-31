@@ -25,6 +25,10 @@
 #about-section .about-issue-group { padding: 0 0 18px; border-bottom: 1px solid rgba(196,191,255,.1); }
 #about-section .about-issue-group:last-child { padding-bottom: 0; border-bottom: 0; }
 #about-section .about-issue-group h3 { display: flex; align-items: center; gap: 9px; margin: 0 0 8px; color: #dce1f2; font-size: 14px; font-weight: 600; }
+.about-issue-badge { display: inline-flex; align-items: center; gap: 7px; padding: 5px 11px; border: 1px solid; border-radius: 999px; font-size: 12px; font-weight: 600; line-height: 1.4; white-space: nowrap; }
+.about-issue-badge.is-investigating { color: #edc581; border-color: rgba(231,183,101,.24); background: rgba(231,183,101,.08); }
+.about-issue-badge.is-in-progress { color: #b6b8ff; border-color: rgba(142,157,248,.25); background: rgba(142,157,248,.09); }
+.about-issue-badge.is-on-hold { color: #ec9aa7; border-color: rgba(225,111,133,.24); background: rgba(225,111,133,.08); }
 .about-issue-status { width: 8px; height: 8px; flex: 0 0 8px; border-radius: 50%; }
 .about-issue-status.is-investigating { background: #e7b765; box-shadow: 0 0 8px #e7b76555; animation: about-issue-light 1.8s ease-in-out infinite; }
 .about-issue-status.is-in-progress { background: #8e9df8; box-shadow: 0 0 8px #8e9df855; animation: about-issue-light 1.8s ease-in-out infinite; }
