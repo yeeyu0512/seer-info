@@ -1,3 +1,6 @@
+import { competitiveServerLabel } from "../competitive/servers.js";
+import { normalizePetQuery, searchPets } from "../shared/pet-search.js";
+
 export function createCompetitiveEditor({
     getAdminCompetitivePools,
     showAdminNotification,
@@ -15,6 +18,7 @@ export function createCompetitiveEditor({
     toCsvCell,
     fetchJson,
     toTraditionalChinese,
+    convertToSimplifiedChinese,
     addCompetitivePoolCharacter,
     competitivePoolImportProgress,
     parseCompetitivePoolPetIds,
@@ -23,6 +27,10 @@ export function createCompetitiveEditor({
     deleteCompetitivePoolCharacter
 }) {
     const competitivePoolAdminList = document.getElementById("competitive-pool-admin-list");
+    const serverSelect = document.getElementById("admin-competitive-pool-server");
+    let selectedServer = "tw";
+    serverSelect.value = selectedServer;
+    let poolListRequestId = 0;
     const competitivePoolEditor = document.getElementById("competitive-pool-editor");
     const competitivePoolEditorTitle = document.getElementById("competitive-pool-editor-title");
     const competitivePoolForm = document.getElementById("competitive-pool-form");
@@ -42,6 +50,7 @@ export function createCompetitiveEditor({
     const competitivePetName = document.getElementById("competitive-pet-name");
     const competitivePetIdPreview = document.getElementById("competitive-pet-id-preview");
     const competitivePetMessage = document.getElementById("competitive-pet-message");
+    const competitivePetSearchResults = document.getElementById("competitive-pet-search-results");
     const competitivePoolCharacterList = document.getElementById("competitive-pool-character-list");
     const exportCompetitivePoolCsvButton = document.getElementById("export-competitive-pool-csv-button");
     const competitivePoolImportForm = document.getElementById("competitive-pool-import-form");
@@ -62,20 +71,56 @@ export function createCompetitiveEditor({
     let competitivePoolCharacters = [];
 
     let resolvedCompetitivePet = null;
+    let resolvedCompetitivePetQuery = "";
+    let competitivePetLookupRequestId = 0;
+    let petAddInProgress = false;
 
     let competitivePoolCharacterLoadRequestId = 0;
 
-    createCompetitivePoolButton.addEventListener("click", showNewCompetitivePoolEditor);
+    const isBusy = () => petAddInProgress || saveCompetitivePoolButton.disabled || deleteCompetitivePoolButton.disabled
+        || competitivePoolImportButton.disabled || lookupCompetitivePetButton.disabled
+        || (!competitivePetPreview.hidden && addCompetitivePetButton.disabled);
 
-    cancelCompetitivePoolButton.addEventListener("click", closeCompetitivePoolEditor);
+    serverSelect.addEventListener("change", async () => {
+        const nextServer = serverSelect.value;
+        serverSelect.value = selectedServer;
+        if (nextServer === selectedServer) return;
+        if (isBusy()) {
+            showAdminNotification("請等待目前操作完成後再切換伺服器。", "error");
+            return;
+        }
+        serverSelect.disabled = true;
+        try {
+            if (!competitivePoolEditor.hidden && !await showConfirmDialog(
+                "切換伺服器會關閉目前編輯區，尚未儲存的內容不會保留。確定切換嗎？",
+                { confirmLabel: "切換伺服器" }
+            )) return;
+            if (isBusy()) return;
+            selectedServer = nextServer;
+            serverSelect.value = selectedServer;
+            closeCompetitivePoolEditor();
+            await loadAdminCompetitivePools();
+        } finally {
+            serverSelect.disabled = false;
+        }
+    });
+
+    createCompetitivePoolButton.addEventListener("click", () => { if (!isBusy()) showNewCompetitivePoolEditor(); });
+
+    cancelCompetitivePoolButton.addEventListener("click", () => { if (!isBusy()) closeCompetitivePoolEditor(); });
 
     competitivePoolForm.addEventListener("submit", saveCompetitivePool);
 
     deleteCompetitivePoolButton.addEventListener("click", deleteSelectedCompetitivePool);
 
     competitivePetIdInput.addEventListener("input", clearCompetitivePetPreview);
+    competitivePetIdInput.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter") return;
+        event.preventDefault();
+        if (!lookupCompetitivePetButton.disabled) lookupCompetitivePet();
+    });
 
-    lookupCompetitivePetButton.addEventListener("click", lookupCompetitivePet);
+    lookupCompetitivePetButton.addEventListener("click", () => lookupCompetitivePet());
 
     competitivePoolCharacterForm.addEventListener("submit", addSelectedCompetitivePet);
 
@@ -86,11 +131,20 @@ export function createCompetitiveEditor({
     competitivePoolImportForm.addEventListener("submit", importCompetitivePoolCharacters);
 
     async function loadAdminCompetitivePools() {
+        const requestId = ++poolListRequestId;
+        const server = selectedServer;
+        competitivePools = [];
+        competitivePoolAdminList.innerHTML = "<p class=\"empty-state\">正在載入競技池資料…</p>";
+        createCompetitivePoolButton.disabled = true;
         try {
-            competitivePools = await getAdminCompetitivePools();
+            const pools = await getAdminCompetitivePools(server);
+            if (requestId !== poolListRequestId || server !== selectedServer) return false;
+            competitivePools = pools;
             renderAdminCompetitivePools();
+            createCompetitivePoolButton.disabled = false;
             return true;
         } catch (error) {
+            if (requestId !== poolListRequestId || server !== selectedServer) return false;
             console.error("Load competitive pools error:", error);
             competitivePoolAdminList.innerHTML = "<p class=\"empty-state\">競技池資料載入失敗。</p>";
             showAdminNotification(`載入競技池資料失敗：${getAdminErrorMessage(error)}`, "error");
@@ -101,7 +155,7 @@ export function createCompetitiveEditor({
     function renderAdminCompetitivePools() {
         competitivePoolAdminList.replaceChildren();
         if (competitivePools.length === 0) {
-            competitivePoolAdminList.innerHTML = "<p class=\"empty-state\">尚未建立任何競技池期間。</p>";
+            competitivePoolAdminList.textContent = `${competitiveServerLabel(selectedServer)}尚未建立任何競技池期間。`;
             return;
         }
 
@@ -119,7 +173,7 @@ export function createCompetitiveEditor({
 
             item.className = "competitive-pool-admin-item";
             details.className = "competitive-pool-admin-details";
-            name.textContent = pool.name;
+            name.textContent = `${competitiveServerLabel(pool.server)}｜${pool.name}`;
             dates.textContent = `${formatDate(pool.start_at)} → ${formatDate(pool.end_at)}`;
             status.className = "competitive-pool-period-status";
             status.textContent = startsAt <= now && endsAt > now
@@ -129,7 +183,7 @@ export function createCompetitiveEditor({
             editButton.type = "button";
             editButton.className = "secondary-button compact-button";
             editButton.textContent = "管理名單";
-            editButton.addEventListener("click", () => openCompetitivePoolEditor(pool.id));
+            editButton.addEventListener("click", () => { if (!isBusy()) openCompetitivePoolEditor(pool.id); });
             details.append(name, dates);
             actions.append(status, editButton);
             item.append(details, actions);
@@ -139,9 +193,11 @@ export function createCompetitiveEditor({
 
     function showNewCompetitivePoolEditor() {
         selectedCompetitivePool = null;
+        competitivePoolCharacters = [];
+        ++competitivePoolCharacterLoadRequestId;
         exportCompetitivePoolCsvButton.disabled = true;
         competitivePoolEditor.hidden = false;
-        competitivePoolEditorTitle.textContent = "新增競技池期間";
+        competitivePoolEditorTitle.textContent = `新增${competitiveServerLabel(selectedServer)}競技池期間`;
         competitivePoolForm.reset();
         setPoolDateValue("competitive-pool-start", "");
         setPoolDateValue("competitive-pool-end", "");
@@ -156,6 +212,7 @@ export function createCompetitiveEditor({
     }
 
     function closeCompetitivePoolEditor() {
+        ++competitivePoolCharacterLoadRequestId;
         competitivePoolEditor.hidden = true;
         selectedCompetitivePool = null;
         competitivePoolCharacters = [];
@@ -168,7 +225,8 @@ export function createCompetitiveEditor({
         if (!selectedCompetitivePool) return;
 
         competitivePoolEditor.hidden = false;
-        competitivePoolEditorTitle.textContent = selectedCompetitivePool.name;
+        competitivePoolCharacters = [];
+        competitivePoolEditorTitle.textContent = `${competitiveServerLabel(selectedCompetitivePool.server)}｜${selectedCompetitivePool.name}`;
         competitivePoolNameInput.value = selectedCompetitivePool.name;
         setPoolDateValue("competitive-pool-start", toLocalDateTime(selectedCompetitivePool.start_at));
         setPoolDateValue("competitive-pool-end", toLocalDateTime(selectedCompetitivePool.end_at));
@@ -205,7 +263,7 @@ export function createCompetitiveEditor({
             if (poolId) {
                 await updateCompetitivePool(poolId, name, startAt, endAt);
             } else {
-                poolId = await createCompetitivePool(name, startAt, endAt);
+                poolId = await createCompetitivePool(name, startAt, endAt, selectedServer);
             }
             if (!await loadAdminCompetitivePools()) {
                 competitivePoolFormMessage.textContent = "期間已儲存，但重新載入清單失敗；請重新整理管理頁面。";
@@ -225,15 +283,16 @@ export function createCompetitiveEditor({
 
     async function deleteSelectedCompetitivePool() {
         if (!selectedCompetitivePool) return;
+        const pool = selectedCompetitivePool;
         const confirmed = await showConfirmDialog(
-            `確定要刪除「${selectedCompetitivePool.name}」競技池期間及其中所有精靈名單嗎？此操作無法復原。`,
+            `確定要刪除「${competitiveServerLabel(pool.server)}｜${pool.name}」競技池期間及其中所有精靈名單嗎？此操作無法復原。`,
             { confirmLabel: "刪除期間", danger: true }
         );
-        if (!confirmed) return;
+        if (!confirmed || selectedCompetitivePool?.id !== pool.id) return;
 
         deleteCompetitivePoolButton.disabled = true;
         try {
-            await deleteCompetitivePool(selectedCompetitivePool.id);
+            await deleteCompetitivePool(pool.id);
             closeCompetitivePoolEditor();
             await loadAdminCompetitivePools();
             showAdminNotification("競技池期間與所屬精靈名單已刪除。", "success");
@@ -275,12 +334,13 @@ export function createCompetitiveEditor({
             restricted: ["限制池", "最多攜帶 2 隻"],
             semi_restricted: ["準限制池", "最多攜帶 3 隻"]
         };
-        const rows = [["競技池期間", "開始時間", "結束時間", "池種", "攜帶規則", "精靈 ID", "精靈名稱"]];
+        const rows = [["伺服器", "競技池期間", "開始時間", "結束時間", "池種", "攜帶規則", "精靈 ID", "精靈名稱"]];
         competitivePoolCharacters.forEach((character) => {
             const [typeName, rule] = Object.prototype.hasOwnProperty.call(typeLabels, character.pool_type)
                 ? typeLabels[character.pool_type]
                 : ["未知", ""];
             rows.push([
+                competitiveServerLabel(selectedCompetitivePool.server),
                 selectedCompetitivePool.name,
                 formatDate(selectedCompetitivePool.start_at),
                 formatDate(selectedCompetitivePool.end_at),
@@ -297,7 +357,7 @@ export function createCompetitiveEditor({
         const link = document.createElement("a");
         const safePoolName = selectedCompetitivePool.name.replace(/[\\/:*?"<>|]/g, "_");
         link.href = url;
-        link.download = `${safePoolName}_競技池名單.csv`;
+        link.download = `${competitiveServerLabel(selectedCompetitivePool.server)}_${safePoolName}_競技池名單.csv`;
         link.click();
         URL.revokeObjectURL(url);
         showAdminNotification(`已匯出「${selectedCompetitivePool.name}」的 ${competitivePoolCharacters.length} 隻競技池精靈。`, "success");
@@ -360,28 +420,78 @@ export function createCompetitiveEditor({
         });
     }
 
-    async function lookupCompetitivePet() {
-        const petId = competitivePetIdInput.value.trim();
-        if (!/^\d+$/.test(petId) || !Number.isSafeInteger(Number(petId)) || Number(petId) <= 0) {
+    function currentPetQuery() {
+        return competitivePetIdInput.value.normalize("NFKC").trim();
+    }
+
+    function showResolvedCompetitivePet(pet, query) {
+        resolvedCompetitivePet = pet;
+        resolvedCompetitivePetQuery = query;
+        competitivePetPreview.hidden = false;
+        competitivePetAvatar.src = `https://newseer.61.com/web/monster/head/${pet.id}.png`;
+        competitivePetAvatar.alt = `${pet.name} 精靈頭像`;
+        competitivePetName.textContent = pet.name;
+        competitivePetIdPreview.textContent = `#${pet.id}`;
+        addCompetitivePetButton.disabled = false;
+        competitivePetMessage.textContent = "精靈資料已確認，請選擇池種後加入名單。";
+    }
+
+    async function lookupCompetitivePet(selectedPetId = null) {
+        if (petAddInProgress) return;
+        const query = currentPetQuery();
+        clearCompetitivePetPreview();
+        if (!query || !normalizePetQuery(query, value => value)) {
+            competitivePetMessage.textContent = "請輸入精靈名稱或 ID。";
+            return;
+        }
+        if (/^\d+$/.test(query) && (!Number.isSafeInteger(Number(query)) || Number(query) <= 0)) {
             competitivePetMessage.textContent = "請輸入有效的精靈 ID。";
             return;
         }
 
+        const requestId = competitivePetLookupRequestId;
         lookupCompetitivePetButton.disabled = true;
         competitivePetIdInput.disabled = true;
         lookupCompetitivePetButton.textContent = "查詢中…";
         competitivePetMessage.textContent = "正在向 SeerAPI 查詢精靈…";
-        clearCompetitivePetPreview();
         try {
-            resolvedCompetitivePet = await fetchCompetitivePet(Number(petId));
-            competitivePetPreview.hidden = false;
-            competitivePetAvatar.src = `https://newseer.61.com/web/monster/head/${resolvedCompetitivePet.id}.png`;
-            competitivePetAvatar.alt = `${resolvedCompetitivePet.name} 精靈頭像`;
-            competitivePetName.textContent = resolvedCompetitivePet.name;
-            competitivePetIdPreview.textContent = `#${resolvedCompetitivePet.id}`;
-            addCompetitivePetButton.disabled = false;
-            competitivePetMessage.textContent = "精靈資料已確認，加入後會顯示在首頁競技池。";
+            if (selectedPetId || /^\d+$/.test(query)) {
+                const pet = await fetchCompetitivePet(selectedPetId || Number(query));
+                if (requestId !== competitivePetLookupRequestId) return;
+                showResolvedCompetitivePet(pet, query);
+                if (selectedPetId) addCompetitivePetButton.focus();
+                return;
+            }
+            const { records, count } = await searchPets(query, { fetchCached: fetchJson, simplified: convertToSimplifiedChinese });
+            if (requestId !== competitivePetLookupRequestId) return;
+            const candidates = records.filter(pet => Number.isSafeInteger(Number(pet.id)) && Number(pet.id) > 0 && String(pet.name || "").trim());
+            if (!candidates.length) {
+                competitivePetMessage.textContent = "找不到符合名稱的精靈，請改用其他關鍵字或 ID。";
+                return;
+            }
+            competitivePetSearchResults.hidden = false;
+            for (const pet of candidates) {
+                const button = document.createElement("button");
+                const avatar = document.createElement("img");
+                const label = document.createElement("span");
+                button.type = "button";
+                button.className = "secondary-button competitive-pet-search-result";
+                avatar.src = `https://newseer.61.com/web/monster/head/${encodeURIComponent(pet.id)}.png`;
+                avatar.alt = "";
+                avatar.loading = "lazy";
+                avatar.addEventListener("error", () => { avatar.hidden = true; }, { once: true });
+                label.textContent = `${toTraditionalChinese(pet.name)} #${pet.id}`;
+                button.append(avatar, label);
+                button.addEventListener("click", () => {
+                    if (requestId !== competitivePetLookupRequestId || query !== currentPetQuery() || lookupCompetitivePetButton.disabled) return;
+                    return lookupCompetitivePet(Number(pet.id));
+                });
+                competitivePetSearchResults.append(button);
+            }
+            competitivePetMessage.textContent = `找到 ${candidates.length} 隻符合名稱的精靈，請點選確認。${Number(count) > 100 ? "結果僅查詢前 100 筆，請使用更完整名稱縮小範圍。" : ""}`;
+            competitivePetSearchResults.querySelector("button")?.focus();
         } catch (error) {
+            if (requestId !== competitivePetLookupRequestId) return;
             console.error("Lookup competitive pet error:", error);
             competitivePetMessage.textContent = `精靈查詢失敗：${getAdminErrorMessage(error)}`;
         } finally {
@@ -402,7 +512,12 @@ export function createCompetitiveEditor({
     }
 
     function clearCompetitivePetPreview() {
+        ++competitivePetLookupRequestId;
         resolvedCompetitivePet = null;
+        resolvedCompetitivePetQuery = "";
+        competitivePetSearchResults.replaceChildren();
+        competitivePetSearchResults.hidden = true;
+        competitivePetMessage.textContent = "";
         if (!competitivePetPreview) return;
         competitivePetPreview.hidden = true;
         competitivePetAvatar.removeAttribute("src");
@@ -413,23 +528,27 @@ export function createCompetitiveEditor({
 
     async function addSelectedCompetitivePet(event) {
         event.preventDefault();
-        if (!selectedCompetitivePool) return;
-        const petId = Number(competitivePetIdInput.value);
-        if (!resolvedCompetitivePet || resolvedCompetitivePet.id !== petId) {
-            competitivePetMessage.textContent = "請先查詢並確認此精靈 ID。";
+        if (!selectedCompetitivePool || petAddInProgress) return;
+        if (!resolvedCompetitivePet || resolvedCompetitivePetQuery !== currentPetQuery()) {
+            competitivePetMessage.textContent = "請先查詢並選擇要加入的精靈。";
             return;
         }
 
+        petAddInProgress = true;
+        const pet = resolvedCompetitivePet;
+        const poolId = selectedCompetitivePool.id;
         addCompetitivePetButton.disabled = true;
+        competitivePetIdInput.disabled = true;
+        lookupCompetitivePetButton.disabled = true;
         competitivePetMessage.textContent = "正在加入精靈名單…";
         try {
             await addCompetitivePoolCharacter(
-                selectedCompetitivePool.id,
-                resolvedCompetitivePet.id,
-                resolvedCompetitivePet.name,
+                poolId,
+                pet.id,
+                pet.name,
                 competitivePetTypeInput.value
             );
-            const petName = resolvedCompetitivePet.name;
+            const petName = pet.name;
             competitivePoolCharacterForm.reset();
             clearCompetitivePetPreview();
             competitivePetMessage.textContent = `已加入「${petName}」。`;
@@ -440,6 +559,9 @@ export function createCompetitiveEditor({
             competitivePetMessage.textContent = `加入失敗：${getAdminErrorMessage(error)}`;
             showAdminNotification(`加入競技池精靈失敗：${getAdminErrorMessage(error)}`, "error");
         } finally {
+            petAddInProgress = false;
+            competitivePetIdInput.disabled = false;
+            lookupCompetitivePetButton.disabled = false;
             addCompetitivePetButton.disabled = !resolvedCompetitivePet;
         }
     }
@@ -557,15 +679,16 @@ export function createCompetitiveEditor({
     }
 
     async function removeCompetitivePoolCharacter(character) {
+        const poolId = selectedCompetitivePool?.id;
         const confirmed = await showConfirmDialog(
             `確定要從競技池名單移除「${character.pet_name}」嗎？`,
             { confirmLabel: "移除", danger: true }
         );
-        if (!confirmed) return;
+        if (!confirmed || !poolId || selectedCompetitivePool?.id !== poolId) return;
 
         try {
             await deleteCompetitivePoolCharacter(character.id);
-            await loadCompetitivePoolCharacters();
+            if (selectedCompetitivePool?.id === poolId) await loadCompetitivePoolCharacters();
             showAdminNotification(`已從競技池名單移除「${character.pet_name}」。`, "success");
         } catch (error) {
             console.error("Remove competitive pool character error:", error);

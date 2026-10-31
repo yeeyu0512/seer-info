@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { createNavigation } from '../js/app/navigation.js';
 
 function setup(search, { menuSummary, menuOptions } = {}) {
-    const calls = [], elements = new Map();
+    const calls = [], servers = [], elements = new Map();
     const element = () => ({ hidden: true, querySelectorAll: () => [] });
     globalThis.document = { getElementById(id) {
         if (id === 'encyclopedia-nav' && menuSummary) {
@@ -26,10 +26,24 @@ function setup(search, { menuSummary, menuOptions } = {}) {
         seerSuits: { load() {}, searchById: id => calls.push(['suit', id]) },
         trainingSection: element(),
         seerTraining: { cancelRestore() {} }, encyclopediaSubTabs: element(),
-        loadCurrentCompetitivePool: () => calls.push(['competitive'])
+        loadCurrentCompetitivePool: server => { calls.push(['competitive']); servers.push(server); }
     });
-    return { navigation, calls, elements };
+    return { navigation, calls, servers, elements };
 }
+
+test('competitive server routes restore China, default invalid values to Taiwan, and clear server on leaving', () => {
+    try {
+        for (const [value, expected] of [['cn', 'cn'], ['tw', 'tw'], ['bad', 'tw']]) {
+            const { navigation, servers } = setup(`?tab=competitive&server=${value}`);
+            navigation.restoreRouteFromUrl({ initial: true });
+            assert.deepEqual(servers, [expected]);
+            navigation.activateTab('competitive-pool-section');
+            assert.equal(new URL(window.location.href).searchParams.get('server'), expected);
+            navigation.activateTab('home-section');
+            assert.equal(new URL(window.location.href).searchParams.has('server'), false);
+        }
+    } finally { delete globalThis.document; delete globalThis.window; }
+});
 
 test('the competitive pool route can be opened and restored publicly', () => {
     try {

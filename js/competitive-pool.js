@@ -1,12 +1,15 @@
 import { supabaseClient } from "./supabase.js";
+import { requireCompetitiveServer } from "./competitive/servers.js";
 
 const COMPETITIVE_POOL_CHARACTER_FIELDS = "id, competitive_pool_id, seer_pet_id, pet_name, pool_type";
 
-export async function getCurrentCompetitivePool() {
+export async function getCurrentCompetitivePool(server) {
+    requireCompetitiveServer(server);
     const now = new Date().toISOString();
     const { data, error } = await supabaseClient
         .from("competitive_pools")
-        .select(`id, name, start_at, end_at, competitive_pool_characters(${COMPETITIVE_POOL_CHARACTER_FIELDS})`)
+        .select(`id, name, server, start_at, end_at, competitive_pool_characters(${COMPETITIVE_POOL_CHARACTER_FIELDS})`)
+        .eq("server", server)
         .lte("start_at", now)
         .gt("end_at", now)
         .order("start_at", { ascending: false })
@@ -17,20 +20,23 @@ export async function getCurrentCompetitivePool() {
     return data;
 }
 
-export async function getAdminCompetitivePools() {
+export async function getAdminCompetitivePools(server) {
+    requireCompetitiveServer(server);
     const { data, error } = await supabaseClient
         .from("competitive_pools")
-        .select("id, name, start_at, end_at, created_at")
+        .select("id, name, server, start_at, end_at, created_at")
+        .eq("server", server)
         .order("start_at", { ascending: false });
 
     if (error) throw error;
     return data ?? [];
 }
 
-export async function createCompetitivePool(name, startAt, endAt) {
+export async function createCompetitivePool(name, startAt, endAt, server) {
+    requireCompetitiveServer(server);
     const { data, error } = await supabaseClient
         .from("competitive_pools")
-        .insert({ name, start_at: startAt, end_at: endAt })
+        .insert({ name, start_at: startAt, end_at: endAt, server })
         .select("id")
         .single();
 

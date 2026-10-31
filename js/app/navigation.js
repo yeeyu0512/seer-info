@@ -1,3 +1,5 @@
+import { normalizeCompetitiveServer } from "../competitive/servers.js";
+
 export function createNavigation({
     primaryMainTabs,
     seerLookup,
@@ -143,7 +145,10 @@ export function createNavigation({
             option.setAttribute("aria-pressed", String(isActive));
         });
 
-        if (targetId === "competitive-pool-section") loadCurrentCompetitivePool();
+        if (isCompetitive) {
+            const server = normalizeCompetitiveServer(new URL(window.location.href).searchParams.get("server"));
+            loadCurrentCompetitivePool(server);
+        }
         if (isLookup) seerLookup.browseLatestIfEmpty();
 
         if (updateUrl) {
@@ -155,7 +160,7 @@ export function createNavigation({
 
             if (!routeName) {
                 const url = new URL(window.location.href);
-                url.searchParams.delete("build"); url.searchParams.delete("tab");
+                url.searchParams.delete("build"); url.searchParams.delete("tab"); url.searchParams.delete("server");
                 if (url.href !== window.location.href) window.history.pushState(null,"",url);
             }
             if (routeName) {
@@ -164,6 +169,11 @@ export function createNavigation({
                 if (url.searchParams.get("tab") !== routeName) url.searchParams.delete("id");
 
                 if (routeName !== "training") url.searchParams.delete("build");
+                if (routeName === "competitive") {
+                    url.searchParams.set("server", normalizeCompetitiveServer(url.searchParams.get("server")));
+                } else {
+                    url.searchParams.delete("server");
+                }
 
                 if (routeName === "home") {
                     url.searchParams.delete("tab");

@@ -36,7 +36,7 @@ const competitivePoolNameInput = document.getElementById("competitive-pool-name"
 
 const competitivePoolImportProgress = document.getElementById("competitive-pool-import-progress");
 
-const { toTraditionalChinese } = createChineseConverters(Converter);
+const { toTraditionalChinese, convertToSimplifiedChinese } = createChineseConverters(Converter);
 
 const { showConfirmDialog, showAdminNotification, showNextAdminNotification, finishConfirmDialog } = createAdminDialogs({
 
@@ -82,6 +82,7 @@ const { loadAdminCompetitivePools, renderAdminCompetitivePools, showNewCompetiti
     toCsvCell: (...args) => toCsvCell(...args),
     fetchJson: (...args) => fetchJson(...args),
     toTraditionalChinese,
+    convertToSimplifiedChinese,
     addCompetitivePoolCharacter: (...args) => addCompetitivePoolCharacter(...args),
     competitivePoolImportProgress,
     parseCompetitivePoolPetIds: (...args) => parseCompetitivePoolPetIds(...args),

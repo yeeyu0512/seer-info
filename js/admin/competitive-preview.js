@@ -1,3 +1,5 @@
+import { competitiveServerLabel } from "../competitive/servers.js";
+
 export function createCompetitivePreview({
     competitivePoolNameInput,
     toIsoDate,
@@ -34,7 +36,8 @@ export function createCompetitivePreview({
 
     function openCompetitivePoolPreview() {
         const poolName = competitivePoolNameInput.value.trim() || "未命名競技池";
-        competitivePoolPreviewTitle.textContent = `${poolName}｜首頁預覽`;
+        const server = document.getElementById("admin-competitive-pool-server").value;
+        competitivePoolPreviewTitle.textContent = `${competitiveServerLabel(server)}｜${poolName}｜首頁預覽`;
         const startAt = toIsoDate("competitive-pool-start");
         const endAt = toIsoDate("competitive-pool-end");
         competitivePoolPreviewPeriod.textContent = `${formatCompetitivePoolPreviewDate(startAt)} 至 ${formatCompetitivePoolPreviewDate(endAt)}`;

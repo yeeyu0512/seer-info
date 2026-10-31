@@ -1,4 +1,57 @@
 /* Admin page: compact toolbar and consistent controls. */
+.competitive-pet-search-results {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+    gap: 8px;
+    max-height: 320px;
+    overflow-y: auto;
+    margin: 12px 0;
+}
+
+.competitive-pet-search-results[hidden] {
+    display: none;
+}
+
+.competitive-pet-search-result {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    text-align: left;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.competitive-pet-search-result img {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    object-fit: contain;
+}
+
+.competitive-server-control {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.competitive-server-control label {
+    font-weight: 700;
+}
+
+.competitive-server-control select {
+    min-width: 110px;
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-secondary);
+    color: var(--text);
+    font: inherit;
+}
+
 .admin-page .admin-hero {
     padding: 22px 0 12px;
 }

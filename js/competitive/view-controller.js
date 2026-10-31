@@ -1,3 +1,5 @@
+import { normalizeCompetitiveServer, competitiveServerLabel } from "./servers.js";
+
 export function createCompetitiveView({
     getCurrentCompetitivePool,
     clearObservedTypeIcons,
@@ -10,6 +12,7 @@ export function createCompetitiveView({
     const competitivePoolTypeTabs = document.getElementById("competitive-pool-type-tabs");
     const competitivePoolTypeTabButtons = Array.from(document.querySelectorAll(".competitive-pool-type-tab"));
     const refreshCompetitivePoolButton = document.getElementById("refresh-competitive-pool-button");
+    const serverSelect = document.getElementById("competitive-pool-server");
 
     let competitivePoolRequestId = 0;
 
@@ -17,7 +20,14 @@ export function createCompetitiveView({
 
     let selectedCompetitivePoolType = "banned";
 
-    refreshCompetitivePoolButton.addEventListener("click", loadCurrentCompetitivePool);
+    refreshCompetitivePoolButton.addEventListener("click", () => loadCurrentCompetitivePool());
+    serverSelect.addEventListener("change", () => {
+        const url = new URL(window.location.href);
+        url.searchParams.set("tab", "competitive");
+        url.searchParams.set("server", serverSelect.value);
+        if (url.href !== window.location.href) window.history.pushState(null, "", url);
+        loadCurrentCompetitivePool(serverSelect.value);
+    });
 
     competitivePoolTypeTabButtons.forEach((button) => {
         button.addEventListener("click", () => {
@@ -39,21 +49,26 @@ export function createCompetitiveView({
         });
     });
 
-    async function loadCurrentCompetitivePool() {
+    async function loadCurrentCompetitivePool(server = serverSelect.value) {
+        server = normalizeCompetitiveServer(server);
+        serverSelect.value = server;
+        const serverLabel = competitiveServerLabel(server);
         const requestId = ++competitivePoolRequestId;
-        competitivePoolMessage.textContent = "正在載入競技池資料…";
+        competitivePoolMessage.textContent = `正在載入${serverLabel}競技池資料…`;
         competitivePoolPeriod.textContent = "";
         competitivePoolTypeTabs.hidden = true;
         competitivePoolGroups.hidden = true;
+        clearObservedTypeIcons(competitivePoolGroups);
         competitivePoolGroups.replaceChildren();
+        currentCompetitivePoolCharacters = [];
         refreshCompetitivePoolButton.disabled = true;
 
         try {
-            const pool = await getCurrentCompetitivePool();
+            const pool = await getCurrentCompetitivePool(server);
             if (requestId !== competitivePoolRequestId) return;
             if (!pool) {
                 currentCompetitivePoolCharacters = [];
-                competitivePoolMessage.textContent = "目前沒有進行中的競技池。";
+                competitivePoolMessage.textContent = `${serverLabel}目前沒有進行中的競技池。`;
                 return;
             }
 
@@ -67,14 +82,14 @@ export function createCompetitiveView({
             competitivePoolTypeTabs.hidden = false;
             updateCompetitivePoolTypeTabs();
             renderCompetitivePoolCharacters();
-            competitivePoolMessage.textContent = pool.name;
+            competitivePoolMessage.textContent = `${serverLabel}｜${pool.name}`;
             competitivePoolGroups.hidden = false;
             competitivePoolGroups.setAttribute("aria-labelledby", competitivePoolTypeTabButtons
                 .find((button) => button.dataset.poolType === selectedCompetitivePoolType)?.id || "");
         } catch (error) {
             if (requestId !== competitivePoolRequestId) return;
             console.error("Load competitive pool error:", error);
-            competitivePoolMessage.textContent = "競技池資料載入失敗，請稍後重新整理。";
+            competitivePoolMessage.textContent = `${serverLabel}競技池資料載入失敗，請稍後重新整理。`;
         } finally {
             if (requestId === competitivePoolRequestId) refreshCompetitivePoolButton.disabled = false;
         }

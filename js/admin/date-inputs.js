@@ -63,18 +63,18 @@ export function createAdminDateInputs({
     function toIsoDate(elementId) {
         const date = document.getElementById(elementId).value;
         const time = document.getElementById(`${elementId}-time`).value;
-        return date && time ? new Date(`${date}T${time}`).toISOString() : null;
+        return date && time ? new Date(`${date}T${time}+08:00`).toISOString() : null;
     }
 
     function toLocalDateTime(value) {
         if (!value) return "";
         const date = new Date(value);
-        const offsetDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+        const offsetDate = new Date(date.getTime() + 8 * 60 * 60 * 1000);
         return offsetDate.toISOString().slice(0, 16);
     }
 
     function formatDate(value) {
-        return value ? new Date(value).toLocaleString("zh-TW", { dateStyle: "medium", timeStyle: "short" }) : "未設定";
+        return value ? new Date(value).toLocaleString("zh-TW", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Taipei" }) : "未設定";
     }
     return { initializeDateTimePickers, initializeTimeSelects, setPoolDateValue, setPoolDatePickersDisabled, toIsoDate, toLocalDateTime, formatDate };
 }

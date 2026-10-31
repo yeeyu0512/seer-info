@@ -3,6 +3,7 @@ export function getAdminErrorMessage(error) {
     const lowerMessage = message.toLowerCase();
     const status = Number(error?.status || message.match(/\bHTTP\s+(\d{3})\b/i)?.[1]);
     const code = String(error?.code || "").toUpperCase();
+    if (code === "23P01") return "此伺服器已有時間重疊的競技池期間，請調整開始或結束時間。";
 
     if (/invalid login credentials|invalid credentials/.test(lowerMessage)) {
         return "Email 或密碼錯誤，請確認後再試。";
