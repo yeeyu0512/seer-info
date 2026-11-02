@@ -16,6 +16,7 @@ import { initSeerLookup } from "./seer-lookup.js";
 import { initSeerTypeCalculator } from "./seer-type-calculator.js";
 import { initSeerMintmarks } from "./seer-mintmarks.js";
 import { initSeerSuits } from "./seer-suits.js";
+import { initSeerAbnormal } from "./seer-abnormal.js";
 import { initSeerTraining } from "./seer-training.js";
 import { getSeerServerSettings } from "./seer-server-settings.js";
 import { preloadSeerIcons } from "./seer-icons.js";
@@ -47,6 +48,7 @@ const seerLookup = initSeerLookup({
 const seerTypeCalculator = initSeerTypeCalculator("#type-chart-section");
 const seerMintmarks = initSeerMintmarks(sealEncyclopediaSection, { fetchSeerJson, convertToTraditionalChinese, getSeerServerSettings });
 const seerSuits = initSeerSuits(suitEncyclopediaSection, { fetchSeerJson, convertToTraditionalChinese });
+const seerAbnormal = initSeerAbnormal(document.getElementById("abnormal-encyclopedia-section"), { normalize: convertToSimplifiedChinese });
 const seerTraining = initSeerTraining(trainingSection, { fetchSeerJson, convertToTraditionalChinese, convertToSimplifiedChinese });
 const { createCharacterTypeIcon, clearObservedTypeIcons, loadCharacterTypeIcon, processCharacterTypeIconQueue, fetchCharacterTypeIconUrl } = createPetTypeIcons({
     fetchSeerJson: (...args) => fetchSeerJson(...args)
@@ -64,6 +66,7 @@ const { activateTab, restoreRouteFromUrl } = createNavigation({
     seerMintmarks,
     suitEncyclopediaSection,
     seerSuits,
+    seerAbnormal,
     typeChartSection,
     trainingSection,
     seerTraining,

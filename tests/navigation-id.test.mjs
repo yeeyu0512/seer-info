@@ -24,6 +24,7 @@ function setup(search, { menuSummary, menuOptions } = {}) {
         sealEncyclopediaSection: element(), suitEncyclopediaSection: element(),
         seerMintmarks: { load() {}, searchById: id => calls.push(['mintmark', id]) },
         seerSuits: { load() {}, searchById: id => calls.push(['suit', id]) },
+        seerAbnormal: { load: id => calls.push(['abnormal', id]), deactivate() {} },
         trainingSection: element(),
         seerTraining: { cancelRestore() {} }, encyclopediaSubTabs: element(),
         loadCurrentCompetitivePool: server => { calls.push(['competitive']); servers.push(server); }
@@ -136,6 +137,22 @@ test('damage calculator has a public deep link and leaves training share state b
         const url = new URL(window.location.href);
         assert.equal(url.searchParams.get('tab'), 'damage');
         assert.equal(url.searchParams.has('build'), false);
+        assert.equal(url.searchParams.has('id'), false);
+    } finally { delete globalThis.document; delete globalThis.window; }
+});
+
+test('abnormal routes restore their dedicated parameter and clear it when switching catalogs', () => {
+    try {
+        const { navigation, calls, elements } = setup('?tab=abnormal&abnormal=15&id=241');
+        navigation.restoreRouteFromUrl({ initial: true });
+        assert.deepEqual(calls, [['abnormal', '15']]);
+        assert.equal(elements.get('abnormal-encyclopedia-section').hidden, false);
+        assert.equal(elements.get('home-section').hidden, true);
+        navigation.activateTab('suit-encyclopedia-section');
+        assert.equal(elements.get('abnormal-encyclopedia-section').hidden, true);
+        const url = new URL(window.location.href);
+        assert.equal(url.searchParams.get('tab'), 'suit');
+        assert.equal(url.searchParams.has('abnormal'), false);
         assert.equal(url.searchParams.has('id'), false);
     } finally { delete globalThis.document; delete globalThis.window; }
 });

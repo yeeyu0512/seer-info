@@ -1,0 +1,1309 @@
+{
+  "schemaVersion": 2,
+  "scope": "中國大陸頁遊《賽爾號》PVP 與 PVE",
+  "updatedAt": "2026-11-02",
+  "durationNote": "持續回合通常由技能或來源效果決定；僅在來源明確記載轉化結果或上限時標註回合數。",
+  "iconNote": "圖示使用使用者提供的 assets/icons/abnormal/ 編號 PNG 素材；檔名對應異常狀態 id。",
+  "abnormals": [
+    {
+      "id": 0,
+      "name": "麻痺",
+      "category": "控制",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/0.png",
+      "summary": "無法行動。",
+      "description": "無法行動。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "中毒",
+      "category": "弱化",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/1.png",
+      "summary": "每回合在對手開始行動時，扣除最大體力的 1/8。",
+      "description": "每回合在對手開始行動時，扣除最大體力的 1/8。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [
+        27
+      ],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "燒傷",
+      "category": "弱化",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/2.png",
+      "summary": "攻擊技能威力降低 50%；每回合在對手開始行動時，扣除最大體力的 1/8。",
+      "description": "攻擊技能威力降低 50%；每回合在對手開始行動時，扣除最大體力的 1/8。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [
+        22,
+        13
+      ],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "寄生對手",
+      "category": "其他",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/3.png",
+      "summary": "每回合在對手開始行動時，扣除自身最大體力的 1/8，並使對手回復等量體力。",
+      "description": "每回合在對手開始行動時，扣除自身最大體力的 1/8，並使對手回復等量體力。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [
+        4
+      ],
+      "sources": [
+        {
+          "type": "userProvided",
+          "title": "使用者提供的異常狀態編號與效果表",
+          "url": null,
+          "checkedAt": "2026-11-02",
+          "scope": "依提供表格收錄核心效果；分類依使用者指定"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "依使用者提供表格整理；各狀態的持續、解除及特殊交互作用仍待確認。"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "寄生",
+      "category": "弱化",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/4.png",
+      "summary": "每回合在對手開始行動時，扣除最大體力的 1/8，並讓對手回復等量體力。",
+      "description": "每回合在對手開始行動時，扣除最大體力的 1/8，並讓對手回復等量體力。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [
+        3
+      ],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "凍傷",
+      "category": "弱化",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/5.png",
+      "summary": "每回合在對手開始行動時，扣除最大體力的 1/8。",
+      "description": "每回合在對手開始行動時，扣除最大體力的 1/8。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [
+        15
+      ],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "害怕",
+      "category": "控制",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/6.png",
+      "summary": "無法行動。",
+      "description": "無法行動。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "疲憊",
+      "category": "控制",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/7.png",
+      "summary": "無法行動。",
+      "description": "無法行動。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "睡眠",
+      "category": "控制",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/8.png",
+      "summary": "無法行動；對手的攻擊技能未 miss 時解除睡眠。",
+      "description": "無法行動；對手的攻擊技能未 miss 時解除睡眠。",
+      "effects": [],
+      "removalConditions": [
+        "對手使用攻擊技能且未 miss 時，解除睡眠。"
+      ],
+      "transformations": [],
+      "relatedStatuses": [],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 9,
+      "name": "石化",
+      "category": "控制",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/9.png",
+      "summary": "無法行動。",
+      "description": "無法行動。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 10,
+      "name": "混亂",
+      "category": "弱化",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/10.png",
+      "summary": "攻擊技能命中率降低 80%；每回合在對手開始行動時，有 5% 機率扣除 50 點體力。",
+      "description": "攻擊技能命中率降低 80%；每回合在對手開始行動時，有 5% 機率扣除 50 點體力。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 11,
+      "name": "衰弱",
+      "category": "弱化",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/11.png",
+      "summary": "依衰弱回合數，受到的攻擊傷害額外增加。",
+      "description": "依衰弱回合數，受到的攻擊傷害額外增加。",
+      "effects": [
+        "衰弱的回合數為 1／2／3／4／5 及以上時，受到的攻擊傷害分別額外增加 25%／50%／100%／250%／500%。"
+      ],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 12,
+      "name": "山神守護",
+      "category": "其他",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/12.png",
+      "summary": "每回合受到對手的攻擊傷害減少 80%。",
+      "description": "每回合受到對手的攻擊傷害減少 80%。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [],
+      "sources": [
+        {
+          "type": "userProvided",
+          "title": "使用者提供的異常狀態編號與效果表",
+          "url": null,
+          "checkedAt": "2026-11-02",
+          "scope": "依提供表格收錄核心效果；分類依使用者指定"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "依使用者提供表格整理；各狀態的持續、解除及特殊交互作用仍待確認。"
+      ]
+    },
+    {
+      "id": 13,
+      "name": "易燃",
+      "category": "弱化",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/13.png",
+      "summary": "攻擊技能命中率降低 30%；遭受火系攻擊後轉為燒傷。",
+      "description": "攻擊技能命中率降低 30%；遭受火系攻擊後轉為燒傷。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [
+        {
+          "targetId": 2,
+          "condition": "受到火系攻擊後",
+          "duration": null,
+          "note": ""
+        }
+      ],
+      "relatedStatuses": [
+        2
+      ],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 14,
+      "name": "狂暴",
+      "category": "附屬",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/14.png",
+      "summary": "造成的攻擊傷害變為 2 倍。",
+      "description": "造成的攻擊傷害變為 2 倍。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 15,
+      "name": "冰封",
+      "category": "控制",
+      "tags": [
+        "衍化"
+      ],
+      "icon": "./assets/icons/abnormal/15.png",
+      "summary": "無法行動；結束後轉為凍傷，速度等級降低 1 級。",
+      "description": "無法行動；結束後轉為凍傷，速度等級降低 1 級。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [
+        {
+          "targetId": 5,
+          "condition": "持續結束後",
+          "duration": null,
+          "note": "同時使速度等級降低 1 級。"
+        }
+      ],
+      "relatedStatuses": [
+        5,
+        43
+      ],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。",
+        "來源記載「結束後」轉化；提前解除是否同樣觸發，待確認。"
+      ]
+    },
+    {
+      "id": 16,
+      "name": "流血",
+      "category": "弱化",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/16.png",
+      "summary": "每回合在對手開始行動時，扣除 80 點體力。",
+      "description": "每回合在對手開始行動時，扣除 80 點體力。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 17,
+      "name": "神話",
+      "category": "其他",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/17.png",
+      "summary": "免疫能力下降與異常狀態，PP 無限，所有技能必中。",
+      "description": "免疫能力下降與異常狀態，PP 無限，所有技能必中。",
+      "effects": [
+        "舊版 BOSS 特性，對應黃色圖示。"
+      ],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [
+        18
+      ],
+      "sources": [
+        {
+          "type": "userProvided",
+          "title": "使用者提供的異常狀態編號與效果表",
+          "url": null,
+          "checkedAt": "2026-11-02",
+          "scope": "依提供表格收錄核心效果；分類依使用者指定"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "依使用者提供表格整理；各狀態的持續、解除及特殊交互作用仍待確認。"
+      ]
+    },
+    {
+      "id": 18,
+      "name": "免疫",
+      "category": "其他",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/18.png",
+      "summary": "免疫異常狀態，PP 無限。",
+      "description": "免疫異常狀態，PP 無限。",
+      "effects": [
+        "舊版 BOSS 特性，對應藍色圖示。"
+      ],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [
+        17
+      ],
+      "sources": [
+        {
+          "type": "userProvided",
+          "title": "使用者提供的異常狀態編號與效果表",
+          "url": null,
+          "checkedAt": "2026-11-02",
+          "scope": "依提供表格收錄核心效果；分類依使用者指定"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "依使用者提供表格整理；各狀態的持續、解除及特殊交互作用仍待確認。"
+      ]
+    },
+    {
+      "id": 19,
+      "name": "癱瘓",
+      "category": "控制",
+      "tags": [
+        "限制"
+      ],
+      "icon": "./assets/icons/abnormal/19.png",
+      "summary": "無法行動，也無法主動切換精靈。",
+      "description": "無法行動，也無法主動切換精靈。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [
+        35
+      ],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 20,
+      "name": "失明",
+      "category": "弱化",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/20.png",
+      "summary": "攻擊技能有 50% 機率 miss；必中技能也有特殊失效判定。",
+      "description": "攻擊技能有 50% 機率 miss；必中技能也有特殊失效判定。",
+      "effects": [
+        "若使用必中技能，有 50% 機率使其命中效果失效，且無法造成攻擊傷害。"
+      ],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 21,
+      "name": "異常免疫",
+      "category": "附屬",
+      "tags": [
+        "特殊"
+      ],
+      "icon": "./assets/icons/abnormal/21.png",
+      "summary": "自身觸發異常狀態抗性抵抗時產生的狀態。",
+      "description": "自身觸發異常狀態抗性抵抗時產生的狀態。",
+      "effects": [
+        "雖屬於附屬類異常，但不會被轉化附屬類異常的相關效果影響。",
+        "處於異常免疫時仍然被視為處於異常狀態，可以觸發處於異常的相關效果。"
+      ],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [],
+      "sources": [
+        {
+          "type": "userProvided",
+          "title": "使用者提供的異常狀態編號與效果表",
+          "url": null,
+          "checkedAt": "2026-11-02",
+          "scope": "依提供表格收錄核心效果；分類依使用者指定"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "依使用者提供表格整理；各狀態的持續、解除及特殊交互作用仍待確認。"
+      ]
+    },
+    {
+      "id": 22,
+      "name": "焚燼",
+      "category": "控制",
+      "tags": [
+        "衍化"
+      ],
+      "icon": "./assets/icons/abnormal/22.png",
+      "summary": "無法行動；結束後轉為燒傷，命中等級降低 1 級。",
+      "description": "無法行動；結束後轉為燒傷，命中等級降低 1 級。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [
+        {
+          "targetId": 2,
+          "condition": "持續結束後",
+          "duration": null,
+          "note": "同時使命中等級降低 1 級。"
+        }
+      ],
+      "relatedStatuses": [
+        2
+      ],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。",
+        "來源記載「結束後」轉化；提前解除是否同樣觸發，待確認。"
+      ]
+    },
+    {
+      "id": 23,
+      "name": "詛咒",
+      "category": "控制",
+      "tags": [
+        "衍化"
+      ],
+      "icon": "./assets/icons/abnormal/23.png",
+      "summary": "無法行動；結束後隨機轉為三種詛咒之一。",
+      "description": "無法行動；結束後隨機轉為三種詛咒之一。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [
+        {
+          "targetId": 24,
+          "condition": "持續結束後",
+          "duration": null,
+          "note": "三者隨機擇一；並非同時附加。"
+        },
+        {
+          "targetId": 25,
+          "condition": "持續結束後",
+          "duration": null,
+          "note": "三者隨機擇一；並非同時附加。"
+        },
+        {
+          "targetId": 26,
+          "condition": "持續結束後",
+          "duration": null,
+          "note": "三者隨機擇一；並非同時附加。"
+        }
+      ],
+      "relatedStatuses": [
+        24,
+        25,
+        26
+      ],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。",
+        "來源記載「結束後」轉化；提前解除是否同樣觸發，待確認。"
+      ]
+    },
+    {
+      "id": 24,
+      "name": "烈焰詛咒",
+      "category": "附屬",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/24.png",
+      "summary": "每回合結束後承受最大體力 1/8 的百分比傷害。",
+      "description": "每回合結束後承受最大體力 1/8 的百分比傷害。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [
+        23
+      ],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 25,
+      "name": "致命詛咒",
+      "category": "附屬",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/25.png",
+      "summary": "受到的攻擊傷害額外增加 50%。",
+      "description": "受到的攻擊傷害額外增加 50%。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [
+        23
+      ],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 26,
+      "name": "虛弱詛咒",
+      "category": "附屬",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/26.png",
+      "summary": "造成的攻擊傷害額外降低 50%。",
+      "description": "造成的攻擊傷害額外降低 50%。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [
+        23
+      ],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 27,
+      "name": "感染",
+      "category": "控制",
+      "tags": [
+        "衍化"
+      ],
+      "icon": "./assets/icons/abnormal/27.png",
+      "summary": "無法行動；結束後轉為中毒，攻擊與特攻等級各降低 1 級。",
+      "description": "無法行動；結束後轉為中毒，攻擊與特攻等級各降低 1 級。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [
+        {
+          "targetId": 1,
+          "condition": "持續結束後",
+          "duration": null,
+          "note": "同時使攻擊、特攻等級各降低 1 級。"
+        }
+      ],
+      "relatedStatuses": [
+        1
+      ],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。",
+        "來源記載「結束後」轉化；提前解除是否同樣觸發，待確認。"
+      ]
+    },
+    {
+      "id": 28,
+      "name": "束縛",
+      "category": "弱化",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/28.png",
+      "summary": "先制效果失效；結束時承受最大體力 1/8 的百分比傷害。",
+      "description": "先制效果失效；結束時承受最大體力 1/8 的百分比傷害。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 29,
+      "name": "失神",
+      "category": "弱化",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/29.png",
+      "summary": "使用屬性技能時，有 50% 機率無效。",
+      "description": "使用屬性技能時，有 50% 機率無效。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [
+        39
+      ],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 30,
+      "name": "沉默",
+      "category": "弱化",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/30.png",
+      "summary": "第五技能無效；每回合結束後承受最大體力 1/8 的百分比傷害。",
+      "description": "第五技能無效；每回合結束後承受最大體力 1/8 的百分比傷害。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [
+        40
+      ],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 31,
+      "name": "臣服",
+      "category": "弱化",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/31.png",
+      "summary": "無法對對手造成攻擊傷害、固定傷害或百分比傷害。",
+      "description": "無法對對手造成攻擊傷害、固定傷害或百分比傷害。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 32,
+      "name": "凝滯",
+      "category": "弱化",
+      "tags": [
+        "限制"
+      ],
+      "icon": "./assets/icons/abnormal/32.png",
+      "summary": "無法切換精靈，同時免疫控制類異常狀態。",
+      "description": "無法切換精靈，同時免疫控制類異常狀態。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 33,
+      "name": "星賜",
+      "category": "附屬",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/33.png",
+      "summary": "造成的攻擊傷害增加 30%；每回合結束時回復 2 點 PP。",
+      "description": "造成的攻擊傷害增加 30%；每回合結束時回復 2 點 PP。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 34,
+      "name": "星哲",
+      "category": "附屬",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/34.png",
+      "summary": "造成的固定傷害與百分比傷害增加 30%；每回合結束時回復最大體力的 1/4。",
+      "description": "造成的固定傷害與百分比傷害增加 30%；每回合結束時回復最大體力的 1/4。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 35,
+      "name": "超頻",
+      "category": "附屬",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/35.png",
+      "summary": "技能先制 +1；開始行動時補滿所選技能的 PP；結束後轉為癱瘓。",
+      "description": "技能先制 +1；開始行動時補滿所選技能的 PP；結束後轉為癱瘓。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [
+        {
+          "targetId": 19,
+          "condition": "持續結束後",
+          "duration": "1～2 回合",
+          "note": ""
+        }
+      ],
+      "relatedStatuses": [
+        19
+      ],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。",
+        "來源記載「結束後」轉化；提前解除是否同樣觸發，待確認。"
+      ]
+    },
+    {
+      "id": 36,
+      "name": "砥礪",
+      "category": "附屬",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/36.png",
+      "summary": "承受真實傷害後，符合條件時增加相當於該次傷害 80% 的體力。",
+      "description": "承受真實傷害後，符合條件時增加相當於該次傷害 80% 的體力。",
+      "effects": [
+        "只有本回合尚未執行過附加異常狀態的效果，才會在受到真實傷害後增加體力。"
+      ],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 37,
+      "name": "沸湧",
+      "category": "弱化",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/37.png",
+      "summary": "承受攻擊傷害的下限為最大體力的 30%；對手打出致命一擊時提高至 50%。",
+      "description": "承受攻擊傷害的下限為最大體力的 30%；對手打出致命一擊時提高至 50%。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 38,
+      "name": "星贖",
+      "category": "附屬",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/38.png",
+      "summary": "體力回復效果增加 30%；每回合結束時，所有非限制類異常狀態的回合數 +1。",
+      "description": "體力回復效果增加 30%；每回合結束時，所有非限制類異常狀態的回合數 +1。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 39,
+      "name": "神遊",
+      "category": "控制",
+      "tags": [
+        "衍化"
+      ],
+      "icon": "./assets/icons/abnormal/39.png",
+      "summary": "無法行動；結束後轉為失神。",
+      "description": "無法行動；結束後轉為失神。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [
+        {
+          "targetId": 29,
+          "condition": "持續結束後",
+          "duration": null,
+          "note": ""
+        }
+      ],
+      "relatedStatuses": [
+        29
+      ],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。",
+        "來源記載「結束後」轉化；提前解除是否同樣觸發，待確認。"
+      ]
+    },
+    {
+      "id": 40,
+      "name": "空定",
+      "category": "控制",
+      "tags": [
+        "衍化"
+      ],
+      "icon": "./assets/icons/abnormal/40.png",
+      "summary": "無法行動；結束後轉為持續 2 回合的沉默。",
+      "description": "無法行動；結束後轉為持續 2 回合的沉默。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [
+        {
+          "targetId": 30,
+          "condition": "持續結束後",
+          "duration": "2 回合",
+          "note": ""
+        }
+      ],
+      "relatedStatuses": [
+        30
+      ],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。",
+        "來源記載「結束後」轉化；提前解除是否同樣觸發，待確認。"
+      ]
+    },
+    {
+      "id": 41,
+      "name": "狂信",
+      "category": "控制",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/41.png",
+      "summary": "對手是自身信仰對象時，無法行動。",
+      "description": "對手是自身信仰對象時，無法行動。",
+      "effects": [
+        "進入狂信時，若自身尚無信仰對象，本次狂信的來源會成為自身信仰對象。"
+      ],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 42,
+      "name": "雷解",
+      "category": "附屬",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/42.png",
+      "summary": "造成攻擊傷害後，再附加相當於該次傷害 60% 的真實傷害。",
+      "description": "造成攻擊傷害後，再附加相當於該次傷害 60% 的真實傷害。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    },
+    {
+      "id": 43,
+      "name": "漸凍",
+      "category": "附屬",
+      "tags": [],
+      "icon": "./assets/icons/abnormal/43.png",
+      "summary": "結束後轉為持續 3 回合的冰封。",
+      "description": "結束後轉為持續 3 回合的冰封。",
+      "effects": [],
+      "removalConditions": [],
+      "transformations": [
+        {
+          "targetId": 15,
+          "condition": "持續結束後",
+          "duration": "3 回合",
+          "note": ""
+        }
+      ],
+      "relatedStatuses": [
+        15
+      ],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。",
+        "來源記載「結束後」轉化；提前解除是否同樣觸發，待確認。"
+      ]
+    },
+    {
+      "id": 44,
+      "name": "魘昧",
+      "category": "弱化",
+      "tags": [
+        "限制"
+      ],
+      "icon": "./assets/icons/abnormal/44.png",
+      "summary": "己方看到的場上異常狀態與能力等級狀態，會被遮蔽為不顯示回合數的魘昧。",
+      "description": "己方看到的場上異常狀態與能力等級狀態，會被遮蔽為不顯示回合數的魘昧。",
+      "effects": [
+        "來源另記載最多持續 5 回合；這是上限，並非每次必定持續 5 回合。"
+      ],
+      "removalConditions": [],
+      "transformations": [],
+      "relatedStatuses": [],
+      "sources": [
+        {
+          "title": "賽爾號 BWIKI｜對戰機制・異常狀態附加效果",
+          "url": "https://wiki.biligame.com/seer/对战机制#异常状态附加效果",
+          "checkedAt": "2026-11-02",
+          "scope": "中國大陸頁遊 PVP；核心效果與分類"
+        }
+      ],
+      "verificationStatus": "coreVerified",
+      "verificationNotes": [
+        "其他技能、魂印或主動切換對此狀態的解除條件，待確認。"
+      ]
+    }
+  ]
+}

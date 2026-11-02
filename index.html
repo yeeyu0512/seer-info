@@ -76,6 +76,7 @@
                         <button type="button" data-lookup-mode="skin">皮膚</button>
                         <button type="button" data-lookup-mode="seal">刻印</button>
                         <button type="button" data-lookup-mode="suit">套裝</button>
+                        <button type="button" data-lookup-mode="abnormal">異常狀態</button>
                     </div>
                 </details>
                 <details id="tools-nav" class="admin-nav">
@@ -116,14 +117,15 @@
                             <option value="all">全部分類</option>
                             <option value="pet">精靈</option><option value="skin">皮膚</option>
                             <option value="mintmark">刻印</option><option value="suit">套裝</option>
+                            <option value="abnormal">異常狀態</option>
                             <option value="tools">工具</option>
                         </select>
                         <button id="home-search-scope-trigger" type="button" role="combobox" aria-label="搜尋範圍" aria-haspopup="listbox" aria-expanded="false" aria-controls="home-search-scope-options"><span>全部分類</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
                         <div id="home-search-scope-options" role="listbox" aria-label="搜尋範圍" popover="manual"></div>
                     </div>
                     <div class="home-search-field">
-                        <label for="home-search-input" class="home-search-sr">名稱、ID 或工具名稱</label>
-                        <input id="home-search-input" type="search" placeholder="輸入名稱、ID 或工具名稱…" autocomplete="off" maxlength="80" aria-describedby="home-search-status" required>
+                        <label for="home-search-input" class="home-search-sr">名稱、ID、效果或工具名稱</label>
+                        <input id="home-search-input" type="search" placeholder="輸入名稱、ID、效果或工具名稱…" autocomplete="off" maxlength="80" aria-describedby="home-search-status" required>
                         <button id="home-search-clear" type="button" aria-label="清除搜尋" hidden>×</button>
                     </div>
                     <button class="home-search-submit" type="submit">搜尋 <span aria-hidden="true">↗</span></button>
@@ -131,6 +133,13 @@
                 <p id="home-search-status" role="status" aria-live="polite">支援名稱、ID 與繁簡中文；圖鑑資料包含陸服進度。</p>
                 <div id="home-search-results" aria-label="全站搜尋結果" aria-busy="false" hidden></div>
             </dialog>
+
+    <dialog id="home-gem-dialog" class="seal-dialog home-gem-dialog" aria-labelledby="home-gem-title" aria-describedby="home-gem-message">
+        <header class="home-gem-heading"><h2 id="home-gem-title">寶石圖鑑</h2><span class="home-gem-status">施工中</span></header>
+        <div class="home-gem-art"><img src="./assets/site/gem-construction.png" alt="工人操作黃色工程車施工" width="800" height="712"></div>
+        <p id="home-gem-message">敬請期待</p>
+        <button id="home-gem-close" type="button">關閉</button>
+    </dialog>
 
     <main class="container">
 
@@ -227,6 +236,16 @@
                                 focusable="false">
                                 <path d="M8 4l4 3 4-3 5 5-4 3v8H7v-8L3 9z" />
                             </svg><span>套裝圖鑑</span></button>
+                        <button type="button" data-home-target="abnormal-encyclopedia-section"><svg class="home-key-icon"
+                                width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.5" aria-hidden="true" focusable="false">
+                                <path d="m12 3 8 4v6c0 4-8 8-8 8s-8-4-8-8V7l8-4Z"/><path d="M8 12h3l2-4 1 8 2-4h2"/>
+                            </svg><span>異常圖鑑</span></button>
+                        <button type="button" id="home-gem-catalog" aria-haspopup="dialog" aria-controls="home-gem-dialog"><svg class="home-key-icon"
+                                width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.5" aria-hidden="true" focusable="false">
+                                <path d="m7 4-4 6 9 11 9-11-4-6H7Z M3 10h18 M7 4l5 17 5-17 M7 4l5 6 5-6"/>
+                            </svg><span>寶石圖鑑</span></button>
                         <p class="home-nav-label">工具</p>
                         <button type="button" data-home-target="competitive-pool-section"><svg class="home-key-icon" width="18"
                                 height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"
@@ -381,6 +400,8 @@
                 aria-controls="seal-encyclopedia-section" data-lookup-mode="seal">刻印圖鑑</button>
             <button class="main-tab" type="button" role="tab" aria-selected="false"
                 aria-controls="suit-encyclopedia-section" data-lookup-mode="suit">套裝圖鑑</button>
+            <button class="main-tab" type="button" role="tab" aria-selected="false"
+                aria-controls="abnormal-encyclopedia-section" data-lookup-mode="abnormal">異常狀態圖鑑</button>
         </nav>
 
         <div id="seer-lookup-section" class="seer-lookup-layout" hidden>
@@ -518,6 +539,18 @@
                         rel="noopener noreferrer">SeerAPI</a>。圖片由 <a href="https://ruffle.rs/" target="_blank"
                         rel="noopener noreferrer">Ruffle</a> 按需渲染官方部件並組裝，暫存在目前頁面；部分特殊套裝可能無法預覽。</small></p>
         </section>
+
+        <section id="abnormal-encyclopedia-section" class="panel" role="tabpanel" aria-labelledby="abnormal-encyclopedia-title" hidden>
+            <div class="panel-header"><div>
+                <h2 id="abnormal-encyclopedia-title" class="panel-title">異常狀態圖鑑</h2>
+                <p class="panel-description">快速查詢遊戲內所有的異常狀態。</p>
+            </div></div>
+            <div id="abnormal-encyclopedia-content"></div>
+        </section>
+        <dialog id="abnormal-detail-dialog" class="seal-dialog abnormal-dialog" aria-labelledby="abnormal-detail-title">
+            <div class="abnormal-dialog-toolbar"><button class="abnormal-dialog-close" type="button" aria-label="關閉異常狀態詳情">關閉</button></div>
+            <div class="abnormal-detail-content"></div>
+        </dialog>
 
         <nav id="type-chart-sub-tabs" class="main-tabs view-sub-tabs" role="tablist" aria-label="屬性克制功能" hidden>
             <button id="type-calc-tab-lookup" class="main-tab is-active" type="button" role="tab" aria-selected="true"

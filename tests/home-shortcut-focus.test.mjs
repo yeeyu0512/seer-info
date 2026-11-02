@@ -8,10 +8,11 @@ const shortcuts = [
     ['pet', 'seer-lookup-section'],
     ['skin', 'seer-lookup-section'],
     ['seal', 'seal-encyclopedia-section'],
-    ['suit', 'suit-encyclopedia-section']
+    ['suit', 'suit-encyclopedia-section'],
+    ['abnormal', 'abnormal-encyclopedia-section']
 ];
 
-test('all four encyclopedia shortcuts focus the selected dropdown summary', () => {
+test('all five encyclopedia shortcuts focus the selected dropdown summary', () => {
     try {
         for (const [mode, target] of shortcuts) {
             const button = mode === 'pet' || mode === 'skin'

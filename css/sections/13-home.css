@@ -921,6 +921,28 @@
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, .3);
 }
 
+.home-shortcuts button[data-home-target="abnormal-encyclopedia-section"] .home-key-icon { color: #a7cde0; }
+.home-gem-dialog { width: min(420px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); padding: 24px; text-align: center; }
+.home-gem-dialog[open] { animation: home-gem-appear .2s ease-out; }
+.home-gem-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; text-align: left; }
+.home-gem-dialog h2 { margin: 0; font-size: 20px; }
+.home-gem-status { padding: 4px 10px; border: 1px solid rgba(232,188,89,.3); border-radius: 6px; background: rgba(232,188,89,.09); color: #e8c77e; font-size: 12px; }
+.home-gem-art { display: grid; place-items: center; margin: 18px 0 16px; padding: 14px; border: 1px solid var(--border); border-radius: 14px; background: rgba(124,140,255,.045); }
+.home-gem-art img { display: block; width: auto; max-width: 100%; height: clamp(0px, calc(100dvh - 300px), 190px); object-fit: contain; }
+.home-gem-dialog p { margin: 0 0 18px; color: var(--text); font-size: 22px; font-weight: 600; letter-spacing: .08em; }
+.home-gem-dialog button { min-height: 44px; min-width: 112px; font: inherit; cursor: pointer; }
+.home-gem-dialog button:focus-visible { outline: 2px solid var(--primary-light); outline-offset: 3px; }
+@media (max-width: 480px) {
+    .home-gem-dialog { padding: 22px; }
+    .home-gem-art { padding: 14px; }
+    .home-gem-art img { max-width: min(190px, 100%); }
+}
+@keyframes home-gem-appear {
+    from { opacity: 0; transform: translateY(10px) scale(.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) { .home-gem-dialog[open] { animation: none; } }
+
 @media (prefers-reduced-motion: reduce) {
     #home-section .home-shortcuts button {
         transition: none;

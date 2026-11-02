@@ -105,6 +105,9 @@
     border-radius: 0; background: transparent; color: #edf2fa; text-align: left; text-decoration: none; font-size: 13px;
 }
 #home-search-results a span { overflow-wrap: anywhere; }
+#home-search-results .home-search-result-icon { flex: 0 0 32px; width: 32px; height: 32px; object-fit: contain; }
+#home-search-results .home-search-result-copy { flex: 1; min-width: 0; }
+#home-search-results .home-search-result-summary { display: block; margin-top: 4px; color: #a8bdce; font-size: 12px; line-height: 1.6; }
 #home-search-results small { flex-shrink: 0; color: #97afc3; font-size: 11px; }
 #home-search-results a:hover, #home-search-dialog #home-search-results button:hover { background: rgba(196,191,255,.08); color: var(--text); }
 #home-search-dialog :focus-visible { outline: 2px solid #b8abff; outline-offset: 2px; }

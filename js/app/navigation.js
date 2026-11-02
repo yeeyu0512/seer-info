@@ -7,6 +7,7 @@ export function createNavigation({
     seerMintmarks,
     suitEncyclopediaSection,
     seerSuits,
+    seerAbnormal,
     typeChartSection,
     trainingSection,
     seerTraining,
@@ -31,6 +32,7 @@ export function createNavigation({
         skin: { section: "seer-lookup-section", mode: "skin" },
         mintmark: { section: "seal-encyclopedia-section" },
         suit: { section: "suit-encyclopedia-section" },
+        abnormal: { section: "abnormal-encyclopedia-section" },
         types: { section: "type-chart-section" },
         training: { section: "training-section" },
         damage: { section: "damage-calculator-section" },
@@ -61,6 +63,10 @@ export function createNavigation({
     });
 
     function activateEncyclopediaMode(mode) {
+        if (mode === "abnormal") {
+            activateTab("abnormal-encyclopedia-section");
+            return;
+        }
         if (mode === "seal") {
             activateTab("seal-encyclopedia-section");
             return;
@@ -77,6 +83,7 @@ export function createNavigation({
         const isLookup = targetId === "seer-lookup-section";
         const isSealEncyclopedia = targetId === "seal-encyclopedia-section";
         const isSuitEncyclopedia = targetId === "suit-encyclopedia-section";
+        const isAbnormalEncyclopedia = targetId === "abnormal-encyclopedia-section";
         const isTypeChart = targetId === "type-chart-section";
         const isTraining = targetId === "training-section";
         const isDamage = targetId === "damage-calculator-section";
@@ -91,7 +98,7 @@ export function createNavigation({
                     ? "training"
                     : isTypeChart
                         ? "type-chart"
-                        : isLookup || isSealEncyclopedia || isSuitEncyclopedia
+                        : isLookup || isSealEncyclopedia || isSuitEncyclopedia || isAbnormalEncyclopedia
                             ? "encyclopedia"
                             : "home";
 
@@ -102,6 +109,9 @@ export function createNavigation({
         if (isSealEncyclopedia) seerMintmarks.load();
         suitEncyclopediaSection.hidden = !isSuitEncyclopedia;
         if (isSuitEncyclopedia) seerSuits.load();
+        const abnormalSection = document.getElementById("abnormal-encyclopedia-section");
+        if (abnormalSection) abnormalSection.hidden = !isAbnormalEncyclopedia;
+        if (!isAbnormalEncyclopedia) seerAbnormal?.deactivate();
         if (typeChartSection) typeChartSection.hidden = !isTypeChart;
         trainingSection.hidden = !isTraining;
         const damageSection = document.getElementById("damage-calculator-section");
@@ -126,7 +136,9 @@ export function createNavigation({
         });
         encyclopediaModeTabs.forEach((tab) => {
             const isActive = mainTarget === "encyclopedia" && (
-                isSealEncyclopedia
+                isAbnormalEncyclopedia
+                    ? tab.dataset.lookupMode === "abnormal"
+                    : isSealEncyclopedia
                     ? tab.dataset.lookupMode === "seal"
                     : isSuitEncyclopedia
                         ? tab.dataset.lookupMode === "suit"
@@ -137,7 +149,8 @@ export function createNavigation({
         });
         encyclopediaNavOptions.forEach((option) => {
             const isActive = mainTarget === "encyclopedia" && (
-                isSealEncyclopedia ? option.dataset.lookupMode === "seal"
+                isAbnormalEncyclopedia ? option.dataset.lookupMode === "abnormal"
+                    : isSealEncyclopedia ? option.dataset.lookupMode === "seal"
                     : isSuitEncyclopedia ? option.dataset.lookupMode === "suit"
                         : option.dataset.lookupMode === seerLookup.getMode()
             );
@@ -169,6 +182,7 @@ export function createNavigation({
                 if (url.searchParams.get("tab") !== routeName) url.searchParams.delete("id");
 
                 if (routeName !== "training") url.searchParams.delete("build");
+                if (routeName !== "abnormal") url.searchParams.delete("abnormal");
                 if (routeName === "competitive") {
                     url.searchParams.set("server", normalizeCompetitiveServer(url.searchParams.get("server")));
                 } else {
@@ -186,6 +200,7 @@ export function createNavigation({
                 }
             }
         }
+        if (isAbnormalEncyclopedia) void seerAbnormal?.load(new URL(window.location.href).searchParams.get("abnormal"));
     }
 
     function restoreRouteFromUrl({ initial = false } = {}) {

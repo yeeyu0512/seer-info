@@ -1,0 +1,55 @@
+#abnormal-encyclopedia-section { padding: 24px; }
+#abnormal-encyclopedia-section .panel-header { padding: 0 0 18px; }
+.abnormal-toolbar { display: grid; gap: 10px; }
+.abnormal-toolbar label { font-size: 14px; color: var(--text-secondary); }
+.abnormal-toolbar input { width: 100%; min-width: 0; min-height: 44px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; background: #111525; color: var(--text); font: inherit; }
+.abnormal-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.abnormal-filters button, .abnormal-retry { padding: 8px 16px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-light); color: var(--text-secondary); font: inherit; font-size: 14px; box-shadow: none; }
+.abnormal-filters button[aria-pressed="true"] { color: var(--primary-light); border-color: var(--primary); background: rgba(124,140,255,.12); }
+.abnormal-filters button:hover { transform: none; box-shadow: none; border-color: var(--border-hover); }
+.abnormal-catalog-note, .abnormal-count, .abnormal-empty, .abnormal-route-message { color: var(--text-secondary); font-size: 13px; line-height: 1.8; margin: 16px 0; }
+.abnormal-count { font-variant-numeric: tabular-nums; }
+.abnormal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 235px), 1fr)); gap: 14px; }
+.abnormal-card { cursor: pointer; width: 100%; min-width: 0; font: inherit; gap: 14px; }
+.abnormal-card .seal-card-description { flex: 1; line-height: 1.75; }
+.abnormal-card .abnormal-verification { font-size: 12px; color: var(--text-secondary); }
+.abnormal-icon { display: grid; place-items: center; width: 52px; height: 52px; flex: 0 0 52px; }
+.abnormal-icon img { display: block; width: 48px; height: 48px; object-fit: contain; }
+.abnormal-badges { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
+.abnormal-badge { display: inline-block; padding: 2px 7px; border-radius: 5px; font-size: 11px; line-height: 1.5; color: var(--primary-light); background: rgba(124,140,255,.12); }
+.abnormal-badge-special { color: var(--text-secondary); background: var(--surface-light); border: 1px solid var(--border); }
+.abnormal-badge-alert { color: #ff9aa4; background: rgba(255,111,125,.12); border-color: rgba(255,111,125,.45); animation: abnormal-special-blink 2.4s ease-in-out infinite; }
+@keyframes abnormal-special-blink { 0%, 100% { opacity: 1; } 50% { opacity: .65; } }
+@media (prefers-reduced-motion: reduce) { .abnormal-badge-alert { animation: none; } }
+.abnormal-pagination { flex-wrap: wrap; gap: 16px; }
+.abnormal-pagination button { font: inherit; font-size: 14px; }
+.abnormal-pagination button:disabled { opacity: .45; cursor: default; }
+.abnormal-grid { scroll-margin-top: 100px; }
+.abnormal-dialog { width: min(700px, calc(100vw - 32px)); padding: 24px; }
+.abnormal-dialog-toolbar { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+.abnormal-dialog .abnormal-dialog-close { min-height: 40px; cursor: pointer; font: inherit; font-size: 14px; }
+.abnormal-detail-header { display: flex; align-items: center; gap: 16px; }
+.abnormal-detail-header h2 { margin: 0; font-size: 26px; }
+.abnormal-detail-description { font-size: 16px; line-height: 1.9; margin: 22px 0; }
+.abnormal-detail-section { padding-top: 18px; margin-top: 18px; border-top: 1px solid var(--border); }
+.abnormal-detail-section h3 { margin: 0 0 10px; color: var(--primary-light); font-size: 15px; }
+.abnormal-detail-section p, .abnormal-detail-section li { color: var(--text-secondary); font-size: 14px; line-height: 1.85; overflow-wrap: anywhere; }
+.abnormal-detail-section p { margin: 8px 0; }
+.abnormal-detail-section ul { padding-left: 20px; margin: 8px 0; }
+.abnormal-detail-section small { display: block; }
+.abnormal-related { display: flex; flex-wrap: wrap; gap: 8px; }
+.abnormal-related-link { display: inline-block; color: var(--primary-light); text-underline-offset: 4px; }
+.abnormal-related > a { border: 1px solid var(--border); padding: 5px 10px; border-radius: 8px; }
+.abnormal-detail-section .abnormal-flow { list-style: none; padding: 12px; border-radius: 12px; background: var(--surface-light); }
+.abnormal-flow > li + li { margin-top: 14px; }
+.abnormal-flow-step { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.abnormal-flow-arrow { color: var(--text-secondary); }
+.abnormal-flow p { font-size: 12px; }
+.abnormal-flow ul { list-style: none; border-left: 1px solid var(--border); }
+.abnormal-toolbar input:focus-visible, .abnormal-filters button:focus-visible, .abnormal-dialog button:focus-visible, .abnormal-dialog a:focus-visible, .abnormal-retry:focus-visible { outline: 2px solid var(--primary-light); outline-offset: 3px; }
+@media (max-width: 600px) {
+    #abnormal-encyclopedia-section { padding: 18px; }
+    .abnormal-grid { grid-template-columns: 1fr; }
+    .abnormal-dialog { padding: 18px; max-height: 90dvh; }
+    .abnormal-filters button { flex: 1 0 auto; }
+}

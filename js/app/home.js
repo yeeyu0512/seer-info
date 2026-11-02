@@ -1,5 +1,6 @@
 import { initHomeCarousel } from "./home-carousel.js";
 import { initAbout } from "./about.js";
+import { enableDialogBackdropClose } from "../shared/dialog-backdrop.js";
 
 // Home only routes to the existing tools; lookup remains owned by seer-lookup.
 export function initHome({ seerLookup, activateTab }) {
@@ -35,6 +36,12 @@ export function initHome({ seerLookup, activateTab }) {
     botGuideOpener.addEventListener("click", () => botGuide.showModal());
     document.getElementById("close-bot-guide").addEventListener("click", () => botGuide.close());
     botGuide.addEventListener("close", () => botGuideOpener.focus({ preventScroll: true }));
+    const gemDialog = document.getElementById("home-gem-dialog");
+    const gemOpener = document.getElementById("home-gem-catalog");
+    gemOpener.addEventListener("click", () => gemDialog.showModal());
+    document.getElementById("home-gem-close").addEventListener("click", () => gemDialog.close());
+    gemDialog.addEventListener("close", () => gemOpener.focus({ preventScroll: true }));
+    enableDialogBackdropClose(gemDialog);
     document.querySelector(".site-header .logo").addEventListener("click", (event) => {
         event.preventDefault();
         activateTab("home-section");
@@ -75,7 +82,7 @@ async function loadOfficialNews(home) {
         const data = await response.json();
         const entries = data.items.filter(item => {
             try { const url = new URL(item.url); return url.origin === "https://www.61.com.tw" && url.pathname.startsWith("/seer_df/news/page/"); } catch { return false; }
-        }).slice(0, 3);
+        }).slice(0, 4);
         if (!entries.length) throw new Error("No news");
         list.replaceChildren(...entries.map(item => {
             const row = document.createElement("li"), date = document.createElement("time"), link = document.createElement("a");
@@ -179,9 +186,9 @@ async function loadChangelog(home) {
             throw new Error("No changelog entries");
         }
 
-        // 首頁：最新三筆，只顯示日期及標題
+        // 首頁：最新四筆，只顯示日期及標題
         previewList.replaceChildren(
-            ...entries.slice(0, 3).map(entry => createEntry(entry))
+            ...entries.slice(0, 4).map(entry => createEntry(entry))
         );
 
         // 完整紀錄：所有更新，包含詳細內容

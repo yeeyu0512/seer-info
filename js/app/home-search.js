@@ -1,13 +1,16 @@
 import { enableDialogBackdropClose } from "../shared/dialog-backdrop.js";
+import { abnormalUrl, filterAbnormals, validateAbnormalCatalog } from "../seer-abnormal.js";
 
 export const SEARCH_CATEGORIES = [
     { key: "pet", endpoint: "pet", label: "精靈" },
     { key: "skin", endpoint: "pet_skin", label: "皮膚" },
     { key: "mintmark", endpoint: "mintmark", label: "刻印" },
-    { key: "suit", endpoint: "suit", label: "套裝" }
+    { key: "suit", endpoint: "suit", label: "套裝" },
+    { key: "abnormal", label: "異常狀態" }
 ];
 
 const TOOLS = [
+    { name: "異常狀態圖鑑", words: "異常 控制 弱化 附屬 限制 衍化 PVP PVE", selector: '#encyclopedia-nav [data-lookup-mode="abnormal"]' },
     { name: "競技池", words: "禁池 禁止 限制 巔峰", selector: '[data-main-target="competitive"]' },
     { name: "屬性克制", words: "屬性 相剋 倍率 克制", selector: '[data-main-target="type-chart"]' },
     { name: "模擬培養", words: "培養 學習力 個體值 能力值", selector: '[data-main-target="training"]' },
@@ -22,6 +25,17 @@ export function findHomeTools(query, simplified = value => value) {
 
 export async function searchHomeCategory(category, query, { signal, simplified = value => value, fetchImpl = fetch } = {}) {
     const term = simplified(query.normalize("NFKC").trim());
+    if (category.key === "abnormal") {
+        const response = await fetchImpl(new URL("../../data/abnormal.json", import.meta.url), { signal });
+        if (!response.ok) throw new Error(`搜尋失敗（${response.status}）`);
+        const catalog = validateAbnormalCatalog(await response.json());
+        const numeric = /^(0|[1-9][0-9]*)$/.test(term);
+        const matches = !term ? [] : numeric
+            ? catalog.abnormals.filter(item => item.id === Number(term))
+            : filterAbnormals(catalog.abnormals, term, "全部", simplified);
+        matches.sort((a, b) => Number(simplified(b.name) === term) - Number(simplified(a.name) === term));
+        return { records: matches.slice(0, 4), more: matches.length > 4 };
+    }
     const numeric = /^[1-9][0-9]{0,9}$/.test(term);
     const params = new URLSearchParams({ name: term, limit: "4", offset: "0", expand: "true" });
     const url = `https://api.seerapi.com/v1/${category.endpoint}${numeric ? `/${term}` : `?${params}`}`;
@@ -213,10 +227,20 @@ export function initHomeSearch({ simplified, traditional }) {
             records.forEach(record => {
                 const li = document.createElement("li"), link = document.createElement("a");
                 const name = document.createElement("span"), id = document.createElement("small");
-                link.href = `?tab=${category.key}&id=${record.id}`;
+                link.href = category.key === "abnormal" ? abnormalUrl(record.id).href : `?tab=${category.key}&id=${record.id}`;
                 name.textContent = traditional(record.name);
                 id.textContent = `#${record.id}`;
-                link.append(name, id); li.append(link); list.append(li);
+                if (category.key === "abnormal") {
+                    const icon = document.createElement("img"), copy = document.createElement("span"), summary = document.createElement("span");
+                    icon.src = record.icon; icon.alt = ""; icon.width = 32; icon.height = 32;
+                    icon.className = "home-search-result-icon";
+                    copy.className = "home-search-result-copy";
+                    summary.className = "home-search-result-summary";
+                    summary.textContent = record.summary;
+                    copy.append(name, summary);
+                    link.append(icon, copy, id);
+                } else link.append(name, id);
+                li.append(link); list.append(li);
             });
             count += records.length;
             if (hasMore) {
