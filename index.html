@@ -369,6 +369,23 @@
                             type="button">重新整理</button>
                     </div>
                 </div>
+                <div id="competitive-content-tabs" class="competitive-content-tabs" role="group" aria-label="陸服競技池內容" hidden>
+                    <button id="competitive-content-list" class="secondary-button compact-button" type="button" aria-pressed="true">競技池名單</button>
+                    <button id="competitive-content-votes" class="secondary-button compact-button" type="button" aria-pressed="false">競技池投票</button>
+                </div>
+                <section id="competitive-votes" aria-label="陸服遊戲票選" hidden>
+                    <div class="competitive-vote-toolbar">
+                        <p id="competitive-vote-status" class="panel-description" aria-live="polite"></p>
+                        <button id="competitive-vote-refresh" class="secondary-button compact-button" type="button">更新資料</button>
+                    </div>
+                    <p id="competitive-vote-policy" class="competitive-vote-policy"></p>
+                    <div class="competitive-vote-tabs" role="tablist" aria-label="票選池別">
+                        <button id="competitive-vote-restricted" class="competitive-pool-type-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="competitive-vote-results">限制池 · 前 20 名</button>
+                        <button id="competitive-vote-semi" class="competitive-pool-type-tab" type="button" role="tab" aria-selected="false" aria-controls="competitive-vote-results" tabindex="-1">準限制池 · 前 30 名</button>
+                    </div>
+                    <p id="competitive-vote-period" class="panel-description"></p>
+                    <div id="competitive-vote-results" role="tabpanel" aria-labelledby="competitive-vote-restricted" aria-live="polite"></div>
+                </section>
                 <div id="competitive-pool-type-tabs" class="competitive-pool-type-tabs" role="tablist"
                     aria-label="競技池種類" hidden>
                     <button id="competitive-pool-tab-banned" class="competitive-pool-type-tab is-active" type="button"
@@ -809,7 +826,17 @@
 
     <!-- Application -->
 
-    <script type="module" src="./js/main.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "./js/shared/chinese.js": "./js/shared/chinese.js?v=20261102_name_policy",
+                "./js/competitive/view-controller.js": "./js/competitive/view-controller.js?v=20261102_name_policy",
+                "./js/competitive/votes-view.js": "./js/competitive/votes-view.js?v=20261102_name_policy",
+                "./js/player-lookup.js": "./js/player-lookup.js?v=20261102_name_policy"
+            }
+        }
+    </script>
+    <script type="module" src="./js/main.js?v=20261102_name_policy"></script>
 
     <dialog id="bot-guide" class="changelog-dialog" aria-labelledby="bot-guide-title">
         <div class="changelog-dialog-header"><h2 id="bot-guide-title">武心嬋 · 指令說明</h2><button type="button" id="close-bot-guide" aria-label="關閉指令說明">✕</button></div>
@@ -839,14 +866,15 @@
 
     <dialog id="lookup-explanation" class="lookup-explanation" aria-labelledby="lookup-explanation-title">
         <h2 id="lookup-explanation-title">查詢原理</h2>
-        <p>伺服器上的測試帳號登入台服後，向遊戲伺服器查詢玩家資料。需要驗證碼時，由查詢者填寫。</p>
+        <p>選擇台服或陸服後，由伺服器上的測試帳號向對應遊戲伺服器查詢玩家資料。台服需要驗證碼時，由查詢者填寫。</p>
         <p>僅顯示在線狀態、巔峰統計及出戰與待戰精靈的名稱與編號，不提供配招或配置，也不保存查詢歷史。</p>
-        <p>查詢共用冷卻時間，資料以遊戲伺服器回傳為準。台服連線狀態僅表示測試帳號目前有沒有建立遊戲連線，無法據此判定官方是否開服。</p>
+        <p>陸服玩家與票選查詢會排隊處理，跨區連線可能較慢；每週三台灣時間 23:45～23:59 暫停陸服玩家查詢，週四 00:00 恢復。</p>
+        <p>資料以遊戲伺服器回傳為準。連線狀態僅表示查詢帳號目前有沒有建立遊戲連線，無法據此判定官方是否開服。</p>
         <button id="close-lookup-explanation" type="button">知道了</button>
     </dialog>
     <!-- 玩家查詢中的米米號是訪客自行指定的查詢目標；不用此功能的訪客無須輸入，且這不是註冊或帳號綁定。 -->
     <dialog id="player-lookup-dialog" class="player-lookup-dialog" aria-label="玩家資料查詢">
-        <div class="player-lookup-dialog-bar"><div class="player-dialog-title"><strong>玩家資料查詢</strong><span>輸入米米號，查詢台服玩家的巔峰戰績與出戰、待戰精靈。</span><button id="open-lookup-explanation" type="button">查詢原理 ⓘ</button></div><button id="close-player-lookup" type="button" aria-label="關閉玩家查詢">✕</button></div>
+        <div class="player-lookup-dialog-bar"><div class="player-dialog-title"><strong>玩家資料查詢</strong><span>選擇區服與米米號，查詢巔峰戰績與出戰、待戰精靈。</span><button id="open-lookup-explanation" type="button">查詢原理 ⓘ</button></div><button id="close-player-lookup" type="button" aria-label="關閉玩家查詢">✕</button></div>
         <div class="player-lookup-content">
 <section class="player-lookup-card">
 
@@ -856,13 +884,15 @@
                 <div class="player-lookup-input-row">
                     <input id="player-lookup-mimi-id" name="mimi_id" type="text" placeholder="例如：20000001" inputmode="numeric" pattern="[0-9]+"
                         autocomplete="off" required aria-describedby="player-lookup-mimi-id-help">
+                    <select id="player-lookup-region" name="region" aria-label="查詢區服"><option value="tw">台服</option><option value="cn">陸服</option></select>
                     <button id="lookup-submit" class="primary-button compact-button" type="submit">查詢</button>
                 </div>
                 <small id="player-lookup-mimi-id-help">請輸入半形數字米米號。</small>
+                <p id="player-region-note" class="player-region-note" hidden></p>
             </form>
             <aside class="player-service-status" aria-label="服務狀態">
-                <div class="service-indicator"><span class="service-label">查詢服務</span><strong id="api-health" data-state="pending">檢查中</strong><small>必須為正常才可以查詢相關資料</small></div>
-                <div class="service-indicator"><span class="service-label">台服連線</span><strong id="game-health" data-state="pending">未知</strong><small>連線狀態不代表官方開服狀態，但關服時一定連不上</small></div>
+                <div class="service-indicator"><span class="service-label">查詢服務</span><strong id="api-health" aria-describedby="player-service-help" data-state="pending">檢查中</strong><small id="player-service-help">查詢服務正常時可送出查詢</small></div>
+                <div class="service-indicator"><span id="player-game-label" class="service-label">台服連線</span><strong id="game-health" aria-describedby="player-game-help" data-state="pending">未知</strong><small id="player-game-help">連線狀態不代表官方開服狀態</small></div>
             </aside>
             </div>
 
@@ -887,7 +917,7 @@
             <section id="player-result" class="player-result" aria-live="polite" hidden>
                 <header class="player-result-heading">
                     <div class="player-identity">
-                        <div class="player-identity-title"><h2 id="player-nickname">-</h2><span id="player-online" class="player-online-badge">-</span></div>
+                        <div class="player-identity-title"><h2 id="player-nickname">-</h2><span id="player-result-region" class="player-region-badge">台服</span><span id="player-online" class="player-online-badge">-</span></div>
                         <div class="player-identity-meta"><span id="player-user-id" class="player-result-id">-</span><span id="player-server">-</span></div>
                         <p id="player-last-login" hidden></p>
                     </div>
@@ -905,6 +935,12 @@
                         <p>歷史最高：<span id="wild-highest-rank">-</span></p>
                         <p>本季勝率：<span id="wild-win-rate">-</span></p>
                     </section>
+                    <section id="expert-mode" class="player-peak-mode player-expert-mode" aria-labelledby="expert-title" hidden>
+                        <h3 id="expert-title">巔峰專家</h3>
+                        <p>當前賽季：<span id="expert-current-rank">-</span></p>
+                        <p>歷史最高：<span id="expert-highest-rank">-</span></p>
+                        <p>本季勝率：<span id="expert-win-rate">-</span></p>
+                    </section>
                 </div>
                 <div class="player-bags">
                 <section class="player-bag" aria-labelledby="primary-bag-title">
@@ -920,7 +956,7 @@
     </dialog>
     <link rel="stylesheet" href="./css/player-lookup.css">
     <link rel="stylesheet" href="./css/player-lookup-dialog.css">
-    <script type="module" src="./js/player-lookup-dialog.js"></script>
+    <script type="module" src="./js/player-lookup-dialog.js?v=20261102_name_policy"></script>
 </body>
 
 </html>

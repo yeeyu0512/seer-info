@@ -54,6 +54,8 @@ const { createCharacterTypeIcon, clearObservedTypeIcons, loadCharacterTypeIcon, 
     fetchSeerJson: (...args) => fetchSeerJson(...args)
 });
 const { loadCurrentCompetitivePool, updateCompetitivePoolTypeTabs, renderCompetitivePoolCharacters, formatCompetitivePoolDate } = createCompetitiveView({
+    convertToTraditionalChinese,
+    convertToSimplifiedChinese,
     getCurrentCompetitivePool: (...args) => getCurrentCompetitivePool(...args),
     clearObservedTypeIcons: (...args) => clearObservedTypeIcons(...args),
     createCharacterTypeIcon: (...args) => createCharacterTypeIcon(...args),

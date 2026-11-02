@@ -1,7 +1,25 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { normalizePlayerResult, getPeakRankIcon, getPeakRankName, formatPeakLines, renderPeakRank, formatPlayerLoginTime } from "../js/player-lookup.js";
+import { normalizePlayerResult, getPeakRankIcon, getPeakRankName, formatPeakLines, renderPeakRank, formatPlayerLoginTime, getPlayerLookupEndpoint, isCnPlayerQueryWindow } from "../js/player-lookup.js";
 import { existsSync } from "node:fs";
+import { configurePlayerNameConverters, formatPlayerPetName } from '../js/player-lookup.js';
+import { createChineseConverters } from '../js/shared/chinese.js';
+
+test('player bag names follow the shared protected-character and 啟 policy', () => {
+    const conversions = {
+        cn: { '傑': '杰', '託': '托', '裏': '里', '嶽': '岳', '揹': '背', '啓': '启', '啟': '启' },
+        tw: { '杰': '傑', '托': '託', '里': '裏', '岳': '嶽', '背': '揹', '启': '啓' }
+    };
+    configurePlayerNameConverters(createChineseConverters(({ to }) => text => [...text].map(c => conversions[to][c] || c).join('')));
+    try {
+        assert.equal(formatPlayerPetName('天啓帝君'), '天啟帝君');
+        assert.equal(formatPlayerPetName('嶽傑託裏揹'), '岳杰托里背');
+        assert.equal(formatPlayerPetName('岳杰托里背'), '岳杰托里背');
+        assert.equal(formatPlayerPetName(undefined), '未知精靈');
+    } finally {
+        configurePlayerNameConverters({ convertToTraditionalChinese: value => value, convertToSimplifiedChinese: value => value });
+    }
+});
 
 test("maps each supported peak rank to an existing badge and skips unknown ranks", () => {
     for (const rank of ["學徒", "猛將", "天驕", "王者", "聖皇", "宇宙聖皇"]) {
@@ -131,4 +149,33 @@ test("matches the real API rank and separate mode statistics", () => {
     assert.equal(result.winRecord, "173／248");
     assert.equal(result.wildWinRate, "無對戰統計");
     assert.equal(result.wildWinRecord, "0／0");
+});
+
+test("routes query, health and Taiwan captcha without inventing a mainland captcha route", () => {
+    const base = "https://seer-info-tw-api.koreacentral.cloudapp.azure.com/api";
+    assert.equal(getPlayerLookupEndpoint(), `${base}/tw/player/query`);
+    assert.equal(getPlayerLookupEndpoint("cn"), `${base}/cn/player/query`);
+    assert.equal(getPlayerLookupEndpoint("cn", "status"), `${base}/cn/status`);
+    assert.equal(getPlayerLookupEndpoint("tw", "captcha"), `${base}/tw/player/captcha`);
+    assert.equal(getPlayerLookupEndpoint("cn", "captcha"), `${base}/cn/player/query`);
+    assert.equal(getPlayerLookupEndpoint("https://untrusted.example"), `${base}/tw/player/query`);
+});
+
+test("mainland player window uses UTC+8 and includes the whole last Wednesday minute", () => {
+    for (const [time, expected] of [
+        ["2026-11-04T15:44:59Z", false], ["2026-11-04T15:45:00Z", true],
+        ["2026-11-04T15:59:59Z", true], ["2026-11-04T16:00:00Z", false],
+        ["2026-11-03T15:50:00Z", false], ["2026-11-05T15:50:00Z", false]
+    ]) assert.equal(isCnPlayerQueryWindow(new Date(time)), expected, time);
+});
+
+test("expert score formatting has no unknown rank and always uses the fixed icon", () => {
+    assert.equal(getPeakRankIcon("專家模式"), "./assets/icons/peak-level/專家模式.png");
+    assert.ok(existsSync(new URL("../assets/icons/peak-level/專家模式.png", import.meta.url)));
+    for (const score of [0, 1000, 99999]) {
+        const lines = formatPeakLines({current: {rank: null, score, unit: "score"},
+            highest: {rank: null, score, unit: "score"}}, {expert: true});
+        assert.equal(lines.current, `${score}分`);
+        assert.equal(lines.highest, `${score}分`);
+    }
 });

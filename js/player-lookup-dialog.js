@@ -1,12 +1,17 @@
 import { enableDialogBackdropClose } from './shared/dialog-backdrop.js';
+import { createChineseConverters } from './shared/chinese.js';
+import { Converter } from 'https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/esm/full.js';
+
+const nameConverters = createChineseConverters(Converter);
 
 const dialog = document.getElementById('player-lookup-dialog');
 const card = dialog.querySelector('.player-lookup-card');
 let lastTrigger;
 document.querySelectorAll('[data-open-player-lookup]').forEach(trigger => trigger.addEventListener('click', () => {
     lastTrigger = trigger;
-    import('./player-lookup.js');
+    import('./player-lookup.js').then(module => module.configurePlayerNameConverters(nameConverters));
     dialog.showModal();
+    dialog.dispatchEvent(new Event('player-lookup-open'));
     resizeLookup();
 }));
 document.getElementById('close-player-lookup').addEventListener('click', () => dialog.close());

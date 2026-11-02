@@ -1,19 +1,36 @@
 import { normalizeCompetitiveServer } from "./servers.js";
 import { renderCompetitivePoolTitle } from "./pool-title.js";
+import { createVotesView } from "./votes-view.js";
 
 export function createCompetitiveView({
     getCurrentCompetitivePool,
     clearObservedTypeIcons,
     createCharacterTypeIcon,
+    convertToTraditionalChinese,
+    convertToSimplifiedChinese,
     seerLookup
 }) {
     const competitivePoolPeriod = document.getElementById("competitive-pool-period");
     const competitivePoolMessage = document.getElementById("competitive-pool-message");
     const competitivePoolGroups = document.getElementById("competitive-pool-groups");
     const competitivePoolTypeTabs = document.getElementById("competitive-pool-type-tabs");
-    const competitivePoolTypeTabButtons = Array.from(document.querySelectorAll(".competitive-pool-type-tab"));
+    const competitivePoolTypeTabButtons = Array.from(document.querySelectorAll(".competitive-pool-type-tab[data-pool-type]"));
     const refreshCompetitivePoolButton = document.getElementById("refresh-competitive-pool-button");
     const serverSelect = document.getElementById("competitive-pool-server");
+    const contentTabs = document.getElementById("competitive-content-tabs");
+    const listButton = document.getElementById("competitive-content-list");
+    const votesButton = document.getElementById("competitive-content-votes");
+    const votesView = createVotesView({ seerLookup, convertToTraditionalChinese, convertToSimplifiedChinese });
+
+    function selectContent(votes) {
+        const url = new URL(window.location.href);
+        if (votes && serverSelect.value === "cn") url.searchParams.set("poolview", "votes");
+        else url.searchParams.delete("poolview");
+        window.history.pushState(null, "", url);
+        return loadCurrentCompetitivePool();
+    }
+    listButton.addEventListener("click", () => selectContent(false));
+    votesButton.addEventListener("click", () => selectContent(true));
 
     let competitivePoolRequestId = 0;
 
@@ -26,6 +43,7 @@ export function createCompetitiveView({
         const url = new URL(window.location.href);
         url.searchParams.set("tab", "competitive");
         url.searchParams.set("server", serverSelect.value);
+        if (serverSelect.value !== "cn") url.searchParams.delete("poolview");
         if (url.href !== window.location.href) window.history.pushState(null, "", url);
         loadCurrentCompetitivePool(serverSelect.value);
     });
@@ -54,6 +72,12 @@ export function createCompetitiveView({
         server = normalizeCompetitiveServer(server);
         serverSelect.value = server;
         const requestId = ++competitivePoolRequestId;
+        const showVotes = server === "cn" && new URL(window.location.href).searchParams.get("poolview") === "votes";
+        contentTabs.hidden = server !== "cn";
+        listButton.setAttribute("aria-pressed", String(!showVotes));
+        votesButton.setAttribute("aria-pressed", String(showVotes));
+        votesView.setActive(showVotes);
+        refreshCompetitivePoolButton.hidden = showVotes;
         renderCompetitivePoolTitle(competitivePoolMessage, server, "正在載入競技池資料…");
         competitivePoolPeriod.textContent = "";
         competitivePoolTypeTabs.hidden = true;
@@ -62,6 +86,13 @@ export function createCompetitiveView({
         competitivePoolGroups.replaceChildren();
         currentCompetitivePoolCharacters = [];
         refreshCompetitivePoolButton.disabled = true;
+
+        if (showVotes) {
+            renderCompetitivePoolTitle(competitivePoolMessage, "cn", "遊戲票選");
+            competitivePoolPeriod.textContent = "查看遊戲內票選排名與票數";
+            await votesView.load();
+            return;
+        }
 
         try {
             const pool = await getCurrentCompetitivePool(server);

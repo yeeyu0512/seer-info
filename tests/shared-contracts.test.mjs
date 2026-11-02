@@ -33,6 +33,14 @@ test("conversion keeps special names and each caller's trim/null contract", () =
     assert.equal(toTraditionalChinese(123), "123");
 });
 
+test("traditional display always uses 啟 even when the converter returns 啓", () => {
+    const converters = createChineseConverters(() => text => text.replaceAll('启', '啓').replaceAll('啟', '啓'));
+    for (const value of ['天启帝君', '天啓帝君', '天啟帝君']) {
+        assert.equal(converters.convertToTraditionalChinese(value), '天啟帝君');
+        assert.equal(converters.toTraditionalChinese(` ${value} `), '天啟帝君');
+    }
+});
+
 test("pool import rejects duplicate lines while competitive import counts duplicate IDs", () => {
     const pool = parseImportedCharacters("1,精靈\n2\n1\nwrong\n");
     assert.deepEqual(pool.invalidLines, [3,4]);

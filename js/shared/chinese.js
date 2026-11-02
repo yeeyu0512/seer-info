@@ -5,10 +5,10 @@ export function createChineseConverters(Converter) {
     function convertToTraditionalChinese(value) {
         if (!value) return "";
         try {
-            return value.split(/([岳杰托里背])/).map((part) => "岳杰托里背".includes(part) ? part : s2tConverter(part)).join("");
+            return value.split(/([岳杰托里背])/).map((part) => "岳杰托里背".includes(part) ? part : s2tConverter(part)).join("").replaceAll("啓", "啟");
         } catch (error) {
             console.warn("Simplified-to-traditional conversion failed:", error);
-            return value;
+            return value.replaceAll("啓", "啟");
         }
     }
 
@@ -25,12 +25,7 @@ export function createChineseConverters(Converter) {
         if (value === null || value === undefined) return "";
         const text = String(value).trim();
         if (!text) return "";
-        try {
-            return text.split(/([岳杰托里背])/).map((part) => "岳杰托里背".includes(part) ? part : s2tConverter(part)).join("");
-        } catch (error) {
-            console.warn("Simplified-to-traditional conversion failed:", error);
-            return text;
-        }
+        return convertToTraditionalChinese(text);
     }
     return { convertToTraditionalChinese, convertToSimplifiedChinese, toTraditionalChinese };
 }

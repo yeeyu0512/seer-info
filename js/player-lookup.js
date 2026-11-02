@@ -1,8 +1,29 @@
-// Taiwan player API; game credentials remain on the server.
-export const PLAYER_LOOKUP_API_ENDPOINT = "https://seer-info-tw-api.koreacentral.cloudapp.azure.com/api/tw/player/query";
+// Game credentials remain on the server. Region routing is fixed, never user URLs.
+let playerNameConverters = { convertToTraditionalChinese: value => value, convertToSimplifiedChinese: value => value };
+
+export function configurePlayerNameConverters(converters) {
+    playerNameConverters = converters;
+}
+
+export function formatPlayerPetName(value) {
+    const text = String(value || "未知精靈");
+    return playerNameConverters.convertToTraditionalChinese(playerNameConverters.convertToSimplifiedChinese(text)).replaceAll("啓", "啟");
+}
+
+export function getPlayerLookupEndpoint(region = "tw", purpose = "query") {
+    const base = `https://seer-info-tw-api.koreacentral.cloudapp.azure.com/api/${region === "cn" ? "cn" : "tw"}`;
+    return purpose === "status" ? `${base}/status` : purpose === "captcha" && region !== "cn" ? `${base}/player/captcha` : `${base}/player/query`;
+}
+export const PLAYER_LOOKUP_API_ENDPOINT = getPlayerLookupEndpoint();
+
+export function isCnPlayerQueryWindow(now = new Date()) {
+    const local = new Date(new Date(now).getTime() + 8 * 60 * 60 * 1000);
+    return local.getUTCDay() === 3 && local.getUTCHours() === 23 && local.getUTCMinutes() >= 45;
+}
 
 const elements = typeof document === "undefined" ? {} : {
     form: document.getElementById("player-lookup-form"),
+    region: document.getElementById("player-lookup-region"),
     mimiId: document.getElementById("player-lookup-mimi-id"),
     submit: document.getElementById("lookup-submit"),
     status: document.getElementById("player-lookup-status"),
@@ -36,6 +57,24 @@ const resultFields = typeof document === "undefined" ? {} : {
 };
 
 let pendingCaptcha = null;
+let activeRequest = null;
+let requestVersion = 0;
+let healthVersion = 0;
+let loading = false;
+let regionDisabled = false;
+const CN_WINDOW_MESSAGE = "每週三台灣時間 23:45～23:59 暫停陸服玩家查詢，週四 00:00 恢復。";
+const selectedRegion = () => elements.region?.value === "cn" ? "cn" : "tw";
+
+function updateRegionNote() {
+    const cn = selectedRegion() === "cn";
+    const blocked = cn && (regionDisabled || isCnPlayerQueryWindow());
+    const note = document.getElementById("player-region-note");
+    note.hidden = !cn;
+    note.dataset.disabled = String(blocked);
+    note.textContent = isCnPlayerQueryWindow() ? CN_WINDOW_MESSAGE : regionDisabled
+        ? "陸服玩家查詢目前暫停，請稍後再試。" : "跨區連線可能較慢；陸服玩家與票選查詢會排隊處理。";
+    elements.submit.disabled = loading || blocked;
+}
 
 function firstDefined(...values) {
     return values.find((value) => value !== undefined && value !== null && value !== "");
@@ -123,10 +162,11 @@ function setStatus(message, type = "") {
 }
 
 function setLoading(isLoading) {
+    loading = isLoading;
     elements.progress.hidden = !isLoading;
     elements.form.setAttribute("aria-busy", String(isLoading));
     if (!isLoading) refreshServiceStatus();
-    elements.submit.disabled = isLoading;
+    updateRegionNote();
     elements.captchaSubmit.disabled = isLoading;
     elements.submit.textContent = isLoading ? "查詢中…" : "查詢";
 }
@@ -141,6 +181,7 @@ function hideCaptcha() {
 
 function showCaptcha(payload) {
     pendingCaptcha = {
+        region: "tw",
         id: firstDefined(payload.captcha_id, payload.challenge_id, payload.challenge),
         challenge: payload.challenge
     };
@@ -156,17 +197,17 @@ function showCaptcha(payload) {
     elements.captchaAnswer.focus();
 }
 
-async function requestPlayer(mimiId, captchaAnswer = "") {
-    const body = pendingCaptcha
+async function requestPlayer(mimiId, captchaAnswer, region, signal) {
+    const captcha = region === "tw" && pendingCaptcha?.region === "tw";
+    const body = captcha
         ? { challenge_id: pendingCaptcha.id, code: captchaAnswer }
         : { user_id: Number(mimiId) };
-    const endpoint = pendingCaptcha
-        ? PLAYER_LOOKUP_API_ENDPOINT.replace(/\/query$/, "/captcha")
-        : PLAYER_LOOKUP_API_ENDPOINT;
+    const endpoint = getPlayerLookupEndpoint(region, captcha ? "captcha" : "query");
     const response = await fetch(endpoint, {
         method: "POST",
         headers: { Accept: "application/json", "Content-Type": "application/json" },
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
+        signal: AbortSignal.any([signal, AbortSignal.timeout(130000)])
     });
     let payload = {};
     try {
@@ -174,7 +215,7 @@ async function requestPlayer(mimiId, captchaAnswer = "") {
     } catch (error) {
         if (!response.ok) throw new Error(`查詢失敗（${response.status}）`);
     }
-    if (response.status === 428) {
+    if (response.status === 428 && region === "tw") {
         const error = new Error(payload.message || "需要驗證");
         error.code = "captcha_required";
         error.payload = payload;
@@ -193,7 +234,7 @@ function renderPetBag(container, pets) {
     container.replaceChildren();
     container.classList.add("player-pet-list");
     if (!Array.isArray(pets) || !pets.length) {
-        container.textContent = pets ? String(pets) : "空";
+        container.textContent = pets ? formatPlayerPetName(pets) : "空";
         return;
     }
     for (const pet of pets) {
@@ -210,7 +251,7 @@ function renderPetBag(container, pets) {
         }
         const info = document.createElement("div");
         const name = document.createElement("strong");
-        name.textContent = typeof pet === "string" ? pet : String(pet.name || "未知精靈");
+        name.textContent = formatPlayerPetName(typeof pet === "string" ? pet : pet?.name);
         info.append(name);
         if (Number.isInteger(id) && id > 0) {
             const number = document.createElement("small");
@@ -231,15 +272,15 @@ export function getPeakRankName(value) {
     return rank || null;
 }
 
-export function formatPeakLines(peak = {}) {
-    const rank = (value) => value ? `${getPeakRankName(value) || '未知段位'}${value.score ?? '-'}${value.unit === 'star' ? '星' : '分'}` : '-';
+export function formatPeakLines(peak = {}, { expert = false } = {}) {
+    const rank = (value) => value ? expert ? `${value.score ?? '-'}分` : `${getPeakRankName(value) || '未知段位'}${value.score ?? '-'}${value.unit === 'star' ? '星' : '分'}` : '-';
     const stats = peak.win_rate || {};
     const percent = stats.percent == null ? '無對戰統計' : `${Number(stats.percent).toFixed(1)}%`;
     return {current: rank(peak.current), highest: rank(peak.highest), rate: `${percent}（${stats.wins ?? '-'}／${stats.total ?? '-'}）`};
 }
 
 const PEAK_RANK_ICONS = new Map(
-    ["學徒", "猛將", "天驕", "王者", "聖皇", "宇宙聖皇"].map((rank) => [rank, `./assets/icons/peak-level/${rank}.png`])
+    ["學徒", "猛將", "天驕", "王者", "聖皇", "宇宙聖皇", "專家模式"].map((rank) => [rank, `./assets/icons/peak-level/${rank}.png`])
 );
 
 export function getPeakRankIcon(rank) {
@@ -265,7 +306,7 @@ export function renderPeakRank(container, rank, text) {
     container.append(label);
 }
 
-function renderResult(payload) {
+function renderResult(payload, region) {
     const result = normalizePlayerResult(payload);
     for (const [key, value] of Object.entries(result)) {
         if (resultFields[key]) {
@@ -279,10 +320,16 @@ function renderResult(payload) {
         }
     }
     const player = payload?.player || payload?.data || payload?.result || payload || {};
-    for (const [mode, rateId] of [["sport", "win-rate"], ["wild", "wild-win-rate"]]) {
-        const lines = formatPeakLines(player[mode]);
-        renderPeakRank(document.getElementById(`${mode}-current-rank`), getPeakRankName(player[mode]?.current), lines.current);
-        renderPeakRank(document.getElementById(`${mode}-highest-rank`), getPeakRankName(player[mode]?.highest), lines.highest);
+    const expert = region === "cn" && player.expert && typeof player.expert === "object";
+    document.getElementById("expert-mode").hidden = !expert;
+    document.getElementById("player-result-region").textContent = region === "cn" ? "陸服" : "台服";
+    const modes = [["sport", "win-rate"], ["wild", "wild-win-rate"]];
+    if (expert) modes.push(["expert", "expert-win-rate"]);
+    for (const [mode, rateId] of modes) {
+        const lines = formatPeakLines(player[mode], { expert: mode === "expert" });
+        const icon = value => mode === "expert" ? "專家模式" : getPeakRankName(value);
+        renderPeakRank(document.getElementById(`${mode}-current-rank`), icon(player[mode]?.current), lines.current);
+        renderPeakRank(document.getElementById(`${mode}-highest-rank`), icon(player[mode]?.highest), lines.highest);
         document.getElementById(rateId).textContent = lines.rate;
     }
     resultFields.userId.textContent = `米米號：${display(result.userId)}`;
@@ -295,34 +342,63 @@ function renderResult(payload) {
 }
 
 async function submitLookup(captchaAnswer = "") {
+    if (loading) return;
+    const region = selectedRegion();
+    if (region === "cn" && (regionDisabled || isCnPlayerQueryWindow())) {
+        updateRegionNote();
+        setStatus(isCnPlayerQueryWindow() ? CN_WINDOW_MESSAGE : "陸服玩家查詢目前暫停，請稍後再試。", "error");
+        return;
+    }
     const mimiId = elements.mimiId.value.trim();
     if (!/^[0-9]+$/.test(mimiId) || !Number.isSafeInteger(Number(mimiId)) || Number(mimiId) <= 0 || Number(mimiId) > 4294967295) {
         setStatus("請輸入有效的數字 米米號。", "error");
         elements.mimiId.focus();
         return;
     }
+    const version = ++requestVersion;
+    activeRequest = new AbortController();
+    const signal = activeRequest.signal;
+    elements.result.hidden = true;
     setLoading(true);
-    setStatus("查詢中…");
+    setStatus(region === "cn" ? "正在查詢陸服資料；跨區連線可能較慢，如有其他陸服處理，將排隊等候。" : "查詢中…");
     try {
-        const payload = await requestPlayer(mimiId, captchaAnswer);
+        const payload = await requestPlayer(mimiId, captchaAnswer, region, signal);
+        if (version !== requestVersion || region !== selectedRegion()) return;
         hideCaptcha();
-        renderResult(payload);
+        renderResult(payload, region);
         setStatus("查詢完成。", "success");
     } catch (error) {
+        if (version !== requestVersion || region !== selectedRegion()) return;
         if (error.code === "captcha_required") {
             showCaptcha(error.payload);
             setStatus("此查詢需要完成驗證。", "error");
         } else if (error.code === "busy") {
             setStatus(error.message, "error");
         } else {
-            setStatus(error.message || "查詢失敗，請稍後再試。", "error");
+            setStatus(error.name === "TimeoutError" ? "等候或查詢逾時，請稍後再試。" : error.message || "查詢失敗，請稍後再試。", "error");
         }
     } finally {
-        setLoading(false);
+        if (version === requestVersion) {
+            activeRequest = null;
+            setLoading(false);
+        }
     }
 }
 
 if (elements.form) {
+    elements.region.addEventListener("change", () => {
+        requestVersion++;
+        healthVersion++;
+        activeRequest?.abort();
+        activeRequest = null;
+        regionDisabled = false;
+        hideCaptcha();
+        elements.result.hidden = true;
+        document.getElementById("expert-mode").hidden = true;
+        document.getElementById("player-game-label").textContent = selectedRegion() === "cn" ? "陸服連線" : "台服連線";
+        setStatus("");
+        setLoading(false);
+    });
     elements.form.addEventListener("submit", (event) => {
         event.preventDefault();
         submitLookup();
@@ -338,19 +414,32 @@ if (elements.form) {
 }
 
 async function refreshServiceStatus() {
+    const version = ++healthVersion;
+    const region = selectedRegion();
     try {
-        const response = await fetch(PLAYER_LOOKUP_API_ENDPOINT.replace('/player/query', '/status'), {signal: AbortSignal.timeout(8000)});
+        const response = await fetch(getPlayerLookupEndpoint(region, "status"), {signal: AbortSignal.timeout(8000)});
         if (!response.ok) throw new Error('status unavailable');
         const health = await response.json();
+        if (version !== healthVersion || region !== selectedRegion()) return;
+        regionDisabled = region === "cn" && (health.player_query_allowed === false || ["disabled", "maintenance", "unconfigured"].includes(health.api));
         document.getElementById('api-health').dataset.state = health.api === 'available' ? 'ok' : 'pending';
         document.getElementById('game-health').dataset.state = health.game_connected ? 'ok' : 'idle';
-        document.getElementById('api-health').textContent = ({available:'正常',busy:'查詢中',maintenance:'維護中'})[health.api] || '未知';
+        document.getElementById('api-health').textContent = ({available:'正常',busy:'處理中',maintenance:'維護中',disabled:'暫停查詢',unconfigured:'尚未設定'})[health.api] || '未知';
+        document.getElementById('player-service-help').textContent = region === "cn" && health.api === "busy" ? "送出後會排隊等候處理" : regionDisabled ? "陸服查詢目前暫停" : "查詢服務正常時可送出查詢";
         document.getElementById('game-health').textContent = health.game_connected ? '已連線' : '尚未連線';
     } catch {
+        if (version !== healthVersion || region !== selectedRegion()) return;
         document.getElementById('api-health').dataset.state = 'error';
         document.getElementById('game-health').dataset.state = 'pending';
         document.getElementById('api-health').textContent = '無法連線';
         document.getElementById('game-health').textContent = '未知';
     }
+    updateRegionNote();
 }
-if (typeof document !== 'undefined') refreshServiceStatus();
+if (elements.form) {
+    refreshServiceStatus();
+    document.getElementById("player-lookup-dialog").addEventListener("player-lookup-open", refreshServiceStatus);
+    setInterval(() => {
+        if (document.getElementById("player-lookup-dialog").open) refreshServiceStatus();
+    }, 30000);
+}

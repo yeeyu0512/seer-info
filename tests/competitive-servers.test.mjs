@@ -91,6 +91,27 @@ test('a server without an active period clears old characters and shows a server
     } finally { Object.assign(globalThis, original); }
 });
 
+test('mainland vote entry is hidden on Taiwan and switching back clears the vote route', async () => {
+    const original = { document: globalThis.document, window: globalThis.window };
+    try {
+        const ui = setupDocument();
+        const view = createCompetitiveView({ getCurrentCompetitivePool: async () => null,
+            clearObservedTypeIcons() {}, createCharacterTypeIcon: node, seerLookup: {} });
+        window.location.href = 'https://example.com/?tab=competitive&server=tw&poolview=votes';
+        await view.loadCurrentCompetitivePool('tw');
+        assert.equal(ui.get('competitive-content-tabs').hidden, true);
+        assert.equal(ui.get('competitive-votes').hidden, true);
+        window.location.href = 'https://example.com/?tab=competitive&server=cn';
+        await view.loadCurrentCompetitivePool('cn');
+        assert.equal(ui.get('competitive-content-tabs').hidden, false);
+        window.location.href += '&poolview=votes';
+        ui.get('competitive-pool-server').value = 'tw';
+        await ui.get('competitive-pool-server').events.change();
+        assert.equal(new URL(window.location.href).searchParams.has('poolview'), false);
+        assert.equal(ui.get('competitive-votes').hidden, true);
+    } finally { Object.assign(globalThis, original); }
+});
+
 test('admin date conversion always uses UTC+8, independently of the host timezone', () => {
     const original = { document: globalThis.document, window: globalThis.window };
     const previousTz = process.env.TZ;
