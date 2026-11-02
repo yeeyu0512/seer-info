@@ -39,8 +39,8 @@
     </script>
 
     <link rel="icon" href="./favicon.ico" sizes="any">
-    <link rel="stylesheet" href="./css/style.css?v=20261031_global_search">
-    <link rel="stylesheet" href="./css/public-background.css?v=20261101_scene1634">
+    <link rel="stylesheet" href="./css/style.css?v=20261103_vote_layout">
+    <link rel="stylesheet" href="./css/public-background.css?v=20261103_mobile_background">
 
 
 </head>
@@ -371,19 +371,26 @@
                 </div>
                 <div id="competitive-content-tabs" class="competitive-content-tabs" role="group" aria-label="陸服競技池內容" hidden>
                     <button id="competitive-content-list" class="secondary-button compact-button" type="button" aria-pressed="true">競技池名單</button>
-                    <button id="competitive-content-votes" class="secondary-button compact-button" type="button" aria-pressed="false">競技池投票</button>
+                    <button id="competitive-content-votes" class="secondary-button compact-button" type="button" aria-pressed="false">競技池投票數據</button>
                 </div>
                 <section id="competitive-votes" aria-label="陸服遊戲票選" hidden>
                     <div class="competitive-vote-toolbar">
-                        <p id="competitive-vote-status" class="panel-description" aria-live="polite"></p>
+                        <div class="competitive-vote-tabs" role="tablist" aria-label="票選池別">
+                            <button id="competitive-vote-restricted" class="competitive-pool-type-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="competitive-vote-results">限制池<span class="competitive-vote-top-n">前 20 名</span></button>
+                            <button id="competitive-vote-semi" class="competitive-pool-type-tab" type="button" role="tab" aria-selected="false" aria-controls="competitive-vote-results" tabindex="-1">準限制池<span class="competitive-vote-top-n">前 30 名</span></button>
+                        </div>
                         <button id="competitive-vote-refresh" class="secondary-button compact-button" type="button">更新資料</button>
                     </div>
-                    <p id="competitive-vote-policy" class="competitive-vote-policy"></p>
-                    <div class="competitive-vote-tabs" role="tablist" aria-label="票選池別">
-                        <button id="competitive-vote-restricted" class="competitive-pool-type-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="competitive-vote-results">限制池 · 前 20 名</button>
-                        <button id="competitive-vote-semi" class="competitive-pool-type-tab" type="button" role="tab" aria-selected="false" aria-controls="competitive-vote-results" tabindex="-1">準限制池 · 前 30 名</button>
+                    <div class="competitive-vote-meta">
+                        <p id="competitive-vote-period" class="panel-description"></p>
+                        <div class="competitive-vote-source">
+                            <p id="competitive-vote-status" class="panel-description" aria-live="polite"></p>
+                            <details id="competitive-vote-policy-details" class="competitive-vote-policy-details" hidden>
+                                <summary aria-label="資料更新說明" title="資料更新說明">ⓘ</summary>
+                                <p id="competitive-vote-policy" class="competitive-vote-policy"></p>
+                            </details>
+                        </div>
                     </div>
-                    <p id="competitive-vote-period" class="panel-description"></p>
                     <div id="competitive-vote-results" role="tabpanel" aria-labelledby="competitive-vote-restricted" aria-live="polite"></div>
                 </section>
                 <div id="competitive-pool-type-tabs" class="competitive-pool-type-tabs" role="tablist"
@@ -830,9 +837,10 @@
         {
             "imports": {
                 "./js/shared/chinese.js": "./js/shared/chinese.js?v=20261102_name_policy",
-                "./js/competitive/view-controller.js": "./js/competitive/view-controller.js?v=20261102_name_policy",
-                "./js/competitive/votes-view.js": "./js/competitive/votes-view.js?v=20261102_name_policy",
-                "./js/player-lookup.js": "./js/player-lookup.js?v=20261102_name_policy"
+                "./js/app/navigation.js": "./js/app/navigation.js?v=20261103_competitive_list",
+                "./js/competitive/view-controller.js": "./js/competitive/view-controller.js?v=20261103_competitive_list",
+                "./js/competitive/votes-view.js": "./js/competitive/votes-view.js?v=20261103_vote_layout",
+                "./js/player-lookup.js": "./js/player-lookup.js?v=20261103_query_hint"
             }
         }
     </script>

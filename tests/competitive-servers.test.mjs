@@ -104,6 +104,13 @@ test('mainland vote entry is hidden on Taiwan and switching back clears the vote
         window.location.href = 'https://example.com/?tab=competitive&server=cn';
         await view.loadCurrentCompetitivePool('cn');
         assert.equal(ui.get('competitive-content-tabs').hidden, false);
+        assert.equal(ui.get('competitive-content-list')['aria-pressed'], 'true');
+        window.location.href = 'https://example.com/?tab=home&poolview=votes';
+        ui.get('competitive-pool-server').value = 'cn';
+        await ui.get('competitive-pool-server').events.change();
+        assert.equal(new URL(window.location.href).searchParams.has('poolview'), false);
+        assert.equal(ui.get('competitive-content-list')['aria-pressed'], 'true');
+        assert.equal(ui.get('competitive-votes').hidden, true);
         window.location.href += '&poolview=votes';
         ui.get('competitive-pool-server').value = 'tw';
         await ui.get('competitive-pool-server').events.change();

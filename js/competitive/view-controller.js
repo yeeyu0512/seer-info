@@ -43,7 +43,7 @@ export function createCompetitiveView({
         const url = new URL(window.location.href);
         url.searchParams.set("tab", "competitive");
         url.searchParams.set("server", serverSelect.value);
-        if (serverSelect.value !== "cn") url.searchParams.delete("poolview");
+        url.searchParams.delete("poolview");
         if (url.href !== window.location.href) window.history.pushState(null, "", url);
         loadCurrentCompetitivePool(serverSelect.value);
     });
@@ -88,8 +88,8 @@ export function createCompetitiveView({
         refreshCompetitivePoolButton.disabled = true;
 
         if (showVotes) {
-            renderCompetitivePoolTitle(competitivePoolMessage, "cn", "遊戲票選");
-            competitivePoolPeriod.textContent = "查看遊戲內票選排名與票數";
+            renderCompetitivePoolTitle(competitivePoolMessage, "cn", "競技池投票數據");
+            competitivePoolPeriod.textContent = "查看遊戲內競技池的投票數據、排名與票數。";
             await votesView.load();
             return;
         }

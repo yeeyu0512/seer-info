@@ -69,10 +69,10 @@ function updateRegionNote() {
     const cn = selectedRegion() === "cn";
     const blocked = cn && (regionDisabled || isCnPlayerQueryWindow());
     const note = document.getElementById("player-region-note");
-    note.hidden = !cn;
+    note.hidden = !blocked;
     note.dataset.disabled = String(blocked);
-    note.textContent = isCnPlayerQueryWindow() ? CN_WINDOW_MESSAGE : regionDisabled
-        ? "陸服玩家查詢目前暫停，請稍後再試。" : "跨區連線可能較慢；陸服玩家與票選查詢會排隊處理。";
+    note.textContent = blocked ? (isCnPlayerQueryWindow() ? CN_WINDOW_MESSAGE
+        : "陸服玩家查詢目前暫停，請稍後再試。") : "";
     elements.submit.disabled = loading || blocked;
 }
 
@@ -360,7 +360,7 @@ async function submitLookup(captchaAnswer = "") {
     const signal = activeRequest.signal;
     elements.result.hidden = true;
     setLoading(true);
-    setStatus(region === "cn" ? "正在查詢陸服資料；跨區連線可能較慢，如有其他陸服處理，將排隊等候。" : "查詢中…");
+    setStatus(region === "cn" ? "正在查詢陸服資料，跨區連線可能需要較長時間，請稍候。" : "查詢中…");
     try {
         const payload = await requestPlayer(mimiId, captchaAnswer, region, signal);
         if (version !== requestVersion || region !== selectedRegion()) return;

@@ -46,6 +46,20 @@ test('competitive server routes restore China, default invalid values to Taiwan,
     } finally { delete globalThis.document; delete globalThis.window; }
 });
 
+test('competitive entry defaults to the list while explicit vote links still restore', () => {
+    try {
+        const { navigation } = setup('?tab=competitive&server=cn&poolview=votes');
+        navigation.restoreRouteFromUrl({ initial: true });
+        assert.equal(new URL(window.location.href).searchParams.get('poolview'), 'votes');
+        navigation.activateTab('competitive-pool-section');
+        assert.equal(new URL(window.location.href).searchParams.has('poolview'), false);
+        assert.equal(new URL(window.location.href).searchParams.get('server'), 'cn');
+        window.location.href += '&poolview=votes';
+        navigation.activateTab('home-section');
+        assert.equal(new URL(window.location.href).searchParams.has('poolview'), false);
+    } finally { delete globalThis.document; delete globalThis.window; }
+});
+
 test('the competitive pool route can be opened and restored publicly', () => {
     try {
         const { navigation, calls, elements } = setup('?tab=competitive');

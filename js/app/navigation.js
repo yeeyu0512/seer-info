@@ -158,10 +158,6 @@ export function createNavigation({
             option.setAttribute("aria-pressed", String(isActive));
         });
 
-        if (isCompetitive) {
-            const server = normalizeCompetitiveServer(new URL(window.location.href).searchParams.get("server"));
-            loadCurrentCompetitivePool(server);
-        }
         if (isLookup) seerLookup.browseLatestIfEmpty();
 
         if (updateUrl) {
@@ -173,11 +169,13 @@ export function createNavigation({
 
             if (!routeName) {
                 const url = new URL(window.location.href);
+                url.searchParams.delete("poolview");
                 url.searchParams.delete("build"); url.searchParams.delete("tab"); url.searchParams.delete("server");
                 if (url.href !== window.location.href) window.history.pushState(null,"",url);
             }
             if (routeName) {
                 const url = new URL(window.location.href);
+                url.searchParams.delete("poolview");
 
                 if (url.searchParams.get("tab") !== routeName) url.searchParams.delete("id");
 
@@ -199,6 +197,10 @@ export function createNavigation({
                     window.history.pushState(null, "", url);
                 }
             }
+        }
+        if (isCompetitive) {
+            const server = normalizeCompetitiveServer(new URL(window.location.href).searchParams.get("server"));
+            loadCurrentCompetitivePool(server);
         }
         if (isAbnormalEncyclopedia) void seerAbnormal?.load(new URL(window.location.href).searchParams.get("abnormal"));
     }

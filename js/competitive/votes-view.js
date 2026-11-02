@@ -5,10 +5,19 @@ export function createVotesView({ seerLookup, fetchVotes = fetchCnVotes,
     const get = id => document.getElementById(`competitive-vote-${id}`);
     const container = document.getElementById("competitive-votes");
     const status = get("status"), policy = get("policy"), period = get("period");
+    const policyDetails = get("policy-details");
     const results = get("results"), refresh = get("refresh");
     const tabs = [get("restricted"), get("semi")];
     let snapshot = null, selected = 2, active = false, request = null, version = 0, retryAt = 0;
     const date = value => new Date(value).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", dateStyle: "medium", timeStyle: "medium" });
+    const shortDate = (value, includeYear = false) => {
+        const parts = new Intl.DateTimeFormat("en-GB", {
+            timeZone: "Asia/Taipei", year: "numeric", month: "2-digit", day: "2-digit",
+            hour: "2-digit", minute: "2-digit", hourCycle: "h23"
+        }).formatToParts(new Date(value));
+        const part = type => parts.find(item => item.type === type).value;
+        return `${includeYear ? `${part("year")}/` : ""}${part("month")}/${part("day")} ${part("hour")}:${part("minute")}`;
+    };
     const element = (tag, text, className) => {
         const node = document.createElement(tag);
         if (text !== undefined) node.textContent = text;
@@ -25,11 +34,15 @@ export function createVotesView({ seerLookup, fetchVotes = fetchCnVotes,
         });
         results.setAttribute("aria-labelledby", tabs[selected - 2].id);
         results.replaceChildren();
-        period.textContent = "";
+        period.replaceChildren();
         if (!snapshot) return;
         const pool = snapshot.pools.find(item => item.limit === selected);
         const labels = { upcoming: "尚未開始", active: "進行中", ended: "已結束" };
-        period.textContent = `${labels[pool.status]} · ${date(pool.start_at)} 至 ${date(pool.end_at)}（台灣時間）`;
+        const badge = element("span", labels[pool.status], "competitive-vote-state");
+        badge.setAttribute("data-status", pool.status);
+        const crossesYear = shortDate(pool.start_at, true).slice(0, 4) !== shortDate(pool.end_at, true).slice(0, 4);
+        period.append(badge, element("span", `${shortDate(pool.start_at, crossesYear)}－${shortDate(pool.end_at, crossesYear)}`));
+        period.title = `${labels[pool.status]} · ${date(pool.start_at)} 至 ${date(pool.end_at)}（台灣時間）`;
         if (!pool.list.length) {
             results.append(element("p", pool.status === "upcoming" ? "本期票選尚未開始。" : "目前沒有票選排名資料。", "competitive-vote-empty"));
             return;
@@ -79,8 +92,10 @@ export function createVotesView({ seerLookup, fetchVotes = fetchCnVotes,
             const data = await fetchVotes({ signal: controller.signal });
             if (!active || version !== id) return;
             snapshot = data;
-            status.textContent = `${data.realtime ? "即時模式" : data.cached ? "快取資料" : "最新取得"} · 資料時間 ${date(data.fetched_at)}（台灣時間）`;
+            status.textContent = `${data.realtime ? "即時模式" : data.cached ? "快取資料" : "最新取得"} · 更新於 ${shortDate(data.fetched_at)}（台灣時間）`;
+            status.title = `資料時間：${date(data.fetched_at)}（台灣時間）`;
             policy.textContent = data.realtime ? "週三 23:45～23:59 為即時模式，每次查詢重新取得票數。" : `一般時段共用 ${Math.round(data.cache_seconds / 60)} 分鐘快取；更新資料可能仍會取得同一份快取。`;
+            policyDetails.hidden = false;
             render();
         } catch (error) {
             if (!active || version !== id) return;

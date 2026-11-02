@@ -10,11 +10,45 @@
     border-color: var(--border-hover);
     background: rgba(130, 113, 244, .22);
 }
-.competitive-vote-toolbar { justify-content: space-between; margin-top: 18px; }
-.competitive-vote-toolbar p { margin: 0; }
-.competitive-vote-policy { color: var(--text-secondary); font-size: 12px; line-height: 1.7; margin: 8px 0 18px; }
-.competitive-vote-tabs { margin-bottom: 14px; }
-#competitive-vote-period { margin: 0 0 14px; }
+.competitive-vote-toolbar { justify-content: space-between; gap: 12px 20px; margin-top: 16px; }
+.competitive-vote-tabs { gap: 20px; border-bottom: 1px solid var(--border); }
+.competitive-vote-tabs .competitive-pool-type-tab {
+    position: relative; flex: 0 0 auto; flex-direction: row; gap: 8px; min-height: 42px; padding: 10px 2px 12px;
+    border: 0; border-radius: 0; background: transparent; box-shadow: none;
+    color: var(--text-secondary); font-size: 14px; font-weight: 500;
+}
+.competitive-vote-tabs .competitive-pool-type-tab:hover { color: var(--text); background: transparent; transform: none; box-shadow: none; }
+.competitive-vote-tabs .competitive-pool-type-tab.is-active { color: var(--text); background: transparent; border: 0; box-shadow: none; }
+.competitive-vote-tabs .competitive-pool-type-tab.is-active::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px;
+    background: var(--primary-light); border-radius: 2px;
+}
+.competitive-vote-top-n { color: var(--text-secondary); font-size: 11px; font-weight: 400; white-space: nowrap; }
+#competitive-vote-refresh { flex: 0 0 auto; }
+.competitive-vote-meta { display: grid; gap: 2px; margin: 14px 0 16px; }
+.competitive-vote-meta .panel-description { margin: 0; font-size: 11px; line-height: 1.6; }
+#competitive-vote-period { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; font-size: 12px; font-variant-numeric: tabular-nums; }
+.competitive-vote-state { display: inline-flex; align-items: center; gap: 6px; font-weight: 400; color: var(--text); }
+.competitive-vote-state::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.competitive-vote-state[data-status="active"]::before { background: #82d9ad; }
+.competitive-vote-state[data-status="upcoming"]::before { background: var(--primary-light); }
+.competitive-vote-source { display: flex; align-items: center; gap: 2px; position: relative; }
+.competitive-vote-policy-details { flex: 0 0 auto; }
+.competitive-vote-policy-details summary {
+    display: flex; align-items: center; justify-content: center; width: 24px; height: 24px;
+    list-style: none; cursor: pointer; color: var(--text-secondary); border-radius: 6px; font-size: 15px;
+}
+.competitive-vote-policy-details summary::-webkit-details-marker { display: none; }
+.competitive-vote-policy-details summary:hover, .competitive-vote-policy-details[open] summary {
+    color: var(--text); background: var(--surface-light);
+}
+.competitive-vote-policy-details summary:focus-visible { outline: 2px solid var(--primary-light); outline-offset: 2px; }
+.competitive-vote-policy {
+    position: absolute; z-index: 2; left: 0; top: calc(100% + 6px); box-sizing: border-box;
+    width: max-content; max-width: 100%; margin: 0; padding: 12px 14px;
+    color: var(--text-secondary); background: #171c31; border: 1px solid var(--border-hover);
+    border-radius: 10px; box-shadow: 0 10px 28px rgba(0, 0, 0, .25); font-size: 12px; line-height: 1.7;
+}
 .competitive-vote-table {
     width: 100%; border-collapse: separate; border-spacing: 0;
     background: var(--surface-light); border: 1px solid var(--border);
@@ -43,12 +77,16 @@
 .competitive-vote-empty { padding: 32px 18px; text-align: center; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 14px; }
 .competitive-vote-error { color: var(--danger); }
 @media (max-width: 600px) {
+    .competitive-vote-toolbar { align-items: stretch; gap: 10px; }
+    .competitive-vote-tabs { width: 100%; }
+    #competitive-vote-refresh { margin-left: auto; font-size: 12px; padding: 8px 12px; }
+    .competitive-vote-meta { margin-top: 10px; }
     .competitive-vote-table th, .competitive-vote-table td { padding: 12px 8px; }
     .competitive-vote-table th:first-child { width: 42px; }
     .competitive-vote-table th:last-child { width: 90px; }
     .competitive-vote-pet { gap: 8px; font-size: 13px; }
     .competitive-vote-pet img { width: 36px; height: 36px; }
     .competitive-vote-count { font-size: 16px; }
-    .competitive-vote-tabs { gap: 6px; }
-    .competitive-vote-tabs button { flex: 1 1 auto; font-size: 12px; padding: 8px; }
+    .competitive-vote-tabs { gap: 18px; }
+    .competitive-vote-tabs .competitive-pool-type-tab { font-size: 13px; gap: 6px; }
 }

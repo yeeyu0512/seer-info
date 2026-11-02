@@ -2,3 +2,6 @@
 
 # Generated previews and extraction scratch files
 /artifacts/
+
+# Chromium diagnostic output from local browser checks
+/debug.log
