@@ -39,7 +39,7 @@
     </script>
 
     <link rel="icon" href="./favicon.ico" sizes="any">
-    <link rel="stylesheet" href="./css/style.css?v=20261103_vote_layout">
+    <link rel="stylesheet" href="./css/style.css?v=20261103_bot_guide">
     <link rel="stylesheet" href="./css/public-background.css?v=20261103_mobile_background">
 
 
@@ -163,32 +163,12 @@
                 <label class="field-label" for="password">密碼</label>
                 <input id="password" type="password" placeholder="輸入密碼" autocomplete="current-password">
 
-                <div id="password-confirm-group" hidden>
-                    <label class="field-label" for="password-confirm">確認密碼</label>
-                    <input id="password-confirm" type="password" placeholder="再次輸入密碼" autocomplete="new-password">
-                </div>
-
-                <div id="mimi-id-group" hidden>
-                    <label class="field-label" for="mimi-id">米米號</label>
-                    <input id="mimi-id" type="text" inputmode="numeric" pattern="[0-9]+" placeholder="請輸入純數字米米號"
-                        autocomplete="off">
-                </div>
-
                 <button id="login-button" type="button">
                     登入
                 </button>
 
-                <button id="register-button" class="secondary-button" type="button" hidden>
-                    建立帳號
-                </button>
-
                 <p id="login-message"></p>
 
-                <p class="registration-closed-notice">本站沒有提供一般用戶註冊功能。</p>
-
-                <button id="auth-mode-toggle" class="text-button" type="button" hidden>
-                    還沒有帳號？建立帳號
-                </button>
 
             </section>
         </div>
@@ -836,6 +816,7 @@
     <script type="importmap">
         {
             "imports": {
+                "./js/account/auth-view.js": "./js/account/auth-view.js?v=20261103_login_only",
                 "./js/shared/chinese.js": "./js/shared/chinese.js?v=20261102_name_policy",
                 "./js/app/navigation.js": "./js/app/navigation.js?v=20261103_competitive_list",
                 "./js/competitive/view-controller.js": "./js/competitive/view-controller.js?v=20261103_competitive_list",
@@ -849,11 +830,38 @@
     <dialog id="bot-guide" class="changelog-dialog" aria-labelledby="bot-guide-title">
         <div class="changelog-dialog-header"><h2 id="bot-guide-title">武心嬋 · 指令說明</h2><button type="button" id="close-bot-guide" aria-label="關閉指令說明">✕</button></div>
         <div class="changelog-dialog-body bot-guide-body">
-            <p><strong>/player 米米號</strong><br>暱稱、在線狀態、巔峰戰績與出戰／待戰精靈。</p>
-            <p><strong>/online 米米號</strong><br>查詢玩家是否在線。</p>
-            <p><strong>/pet 編號或名稱</strong><br>繁簡搜尋精靈，查看編號、屬性並前往完整圖鑑。</p>
-            <p><strong>/help</strong><br>查看指令及冷卻限制。</p>
-            <p>玩家查詢可能需要驗證碼；不提供玩家配置，不保存查詢歷史。</p>
+            <h3>台服玩家</h3>
+            <dl>
+                <dt><code>/player 米米號</code></dt>
+                <dd>查看暱稱、在線狀態、巔峰競技／狂野戰績與出戰／待戰精靈；離線時顯示最後登入時間。</dd>
+                <dt><code>/online 米米號</code></dt>
+                <dd>查詢玩家是否在線，在線時顯示伺服器編號，結果直接回覆於頻道。</dd>
+            </dl>
+            <h3>陸服玩家與票選</h3>
+            <dl>
+                <dt><code>/cnplayer 米米號</code></dt>
+                <dd>查看暱稱、在線狀態、出戰／待戰精靈，以及競技、狂野與專家模式的巔峰戰績與勝率。</dd>
+                <dt><code>/cnvote [池別]</code></dt>
+                <dd>查看限制池前 20 名、準限制池前 30 名及票數。池別可選「全部」「限制池」「準限制池」，省略時顯示全部。</dd>
+            </dl>
+            <h3>圖鑑與說明</h3>
+            <dl>
+                <dt><code>/pet 編號或名稱</code></dt>
+                <dd>支援繁簡名稱、部分名稱與編號搜尋，查看精靈名稱、編號及屬性，並可開啟完整網站圖鑑。</dd>
+                <dt><code>/help</code></dt>
+                <dd>在 Discord 查看目前指令與查詢限制。</dd>
+            </dl>
+            <p class="bot-guide-note">米米號請輸入半形正整數。玩家查詢不提供配置細節，也不保存查詢歷史。</p>
+            <p class="bot-guide-note">除 <code>/online</code> 外，上述查詢結果預設只有你看得到，可按「分享到頻道」公開分享；<code>/help</code> 僅供自己查看。</p>
+            <details class="bot-guide-limits">
+                <summary>查詢限制與服務時段</summary>
+                <ul>
+                    <li>台服玩家查詢可能需要填寫驗證碼，同時只處理一筆遊戲查詢。<code>/player</code> 與網站玩家查詢結束後共用 8 秒冷卻，失敗亦同；<code>/online</code> 冷卻 5 秒。</li>
+                    <li><code>/pet</code> 不需登入遊戲，也不占用台服玩家查詢冷卻。</li>
+                    <li>陸服玩家與票選查詢共用連線並排隊處理，跨區連線可能較慢；票選一般快取 5 分鐘，失敗後冷卻 30 秒。</li>
+                    <li>每週三台灣時間 23:45～23:59 暫停陸服玩家查詢；該時段票選跳過快取與冷卻，每次重新取得票數。</li>
+                </ul>
+            </details>
         </div>
     </dialog>
 

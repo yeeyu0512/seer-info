@@ -610,13 +610,6 @@
     accent-color:var(--primary-light);
 }
 
-.registration-closed-notice {
-    margin: 14px 0 0;
-    color: var(--text-muted);
-    font-size: 12px;
-    text-align: center;
-}
-
 .seer-taiwan-progress-filter-copy {
     display: flex;
     flex-direction: column;

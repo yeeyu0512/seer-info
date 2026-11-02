@@ -1119,6 +1119,18 @@
 #bot-guide { width: min(520px, calc(100vw - 32px)); }
 .bot-guide-body p { margin: 12px 0; color: #c0cddc; font-size: 13px; line-height: 1.7; }
 .bot-guide-body strong { color: #b7d8e9; }
+.bot-guide-body h3 { margin: 20px 0 10px; color: #eaf2ff; font-size: 14px; }
+.bot-guide-body h3:first-child { margin-top: 8px; }
+.bot-guide-body dl { margin: 0; }
+.bot-guide-body dt { margin-top: 12px; color: #b7d8e9; font-size: 13px; font-weight: 600; }
+.bot-guide-body dd { margin: 4px 0 0; color: #c0cddc; font-size: 13px; line-height: 1.7; }
+.bot-guide-body code { font-family: inherit; overflow-wrap: anywhere; }
+.bot-guide-body .bot-guide-note { color: #a6b7cb; font-size: 12px; }
+.bot-guide-limits { margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(130, 175, 240, .18); }
+.bot-guide-limits summary { color: #b7d8e9; cursor: pointer; font-size: 13px; }
+.bot-guide-limits summary:focus-visible { outline: 2px solid #83c8dc; outline-offset: 4px; }
+.bot-guide-limits ul { margin: 10px 0 0; padding-left: 20px; color: #c0cddc; font-size: 12px; line-height: 1.8; }
+.bot-guide-limits li + li { margin-top: 8px; }
 .home-shark-icon { width: 26px; height: 26px; object-fit: contain; flex-shrink: 0; }
 
 /* Administrator actions share one compact navigation entry. */

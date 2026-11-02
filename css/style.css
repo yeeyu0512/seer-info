@@ -1,18 +1,18 @@
 /* Ordered fragments: preserve the original cascade. See docs/css-migration.md. */
 @import url("./sections/00-base.css");
-@import url("./sections/01-admin-and-lookup-base.css");
+@import url("./sections/01-admin-and-lookup-base.css?v=20261103_login_only");
 @import url("./sections/02-pet-dialogs.css");
 @import url("./sections/03-footer-and-responsive.css");
 @import url("./sections/04-product-refinements.css");
 @import url("./sections/05-catalog-and-about-refinements.css");
 @import url("./sections/06-auth-and-character-refinements.css");
-@import url("./sections/07-admin-and-auth-overrides.css");
+@import url("./sections/07-admin-and-auth-overrides.css?v=20261103_login_only");
 @import url("./sections/08-background-and-account.css");
 @import url("./sections/09-date-inputs.css");
 @import url("./sections/10-catalog-and-type-picker.css");
 @import url("./sections/11-type-versus.css");
 @import url("./sections/12-training.css");
-@import url("./sections/13-home.css?v=20261102_gem_fit");
+@import url("./sections/13-home.css?v=20261103_bot_guide");
 @import url("./sections/14-about.css?v=20261009");
 @import url("./sections/15-damage.css");
 

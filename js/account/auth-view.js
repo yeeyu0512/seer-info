@@ -46,13 +46,13 @@ export function createAuthView({ login, onAuthenticated, document = globalThis.d
             passwordInput.value = "";
             loginMessage.textContent = "";
         } catch (error) {
-            loginMessage.textContent = getChineseAuthError(error, "login");
+            loginMessage.textContent = getChineseAuthError(error);
         } finally {
             loginButton.disabled = false;
             loginButton.textContent = "登入";
         }
     });
-    function getChineseAuthError(error, action) {
+    function getChineseAuthError(error) {
         const message = String(error?.message || "").toLowerCase();
         const code = String(error?.code || "").toLowerCase();
 
@@ -62,17 +62,8 @@ export function createAuthView({ login, onAuthenticated, document = globalThis.d
         if (/email not confirmed|email_not_confirmed/.test(message) || code === "email_not_confirmed") {
             return "Email 尚未完成驗證，請先到信箱點擊驗證連結。";
         }
-        if (/user already registered|email.*already.*registered|email_exists/.test(message) || code === "email_exists") {
-            return "此 Email 已註冊，請直接登入或使用其他 Email。";
-        }
-        if (/password.*(least|short|weak)|weak_password/.test(message) || code === "weak_password") {
-            return "密碼長度不足或不符合安全規則，請改用更安全的密碼。";
-        }
         if (/rate limit|over_email_send_rate_limit|over_request_rate_limit/.test(message) || /rate_limit/.test(code)) {
             return "嘗試次數過於頻繁，請稍後再試。";
-        }
-        if (/signup.*disabled|signup_disabled/.test(message) || code === "signup_disabled") {
-            return "目前暫停開放建立帳號。";
         }
         if (/invalid.*email|email.*invalid/.test(message)) {
             return "Email 格式不正確，請重新輸入。";
@@ -81,9 +72,7 @@ export function createAuthView({ login, onAuthenticated, document = globalThis.d
             return "網路連線異常，請確認網路後再試。";
         }
 
-        return action === "login"
-            ? "登入失敗，請稍後再試。"
-            : "建立帳號失敗，請稍後再試。";
+        return "登入失敗，請稍後再試。";
     }
     return { openLoginModal, closeLoginModal };
 }

@@ -1,0 +1,20 @@
+                <div id="password-confirm-group" hidden>
+                    <label class="field-label" for="password-confirm">確認密碼</label>
+                    <input id="password-confirm" type="password" placeholder="再次輸入密碼" autocomplete="new-password">
+                </div>
+
+                <div id="mimi-id-group" hidden>
+                    <label class="field-label" for="mimi-id">米米號</label>
+                    <input id="mimi-id" type="text" inputmode="numeric" pattern="[0-9]+" placeholder="請輸入純數字米米號"
+                        autocomplete="off">
+                </div>
+
+                <button id="register-button" class="secondary-button" type="button" hidden>
+                    建立帳號
+                </button>
+
+                <p class="registration-closed-notice">本站沒有提供一般用戶註冊功能。</p>
+
+                <button id="auth-mode-toggle" class="text-button" type="button" hidden>
+                    還沒有帳號？建立帳號
+                </button>
