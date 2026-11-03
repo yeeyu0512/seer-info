@@ -1,4 +1,6 @@
 import { createAdminDialogs } from "./admin/confirm-dialog.js";
+import { initSelectionPickers } from "./shared/selection-picker.js";
+initSelectionPickers();
 import { createAdminServerSettings } from "./admin/server-settings.js";
 import { createAdminDateInputs } from "./admin/date-inputs.js";
 import { createAdminNavigation } from "./admin/navigation.js";

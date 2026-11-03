@@ -14,8 +14,11 @@ export function initTrainingPetPicker(dialog,{fetchSeerJson,fetchCached,traditio
     const query = selector => host.querySelector(selector), input = query("input[type=search]"), results = query(".training-options"), status = query("[role=status]"), progress = query("[data-progress]");
     const toolbar = document.createElement("div"); toolbar.className = "training-pet-picker-toolbar";
     toolbar.append(query(".seer-pet-search-method-tabs"),progress.parentElement); host.prepend(toolbar);
-    const triggerMarkup = document.querySelector("#seer-pet-type-filter .seer-pet-type-trigger-card").outerHTML;
-    query("[data-type-filter]").innerHTML = triggerMarkup.replace(/id="([^"]+)"/g,(_,id) => `id="${id.replace("seer-pet-type-","training-pet-type-")}"`);
+    query("[data-type-filter]").innerHTML = `<div class="seer-pet-type-trigger-card" role="button" tabindex="0" aria-haspopup="dialog" aria-label="開啟屬性選擇視窗">
+        <div class="seer-pet-type-current-info"><span class="seer-pet-type-trigger-label">當前篩選屬性</span>
+            <div class="seer-pet-type-current-badge"><img id="training-pet-type-current-icon" class="seer-pet-type-current-icon" alt="" hidden><span id="training-pet-type-current-name">全部單屬性</span></div>
+        </div><button id="training-pet-type-open-modal" class="primary-button compact-button seer-pet-type-trigger-button" type="button" aria-haspopup="dialog"><span>選擇屬性</span><span aria-hidden="true">▾</span></button>
+    </div>`;
     query("#training-pet-type-open-modal").setAttribute("data-type-open","");
     let version = 0, method = "query", category = "single", typeId = null, timer, composing = false, settingsPromise, baseType = "", catalog = [];
     function updateTypeTrigger() {
@@ -54,6 +57,9 @@ export function initTrainingPetPicker(dialog,{fetchSeerJson,fetchCached,traditio
     const typeDialog = document.createElement("dialog"); typeDialog.className = "training-mint-dialog training-type-dialog seer-pet-type-dialog type-related-picker";
     const atlas = document.querySelector("#seer-pet-type-modal .seer-pet-type-dialog");
     typeDialog.innerHTML = atlas.innerHTML.replace(/(id|for|aria-labelledby)="([^"]+)"/g,(_,attribute,value) => `${attribute}="${value.replaceAll("seer-pet-type-","training-pet-type-")}"`);
+    typeDialog.querySelector('[data-pet-type-category="all"]')?.remove();
+    typeDialog.querySelector('[data-pet-type-category="single"]').setAttribute('aria-pressed', 'true');
+    typeDialog.querySelector('[data-pet-type-category="single"]').classList.add('is-active');
     dialog.append(typeDialog);
     typeDialog.setAttribute("aria-labelledby","training-pet-type-modal-title");
     const typeSearch = typeDialog.querySelector("#training-pet-type-search"), bases = typeDialog.querySelector("#training-pet-type-bases"), options = typeDialog.querySelector("#training-pet-type-options");

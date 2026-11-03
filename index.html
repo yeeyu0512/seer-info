@@ -408,7 +408,7 @@
                 aria-controls="abnormal-encyclopedia-section" data-lookup-mode="abnormal">異常狀態圖鑑</button>
         </nav>
 
-        <div id="seer-lookup-section" class="seer-lookup-layout" hidden>
+        <div id="seer-lookup-section" class="panel seer-lookup-layout" data-lookup-mode="pet" data-pet-view="list" data-pet-presentation="browse" hidden>
             <section class="panel seer-lookup-panel">
                 <div class="panel-header">
                     <div>
@@ -425,13 +425,6 @@
                         <p id="seer-lookup-description" class="panel-description">輸入精靈 ID 或中文名稱即可查找結果。</p>
                     </div>
                 </div>
-                <div id="seer-pet-search-method-tabs" class="seer-pet-search-method-tabs main-tabs view-sub-tabs"
-                    role="tablist" aria-label="精靈查詢方式">
-                    <button class="main-tab is-active" type="button" role="tab" aria-selected="true"
-                        aria-controls="seer-lookup-form" data-pet-search-method="query">ID／名稱查詢</button>
-                    <button class="main-tab" type="button" role="tab" aria-selected="false"
-                        aria-controls="seer-pet-type-filter" data-pet-search-method="type">屬性篩選</button>
-                </div>
                 <div id="seer-skin-search-tabs" class="seer-skin-search-tabs" role="tablist" aria-label="皮膚查詢方式" hidden>
                     <button class="seer-skin-search-tab is-active" type="button" role="tab" aria-selected="true"
                         data-skin-search-mode="skin">搜尋皮膚</button>
@@ -440,22 +433,15 @@
                     <button class="seer-skin-search-tab" type="button" role="tab" aria-selected="false"
                         data-skin-search-mode="category">種類查詢</button>
                 </div>
+                <div id="seer-pet-search-toolbar">
                 <section id="seer-pet-type-filter" class="seer-pet-type-filter" aria-label="依屬性篩選精靈" hidden>
-                    <div class="seer-pet-type-trigger-card" role="button" tabindex="0" aria-haspopup="dialog"
-                        aria-label="開啟屬性選擇視窗">
-                        <div class="seer-pet-type-current-info">
-                            <span class="seer-pet-type-trigger-label">當前篩選屬性</span>
-                            <div class="seer-pet-type-current-badge">
-                                <img id="seer-pet-type-current-icon" class="seer-pet-type-current-icon" alt="" hidden>
-                                <span id="seer-pet-type-current-name">全部單屬性</span>
-                            </div>
-                        </div>
-                        <button id="seer-pet-type-open-modal"
-                            class="primary-button compact-button seer-pet-type-trigger-button" type="button"
-                            aria-haspopup="dialog">
-                            <span>選擇屬性</span>
-                            <span aria-hidden="true">▾</span>
-                        </button>
+                    <div class="seer-pet-attribute-control">
+                    <button id="seer-pet-type-open-modal" class="secondary-button compact-button seer-pet-filter-button"
+                        type="button" aria-haspopup="dialog" aria-label="選擇精靈屬性">
+                        <img id="seer-pet-type-current-icon" class="seer-pet-type-current-icon" alt="" hidden>
+                        <span id="seer-pet-type-current-name">全部屬性</span><span aria-hidden="true">▾</span>
+                    </button>
+                    <button id="seer-pet-clear-type" type="button" aria-label="清除屬性篩選" title="清除屬性篩選" hidden>×</button>
                     </div>
                 </section>
                 <form id="seer-lookup-form" class="seer-lookup-form">
@@ -465,7 +451,15 @@
                         <div id="seer-skin-category-options" class="seer-skin-category-options"></div>
                     </div>
                 </form>
-                <p id="seer-lookup-message" class="vote-message" aria-live="polite"></p>
+                </div>
+                <div id="seer-lookup-results-toolbar">
+                    <p id="seer-lookup-message" class="vote-message" aria-live="polite"></p>
+                    <div id="seer-pet-results-controls" hidden>
+                        <label id="seer-pet-sort-label" for="seer-pet-sort"><span class="seer-pet-sort-caption">排序</span>
+                            <select id="seer-pet-sort"><option value="id-desc">編號新 → 舊</option><option value="id-asc">編號舊 → 新</option><option value="name">名稱排序</option></select>
+                        </label>
+                    </div>
+                </div>
                 <div id="seer-lookup-results" class="seer-lookup-results" aria-label="精靈搜尋結果" hidden></div>
                 <div id="seer-lookup-preview" class="seer-pet-preview" hidden>
                     <img id="seer-lookup-avatar" alt="精靈頭像" loading="lazy">
@@ -486,7 +480,9 @@
                                 aria-haspopup="dialog" hidden>精靈資訊</button>
                             <button id="seer-lookup-pet-skins"
                                 class="secondary-button compact-button seer-lookup-more-info" type="button"
-                                hidden>查詢此精靈皮膚</button>
+                                hidden>關聯皮膚</button>
+                            <button id="seer-pet-browse-latest" class="secondary-button compact-button" type="button"
+                                hidden>瀏覽最新精靈</button>
                             <button id="seer-lookup-skin-more-info"
                                 class="secondary-button compact-button seer-lookup-more-info" type="button"
                                 hidden>前往百科</button>
@@ -495,6 +491,7 @@
                 </div>
             </section>
             <aside id="seer-lookup-illustration" class="panel seer-lookup-illustration" aria-label="立繪預覽">
+                <button id="seer-pet-back-to-results" type="button" hidden>‹ 返回清單</button>
                 <div class="seer-lookup-illustration-header">
                     <div>
                         <h3 id="seer-lookup-illustration-title" class="seer-lookup-illustration-title">立繪預覽</h3>
@@ -506,6 +503,7 @@
                 </div>
                 <div class="seer-lookup-illustration-stage">
                     <img id="seer-lookup-illustration-image" alt="精靈立繪" decoding="async" hidden>
+                    <p class="seer-pet-illustration-empty">從清單選擇精靈<br><span>查看立繪與完整精靈資訊</span></p>
                 </div>
             </aside>
         </div>
@@ -746,6 +744,7 @@
                     <section class="type-calc-picker-column" aria-labelledby="seer-pet-type-base-title">
                         <h3 id="seer-pet-type-base-title">單屬性</h3>
                         <div class="type-picker-all-options" role="group" aria-label="全部屬性篩選">
+                            <button type="button" data-pet-type-category="all">全部屬性</button>
                             <button type="button" data-pet-type-category="single">全部單屬性</button>
                             <button type="button" data-pet-type-category="double">全部雙屬性</button>
                         </div>

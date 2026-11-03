@@ -7,9 +7,9 @@ import { createMintmarkSeriesSearch } from "../data/mintmark-series-search.js";
 export function createTrainingMintmarkPicker({root, query, selected, name, traditional, simplified, fetchCached, choose, recalculate}) {
     const mintDialog = query(".training-mint-dialog"), mintGrid = query(".training-dialog-grid");
     let mintCatalog = [], mintPending, mintSlot = 0, mintPage = 1, mintReady = false, slotInvoker;
-    const mintSearch = mintDialog.querySelector("input"), mintCorners = mintDialog.querySelector('[aria-label="刻印角數"]'), mintSeries = mintDialog.querySelector('[aria-label="刻印系列"]');
+    const mintSearch = mintDialog.querySelector("input"), mintCorners = mintDialog.querySelector('select[aria-label="刻印角數"]'), mintSeries = mintDialog.querySelector('select[aria-label="刻印系列"]');
     const seriesSearch = createMintmarkSeriesSearch(mintDialog.querySelector('[data-training-series-combobox]'));
-    const mintSort = mintDialog.querySelector('[aria-label="刻印排序"]');
+    const mintSort = mintDialog.querySelector('select[aria-label="刻印排序"]');
     function renderMintSlot(index) {
         const slot = query(`[data-mint-slot="${index}"]`), record = selected.get(`mint${index}`);
         unobserveMintmarkImages(slot);

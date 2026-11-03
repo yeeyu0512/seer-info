@@ -418,6 +418,23 @@ export function createPetInfoView({ seerPetInfoPanel, seerPetInfoTitle, seerPetI
             soulmarkCards.forEach(({ card }) => soulmarkSection.append(card));
         }
         seerPetInfoPanel.insertBefore(soulmarkSection, skillsSection);
+        const sectionNav = document.createElement("nav");
+        sectionNav.className = "seer-pet-info-section-nav";
+        sectionNav.setAttribute("aria-label", "精靈資訊段落");
+        [["種族值", statsSection], ["魂印", soulmarkSection], ["技能", skillsSection]].forEach(([label, section]) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "secondary-button compact-button";
+            button.textContent = label;
+            button.addEventListener("click", () => {
+                seerPetInfoPanel.scrollTo({
+                    top: section.getBoundingClientRect().top - seerPetInfoPanel.getBoundingClientRect().top + seerPetInfoPanel.scrollTop - 12,
+                    behavior: "instant"
+                });
+            });
+            sectionNav.append(button);
+        });
+        seerPetInfoPanel.prepend(sectionNav);
     }
 
     function renderSeerPetInfoIdentity(pet, typeDetails) {

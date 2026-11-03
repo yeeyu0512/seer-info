@@ -1,0 +1,38 @@
+/* Shared selection-only fields, based on the mintmark series menu. */
+.site-picker-source { display: none !important; }
+.site-picker-trigger {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    box-sizing: border-box; width: 100%; min-width: 0; min-height: 44px; margin: 0;
+    padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px;
+    background: #111525; color: var(--text); font: inherit; font-size: 14px;
+    text-align: left; box-shadow: none; cursor: pointer;
+}
+.site-picker-trigger[hidden] { display: none; }
+.site-picker-trigger span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.site-picker-trigger svg { flex-shrink: 0; color: var(--text-secondary); }
+.site-picker-trigger[aria-expanded="true"] svg { transform: rotate(180deg); }
+.site-picker-trigger:hover, .site-picker-trigger[aria-expanded="true"] { border-color: #746891; background: #1a1d30; transform: none; box-shadow: none; }
+.site-picker-trigger:focus-visible { outline: 2px solid var(--primary-light); outline-offset: 3px; }
+.site-picker-trigger:disabled { opacity: .5; cursor: default; }
+.site-picker-options {
+    position: fixed; inset: auto; margin: 0; padding: 5px; box-sizing: border-box;
+    max-height: 240px; overflow: auto; overscroll-behavior: contain;
+    border: 1px solid var(--border); border-radius: 10px; background: #1a1d30;
+    color: var(--text); box-shadow: var(--shadow);
+}
+.site-picker-options button {
+    display: block; box-sizing: border-box; width: 100%; min-height: 44px; margin: 0;
+    padding: 9px 10px; border: 0; border-radius: 6px; background: transparent;
+    color: var(--text); font: inherit; font-size: 13px; text-align: left; box-shadow: none;
+}
+.site-picker-options button:hover, .site-picker-options button:focus-visible { background: #35304f; transform: none; box-shadow: none; outline: 0; }
+.site-picker-options button[aria-selected="true"] { color: #c6baff; font-weight: 700; }
+.site-picker-options button:disabled { opacity: .45; cursor: default; }
+.seal-toolbar .site-picker-trigger { min-height: 46px; border-radius: 12px; }
+.training-basic .site-picker-trigger { font-size: 14px; }
+.training-dialog-filters > .site-picker-trigger,
+.training-choice-filters > .site-picker-trigger { min-width: 0; font-size: 13px; }
+.training-export-background > .site-picker-trigger { width: auto; min-width: 150px; }
+.competitive-server-control .site-picker-trigger,
+.competitive-server-control > .site-picker-trigger { width: auto; }
+.pool-date-time-control > .site-picker-trigger { width: auto; }

@@ -1,4 +1,5 @@
 import { createAuthView } from "./account/auth-view.js";
+import { initSelectionPickers } from "./shared/selection-picker.js";
 import { createSessionController } from "./app/session-controller.js";
 import { login, logout, getSession } from "./auth.js";
 import { isAdmin } from "./admin.js";
@@ -22,6 +23,7 @@ import { getSeerServerSettings } from "./seer-server-settings.js";
 import { preloadSeerIcons } from "./seer-icons.js";
 import { getCurrentCompetitivePool } from "./competitive-pool.js";
 const primaryMainTabs = Array.from(document.querySelectorAll("[data-main-target]"));
+queueMicrotask(() => initSelectionPickers());
 const sealEncyclopediaSection = document.getElementById("seal-encyclopedia-section");
 const suitEncyclopediaSection = document.getElementById("suit-encyclopedia-section");
 const typeChartSection = document.getElementById("type-chart-section");

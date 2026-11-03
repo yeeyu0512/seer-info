@@ -148,6 +148,8 @@ export function createLookupDialogs({
             seerPetInfoOpener = opener;
             seerPetInfoModal.classList.remove("is-closing");
             seerPetInfoModal.hidden = false;
+            const content = seerPetInfoModal.querySelector(".seer-pet-info");
+            if (content) content.scrollTop = 0;
             updateSeerModalScrollLock();
             seerPetInfoClose.focus();
             void loadSeerPetInfo(getCurrentPetData());
@@ -162,7 +164,7 @@ export function createLookupDialogs({
                 seerPetInfoModal.classList.remove("is-closing");
                 updateSeerModalScrollLock();
                 if (restoreFocus && seerPetInfoOpener && seerPetInfoOpener.isConnected && !seerPetInfoOpener.hidden) {
-                    seerPetInfoOpener.focus();
+                    seerPetInfoOpener.focus({ preventScroll: true });
                 }
                 seerPetInfoOpener = null;
             }, 180);
@@ -234,7 +236,8 @@ export function createLookupDialogs({
                     return;
                 }
                 if (event.key !== "Tab") return;
-                const focusable = seerPetInfoModal.querySelectorAll("button:not([disabled]):not([hidden])");
+                const focusable = Array.from(seerPetInfoModal.querySelectorAll("button:not([disabled]), a[href], [tabindex='0']"))
+                    .filter((element) => element.getClientRects().length);
                 const first = focusable[0];
                 const last = focusable[focusable.length - 1];
                 if (event.shiftKey && document.activeElement === first) {

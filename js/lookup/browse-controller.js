@@ -1,3 +1,5 @@
+import { matchesPetTypeFilter, matchesPetSearchQuery, sortPetResults } from "./pet-filters.js";
+
 export function createLookupBrowseController({
     seerLookupResults,
     seerLookupIdInput,
@@ -9,6 +11,9 @@ export function createLookupBrowseController({
     getPetSearchMethod,
     fetchSeerElementTypeCombinations,
     convertToTraditionalChinese,
+    convertToSimplifiedChinese = value => value,
+    getPetSearchQuery = () => "",
+    getPetSortOrder = () => "id-desc",
     renderSeerPetTypeOptions,
     fetchSeerPetCatalog,
     getPetTypeCategory,
@@ -115,8 +120,9 @@ export function createLookupBrowseController({
             seerLookupResults.replaceChildren();
             seerLookupResults.scrollTop = 0;
             seerLookupResults.hidden = false;
-            seerLookupMessage.textContent = "正在載入屬性資料…";
+            seerLookupMessage.textContent = "正在載入精靈目錄…";
             const state = { requestId, pets: [], nextIndex: 0, loading: true, typeDetailsById: new Map() };
+            const query = getPetSearchQuery().trim();
             seerPetTypeFilterState = state;
 
             try {
@@ -139,34 +145,24 @@ export function createLookupBrowseController({
                 });
                 if (requestId !== getLookupRequestId()) return;
 
-                const matchingTypeIds = new Set(combinations
-                    .filter((combination) => combination.isDouble === (getPetTypeCategory() === "double"))
-                    .filter((combination) => getSelectedPetTypeId() === null || combination.id === getSelectedPetTypeId())
-                    .map((combination) => String(combination.id)));
-                state.pets = catalog.filter((pet) =>
-                    pet.typeId !== null
-                    && matchingTypeIds.has(String(pet.typeId))
+                state.pets = sortPetResults(catalog.filter((pet) =>
+                    matchesPetTypeFilter(pet, { category: getPetTypeCategory(), typeId: getSelectedPetTypeId() }, combinations)
+                    && matchesPetSearchQuery(pet, query, convertToSimplifiedChinese)
                     && matchesTaiwanPetProgress(pet, settings)
-                );
+                ), getPetSortOrder(), convertToTraditionalChinese);
                 state.loading = false;
                 if (state.pets.length === 0) {
                     seerLookupResults.hidden = true;
-                    seerLookupMessage.textContent = getTaiwanOnlyEnabled()
-                        ? "目前篩選條件沒有符合台服進度的精靈。"
-                        : "目前沒有符合篩選條件的精靈。";
+                    seerLookupMessage.textContent = "共 0 隻精靈，請調整搜尋或篩選條件。";
                     return;
                 }
                 loadMoreSeerPetTypeFilterResults(state);
-                const selectedType = getSelectedPetTypeId() === null
-                    ? ""
-                    : `「${state.typeDetailsById.get(String(getSelectedPetTypeId()))?.name || "所選屬性"}」`;
-                seerLookupMessage.textContent = `找到 ${state.pets.length} 隻${selectedType}精靈，已顯示 ${Math.min(state.pets.length, SEER_BROWSE_PAGE_SIZE)} 隻。`;
             } catch (error) {
                 if (requestId !== getLookupRequestId()) return;
                 console.error("Load Seer pets by type error:", error);
                 seerPetTypeFilterState = null;
                 seerLookupResults.hidden = true;
-                seerLookupMessage.textContent = `載入屬性篩選失敗：${error.message}`;
+                seerLookupMessage.textContent = `載入精靈清單失敗：${error.message}`;
             }
         }
 
@@ -190,7 +186,20 @@ export function createLookupBrowseController({
                 seerBrowseSentinel = sentinel;
                 seerLookupResults.append(sentinel);
             }
+            seerLookupMessage.textContent = `共 ${state.pets.length} 隻精靈 · 已顯示 ${state.nextIndex} 隻`;
         }
+
+    function sortSeerPetResults(requestId) {
+        const state = seerPetTypeFilterState;
+        if (!state || state.loading || state.requestId !== requestId) return false;
+        state.pets = sortPetResults(state.pets, getPetSortOrder(), convertToTraditionalChinese);
+        state.nextIndex = 0;
+        clearSeerBrowseSentinel();
+        seerLookupResults.replaceChildren();
+        seerLookupResults.scrollTop = 0;
+        if (state.pets.length) loadMoreSeerPetTypeFilterResults(state);
+        return true;
+    }
 
     async function loadMoreSeerBrowseResults(requestId) {
             const state = seerBrowseState;
@@ -307,5 +316,5 @@ export function createLookupBrowseController({
             seerBrowseSentinel.remove();
             seerBrowseSentinel = null;
         }
-    return { startLatestSeerBrowse, startSeerPetTypeFilter, loadMoreSeerPetTypeFilterResults, loadMoreSeerBrowseResults, updateSeerBrowseLoadingProgress, loadSeerBrowsePage, updateSeerBrowseSentinel, clearSeerBrowseSentinel, getBrowseState: () => seerBrowseState, resetBrowseState: () => { seerBrowseState = null; seerPetTypeFilterState = null; } };
+    return { startLatestSeerBrowse, startSeerPetTypeFilter, sortSeerPetResults, loadMoreSeerPetTypeFilterResults, loadMoreSeerBrowseResults, updateSeerBrowseLoadingProgress, loadSeerBrowsePage, updateSeerBrowseSentinel, clearSeerBrowseSentinel, getBrowseState: () => seerBrowseState, resetBrowseState: () => { seerBrowseState = null; seerPetTypeFilterState = null; } };
 }
