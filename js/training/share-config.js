@@ -12,7 +12,7 @@ export function validateShareConfig(value) {
     const fields = ["v","pet","skin","nature","iv","ev","team","hp","year","mint","suit","eye","title","mode","awakened"];
     if (Object.keys(value).length !== fields.length || fields.some(key => !Object.hasOwn(value,key))) fail("分享配置格式不完整。");
     const integer = (n,max,min = 0) => Number.isSafeInteger(n) && n >= min && n <= max;
-    for (const key of ["pet","nature"]) if (!integer(value[key],99999999,1)) fail("分享配置 ID 無效。");
+    if (!integer(value.pet,99999999,1) || !integer(value.nature,99999999)) fail("分享配置 ID 無效。");
     for (const key of ["skin","suit","eye","title"]) if (value[key] !== null && !integer(value[key],99999999,1)) fail("分享配置 ID 無效。");
     if (!integer(value.iv,31) || !integer(value.hp,20)) fail("培養數值超出範圍。");
     for (const field of ["ev","team"]) {

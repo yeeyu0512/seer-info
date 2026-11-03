@@ -26,9 +26,26 @@ test("share round trips every field and drops unrelated URL information",() => {
     assert.equal(url.pathname,"/seer-info/"); assert.equal(url.searchParams.get("tab"),"training");
     assert.deepEqual([...url.searchParams.keys()],["tab","build"]); assert.equal(url.hash,"");
 });
+test("lonely nature ID zero can be shared and restored",async () => {
+    const c={...config(),nature:0},data=records(),applied=[],messages=[];
+    data["nature/0"]={id:0,name:"孤獨",attributes:{atk:10,def:-10}};
+    const url=new URL(createShareUrl("https://example.com/seer-info/",c));
+    const encoded=url.searchParams.get("build");
+    assert.deepEqual(decodeShareConfig(encoded),c);
+    const restorer=createShareRestorer({
+        resolve:value => resolveShareConfig(value,dependencies(data)),
+        apply:(value,resolved) => applied.push({value,resolved}),
+        onStatus:message => messages.push(message)
+    });
+    await restorer.restore(encoded);
+    assert.equal(applied.length,1);
+    assert.deepEqual(applied[0].value,c);
+    assert.deepEqual(applied[0].resolved.nature,data["nature/0"]);
+    assert.match(messages.at(-1),/已還原/);
+});
 test("malformed, oversized, unsupported and out-of-range configurations are rejected",() => {
     for (const encoded of ["", "%%%", "a".repeat(MAX_BUILD_LENGTH+1),btoa("null"),btoa("{")]) assert.throws(() => decodeShareConfig(encoded));
-    for (const patch of [{v:2},{iv:32},{iv:1.5},{hp:21},{pet:-1},{year:1},{mode:"unknown"},{mint:[1,2]},{ev:{...zeroStats(),atk:255,spd:255,hp:1}},{team:{...zeroStats(),hp:31}},{team:{...zeroStats(),spd:-1}},{ev:{...zeroStats(),atk:256}},{personal:"secret"}]) assert.throws(() => encodeShareConfig({...config(),...patch}));
+    for (const patch of [{v:2},{iv:32},{iv:1.5},{hp:21},{pet:-1},{pet:0},{nature:-1},{nature:null},{nature:"0"},{nature:0.5},{nature:100000000},{year:1},{mode:"unknown"},{mint:[1,2]},{ev:{...zeroStats(),atk:255,spd:255,hp:1}},{team:{...zeroStats(),hp:31}},{team:{...zeroStats(),spd:-1}},{ev:{...zeroStats(),atk:256}},{personal:"secret"}]) assert.throws(() => encodeShareConfig({...config(),...patch}));
 });
 test("full restore resolves skin, slot order, equipment, awakening and recomputes editable results",async () => {
     const data=records(), applied=[],messages=[];

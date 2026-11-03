@@ -12,13 +12,16 @@ const server = http.createServer((req, res) => {
     let browser;
     try {
         browser = await chromium.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });
-        for (const width of [1280, 390, 320]) {
-            const page = await browser.newPage({ viewport: { width, height: 800 } });
+        for (const width of [1280, 768, 390, 320]) {
+            const page = await browser.newPage({ viewport: { width, height: 800 }, hasTouch: width <= 768, isMobile: width <= 768 });
             const errors = [];
             page.on('pageerror', error => errors.push(error.message));
             await page.goto(`http://127.0.0.1:${server.address().port}/css/style.css`);
             await page.setContent(`<link rel="stylesheet" href="/css/style.css"><main style="max-width:480px;padding:16px;margin:auto"><h2>選單檢查</h2><form><label for="sort">排序</label><select id="sort"><option value="new">編號新 → 舊</option><option value="old">編號舊 → 新</option><option value="name" disabled>名稱排序</option></select><div class="mint-series-combobox"><input id="series" aria-label="系列"><div class="mint-series-options" role="listbox" hidden></div><select hidden><option value="all">全部系列</option></select></div><button type="reset">重設</button></form><dialog><label>對話框排序<select id="dialog-sort"><option value="a">ID 由大到小</option><option value="b">能力總和</option></select></label></dialog></main>`);
             await page.evaluate(async () => {
+                const viewport = document.createElement('meta');
+                viewport.name = 'viewport'; viewport.content = 'width=device-width, initial-scale=1';
+                document.head.append(viewport);
                 const { initSelectionPickers } = await import('/js/shared/selection-picker.js');
                 const { createMintmarkSeriesSearch } = await import('/js/data/mintmark-series-search.js');
                 window.series = createMintmarkSeriesSearch(document.querySelector('.mint-series-combobox'));
@@ -45,6 +48,21 @@ const server = http.createServer((req, res) => {
             assert.match(await trigger.textContent(), /新/);
             await trigger.click(); await page.keyboard.press('Escape');
             assert.equal(await trigger.getAttribute('aria-expanded'), 'false');
+            const seriesToggle = page.locator('.mint-series-toggle');
+            const openSeries = async () => width <= 768 ? seriesToggle.tap() : seriesToggle.click();
+            await openSeries();
+            assert.equal(await seriesToggle.getAttribute('aria-expanded'), 'true');
+            assert.equal(await page.locator('#series').evaluate(node => node === document.activeElement), false, 'arrow must not focus the text input');
+            await page.screenshot({ path: path.join(process.env.TEMP || root, `series-picker-${width}.png`) });
+            await page.locator('.mint-series-combobox [role="option"]').filter({ hasText: '英雄之證系列' }).click();
+            assert.equal(await seriesToggle.evaluate(node => node === document.activeElement), true, 'pointer selection returns focus to the arrow');
+            assert.equal(await seriesToggle.getAttribute('aria-expanded'), 'false');
+            await openSeries();
+            await openSeries();
+            assert.equal(await seriesToggle.getAttribute('aria-expanded'), 'false');
+            await seriesToggle.press('ArrowDown');
+            await seriesToggle.press('Enter');
+            assert.equal(await page.locator('.mint-series-combobox select').inputValue(), 'all');
             await page.locator('#series').click();
             await page.locator('#series').fill('英雄');
             assert.equal(await page.locator('#series').isEditable(), true);
@@ -61,6 +79,11 @@ const server = http.createServer((req, res) => {
             });
             await page.locator('#dynamic + button').waitFor();
             await page.evaluate(() => document.querySelector('dialog').showModal());
+            await page.evaluate(() => document.querySelector('dialog').append(document.querySelector('.mint-series-combobox')));
+            await openSeries();
+            assert.equal(await page.locator('#series').evaluate(node => node === document.activeElement), false, 'dialog arrow must not focus the text input');
+            await page.locator('.mint-series-combobox [role="option"]').filter({ hasText: '已更新系列' }).click();
+            assert.equal(await seriesToggle.evaluate(node => node === document.activeElement), true);
             await page.locator('#dialog-sort + button').click();
             await page.locator('.site-picker-options:popover-open [data-value="b"]').click();
             assert.equal(await page.locator('#dialog-sort').inputValue(), 'b');
@@ -157,6 +180,30 @@ const server = http.createServer((req, res) => {
             assert.deepEqual(await page.evaluate(() => playerSubmission), { mimi_id: '20000001', region: 'cn' });
             assert.equal(await page.locator('#player-lookup-dialog').evaluate(node => node.scrollWidth <= node.clientWidth), true);
             await page.screenshot({ path: path.join(process.env.TEMP || root, `player-picker-${width}.png`) });
+            await page.evaluate(async () => {
+                const { initSeerMintmarks } = await import('/js/seer-mintmarks.js');
+                document.body.innerHTML = '<section style="padding:16px"><div id="seal-encyclopedia-content"></div></section>';
+                initSeerMintmarks(document.querySelector('section'), { fetchSeerJson: async () => ({results:[],next:null}) });
+            });
+            await page.locator('[data-seal-type] + button').waitFor();
+            assert.equal(await page.evaluate(() => {
+                const input = document.querySelector('.mint-series-combobox input');
+                const trigger = document.querySelector('[data-seal-type] + button');
+                return ['fontSize','fontFamily','fontWeight'].every(key => getComputedStyle(input)[key] === getComputedStyle(trigger)[key]);
+            }), true, 'series text must match the neighboring picker');
+            assert.equal(await page.locator('.mint-series-toggle svg').evaluate(node => node.outerHTML), await page.locator('[data-seal-type] + button svg').evaluate(node => node.outerHTML));
+            await page.screenshot({ path: path.join(process.env.TEMP || root, `series-toolbar-${width}.png`) });
+            await page.evaluate(async () => {
+                const { trainingTemplate } = await import('/js/training/template.js');
+                const { createMintmarkSeriesSearch } = await import('/js/data/mintmark-series-search.js');
+                document.body.innerHTML = trainingTemplate();
+                const dialog = document.querySelector('.training-mint-dialog');
+                createMintmarkSeriesSearch(dialog.querySelector('.mint-series-combobox')).setOptions([{value:'all',label:'全部系列'},{value:'61',label:'英雄之證系列'}]);
+                dialog.showModal();
+            });
+            await openSeries();
+            assert.equal(await page.locator('.mint-series-combobox input').evaluate(node => node === document.activeElement), false);
+            await page.screenshot({ path: path.join(process.env.TEMP || root, `series-training-${width}.png`) });
             assert.deepEqual(errors, []);
             console.log(`${width}px passed: selection only, keyboard, same-width menu, disabled, dynamic options, restored values, dialog focus`);
             await page.close();

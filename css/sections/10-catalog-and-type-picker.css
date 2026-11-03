@@ -20,9 +20,13 @@
 .seal-toolbar .seal-search { flex: 1; min-width: 180px; }
 .seal-toolbar input[type="search"], .seal-toolbar .mint-series-combobox input, .seal-toolbar select { width: 100%; min-height: 46px; border: 1px solid var(--border); border-radius: 12px; background: #111525; color: var(--text); padding: 10px 14px; font: inherit; }
 .seal-toolbar select { min-width: 0; }
+.seal-toolbar .mint-series-combobox input { font-size:14px; }
 .mint-series-combobox { position:relative; min-width:0; }
-.mint-series-combobox::after { content:"▾"; position:absolute; right:13px; top:50%; transform:translateY(-50%); color:var(--text-secondary); pointer-events:none; }
-.mint-series-combobox input { box-sizing:border-box; padding-right:32px !important; }
+.mint-series-combobox input { box-sizing:border-box; padding-right:44px !important; }
+.mint-series-combobox .mint-series-toggle { position:absolute; right:1px; top:1px; bottom:1px; width:40px; min-height:0; margin:0; padding:0; display:grid; place-items:center; border:0; border-radius:0 10px 10px 0; background:transparent; color:var(--text-secondary); font:inherit; box-shadow:none; transform:none; }
+.mint-series-combobox .mint-series-toggle:hover { background:rgba(139,122,255,.12); box-shadow:none; transform:none; }
+.mint-series-combobox .mint-series-toggle:focus-visible { outline:2px solid var(--primary-light); outline-offset:-3px; }
+.mint-series-toggle[aria-expanded="true"] svg { transform:rotate(180deg); }
 .mint-series-options { position:absolute; z-index:30; left:0; right:0; top:calc(100% + 5px); display:grid; max-height:240px; overflow:auto; padding:5px; border:1px solid var(--border); border-radius:10px; background:#1a1d30; box-shadow:var(--shadow); }
 .mint-series-options[hidden] { display:none; }
 .mint-series-options button { width:100%; margin:0; padding:9px 10px; border:0; border-radius:6px; background:transparent; color:var(--text); text-align:left; font:inherit; font-size:13px; box-shadow:none; }

@@ -14,12 +14,25 @@ export function createMintmarkSeriesSearch(container) {
     const listId = `mint-series-options-${++nextListId}`;
     list.id = listId;
     input.setAttribute("aria-controls",listId);
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "mint-series-toggle";
+    toggle.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+    toggle.setAttribute("aria-label","展開或收合系列選單");
+    toggle.setAttribute("role","combobox");
+    toggle.setAttribute("aria-haspopup","listbox");
+    toggle.setAttribute("aria-controls",listId);
+    toggle.setAttribute("aria-expanded","false");
+    input.after(toggle);
+    let focusTarget = input;
     let choices = [{value:"all",label:"全部系列"}], ready = false, errorText = "", searching = false, activeIndex = -1, suppressFocus = false;
     const labelFor = value => choices.find(choice => choice.value === value)?.label || choices[0].label;
     function close() {
         list.hidden = true;
         input.setAttribute("aria-expanded","false");
+        toggle.setAttribute("aria-expanded","false");
         input.removeAttribute("aria-activedescendant");
+        toggle.removeAttribute("aria-activedescendant");
         searching = false;
         input.value = labelFor(select.value);
     }
@@ -28,9 +41,12 @@ export function createMintmarkSeriesSearch(container) {
         activeIndex = index;
         buttons.forEach((button,i) => button.classList.toggle("is-active",i === index));
         if (index >= 0 && buttons[index]) {
-            input.setAttribute("aria-activedescendant",buttons[index].id);
+            focusTarget.setAttribute("aria-activedescendant",buttons[index].id);
             buttons[index].scrollIntoView({block:"nearest"});
-        } else input.removeAttribute("aria-activedescendant");
+        } else {
+            input.removeAttribute("aria-activedescendant");
+            toggle.removeAttribute("aria-activedescendant");
+        }
     }
     function choose(value) {
         if (select.value !== value) {
@@ -39,7 +55,7 @@ export function createMintmarkSeriesSearch(container) {
         }
         close();
         suppressFocus = true;
-        input.focus({preventScroll:true});
+        focusTarget.focus({preventScroll:true});
         suppressFocus = false;
     }
     function renderList() {
@@ -63,15 +79,25 @@ export function createMintmarkSeriesSearch(container) {
         list.replaceChildren(...options);
         list.hidden = false;
         input.setAttribute("aria-expanded","true");
+        toggle.setAttribute("aria-expanded","true");
         highlight(searching && input.value.trim() && matches.length > 1 ? 1 : -1);
     }
     input.addEventListener("focus",() => {
+        focusTarget = input;
         if (suppressFocus) return;
-        if (list.hidden) { input.select(); renderList(); }
+        input.select();
+        renderList();
     });
     input.addEventListener("click",() => {if (list.hidden) {input.select();renderList();}});
     input.addEventListener("input",() => {searching = true;renderList();});
-    input.addEventListener("keydown",event => {
+    toggle.addEventListener("click",() => {
+        focusTarget = toggle;
+        toggle.focus({preventScroll:true});
+        if (list.hidden) { searching = false; renderList(); }
+        else close();
+    });
+    function onKeydown(event) {
+        focusTarget = event.currentTarget;
         if (event.key === "Escape") {close();return;}
         if (event.key === "Tab") {close();return;}
         if (event.key === "ArrowDown" || event.key === "ArrowUp") {
@@ -84,7 +110,9 @@ export function createMintmarkSeriesSearch(container) {
             event.preventDefault();
             list.querySelectorAll('[role="option"]')[activeIndex >= 0 ? activeIndex : 0]?.click();
         }
-    });
+    }
+    input.addEventListener("keydown",onKeydown);
+    toggle.addEventListener("keydown",onKeydown);
     // 點擊清單捲軸可能讓輸入框失焦，但仍是在操作清單，不應因此關閉。
     document.addEventListener("pointerdown",event => {
         if (container.contains(event.target)) return;
