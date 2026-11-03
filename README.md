@@ -158,7 +158,7 @@ Supabase 負責管理員驗證、競技池資料與台服進度設定。管理�
 
 首頁讀取 `data/official-news.json`，只收錄台服官網的「○月○日維護與活動更新公告」。找不到符合標題的公告時保留舊資料。
 
-[公告更新工作流程](.github/workflows/update-official-news.yml) 每小時執行，也可從 Actions 手動觸發，並在一般 Pages 發布完成後再次更新。流程會執行測試、檢查模組、擷取公告，再發布靜態網站；抓取失敗時中止發布，保留線上版本。
+[公告更新工作流程](.github/workflows/update-official-news.yml) 在推送至 `main` 後執行，也會每小時執行，並可從 Actions 手動觸發。流程會執行測試、檢查模組、擷取公告，再發布靜態網站；抓取失敗時中止發布，保留線上版本。舊有分支式 Pages 發布完成事件仍保留作為相容入口。
 
 使用此流程需將工作流程放在預設分支，並將 GitHub Pages 的 Source 設為 **GitHub Actions**。排程可能延遲；自動擷取的 JSON 僅寫入部署產物，不會自動提交至 Git 分支。
 

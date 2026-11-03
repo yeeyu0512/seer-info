@@ -1,6 +1,8 @@
 name: Refresh official news
 
 on:
+  push:
+    branches: [main]
   schedule:
     - cron: '17 * * * *'
     # Friday 18:00 in Taiwan (UTC+8).
