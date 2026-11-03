@@ -76,3 +76,36 @@ test('loader retries failed downloads, pins a generation and rejects invalid man
     const truncated = createMintmarkSnapshotLoader(async url => url.endsWith('manifest.json') ? b.manifest : { version: 2, category: 'general', records: [] });
     await assert.rejects(truncated.lists(['general']), /不完整/);
 });
+
+test('Go Live falls back from a missing local manifest and pins lists and full records to the published source', async () => {
+    const b = bundle(), calls = [];
+    const loader = createMintmarkSnapshotLoader(async url => {
+        calls.push(url);
+        if (new URL(url).hostname === '127.0.0.1') throw Object.assign(new Error('missing'), { status: 404 });
+        return url.endsWith('manifest.json') ? b.manifest : JSON.parse(b.files.get(new URL(url).pathname.split('/').at(-1)));
+    }, { baseUrl: 'http://127.0.0.1:5500/project/data/mintmarks/' });
+    const [list] = await Promise.all([loader.lists(['general']), loader.lists(['general'])]);
+    await loader.complete(list.records);
+    assert.equal(calls.filter(url => url.startsWith('http://127.0.0.1')).length, 1);
+    assert.equal(calls.filter(url => url === 'https://seerinfo.app/data/mintmarks/manifest.json').length, 1);
+    assert.ok(calls.slice(1).every(url => url.startsWith('https://seerinfo.app/data/mintmarks/')));
+    assert.equal(calls.length, 4);
+});
+
+test('npm dev keeps local snapshots and deployed sites never switch sources on failures', async () => {
+    const b = bundle(), calls = [];
+    const local = createMintmarkSnapshotLoader(async url => {
+        calls.push(url);
+        return url.endsWith('manifest.json') ? b.manifest : JSON.parse(b.files.get(new URL(url).pathname.split('/').at(-1)));
+    }, { baseUrl: 'http://localhost:5500/data/mintmarks/' });
+    await local.lists(['general']);
+    assert.ok(calls.every(url => url.startsWith('http://localhost:5500/')));
+    for (const [baseUrl, status] of [['https://example.com/data/mintmarks/', 404], ['http://localhost:5500/data/mintmarks/', 503]]) {
+        const attempts = [];
+        const loader = createMintmarkSnapshotLoader(async url => {
+            attempts.push(url); throw Object.assign(new Error('unavailable'), { status });
+        }, { baseUrl });
+        await assert.rejects(loader.manifest(), /unavailable/);
+        assert.equal(attempts.length, 1);
+    }
+});

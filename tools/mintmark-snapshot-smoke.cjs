@@ -1,6 +1,7 @@
 const fs = require('node:fs'), path = require('node:path'), http = require('node:http'), assert = require('node:assert/strict');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const root = process.cwd();
+const goLive = process.env.MINTMARK_SMOKE_GO_LIVE === '1';
 const manifest = JSON.parse(fs.readFileSync('tmp/mintmarks/manifest.json'));
 const general = { series: manifest.series };
 const generalFull = JSON.parse(fs.readFileSync(path.join('tmp/mintmarks', manifest.categories.general.full.file))).records;
@@ -10,7 +11,7 @@ const sample = exclusive.records.find(record => !record.is_hidden);
 const section = fs.readFileSync('index.html', 'utf8').match(/<section id="seal-encyclopedia-section"[\s\S]*?<\/section>/)[0].replace(' hidden', '');
 const server = http.createServer((req, res) => {
     const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
-    const file = path.resolve(root, pathname.startsWith('/data/mintmarks/') ? './tmp/mintmarks/' + path.basename(pathname) : '.' + pathname);
+    const file = path.resolve(root, !goLive && pathname.startsWith('/data/mintmarks/') ? './tmp/mintmarks/' + path.basename(pathname) : '.' + pathname);
     if (!file.startsWith(root + path.sep) || !fs.existsSync(file)) return res.writeHead(404).end();
     res.setHeader('Content-Type', ({ '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json' })[path.extname(file)] || 'text/plain');
     res.end(fs.readFileSync(file));
@@ -24,13 +25,16 @@ const server = http.createServer((req, res) => {
         for (const width of [1440, 1024, 390, 320]) {
             const page = await browser.newPage({ viewport: { width, height: width > 900 ? 640 : 844 } });
             const errors = [], calls = { general: 0, exclusive: 0, api: 0, full: 0, ability: 0, skill: 0 };
+            const dataSources = [];
             let failGeneral = true, failExclusive = true, releaseExclusive;
             page.on('pageerror', error => errors.push(error.message));
             await page.route('**/*', async route => {
                 const url = new URL(route.request().url());
                 if (url.hostname === 'api.seerapi.com') calls.api++;
                 // Image conversion is outside this data-loading test; screenshots use placeholders.
-                if (url.origin !== base) return route.abort();
+                const publishedData = url.origin === 'https://seerinfo.app' && url.pathname.startsWith('/data/mintmarks/');
+                if (url.origin !== base && !(goLive && publishedData)) return route.abort();
+                if (url.pathname.startsWith('/data/mintmarks/')) dataSources.push(url.href);
                 // Capture the real export inputs; Excel formatting is covered by
                 // its existing tests, without downloading the CDN runtime here.
                 if (url.pathname === '/js/seer-mintmark-export.js') return route.fulfill({
@@ -70,6 +74,10 @@ const server = http.createServer((req, res) => {
             assert.equal(calls.general, 2);
             assert.equal(calls.exclusive, 0, 'default view must never download exclusive data');
             assert.equal(calls.full + calls.ability + calls.skill, 0, 'initial load must only fetch the compact general list');
+            if (goLive) {
+                assert.ok(dataSources.some(url => url.startsWith('http://127.0.0.1:') && url.endsWith('/manifest.json')));
+                assert.ok(dataSources.some(url => url.startsWith('https://seerinfo.app/data/mintmarks/general-list.')));
+            } else assert.ok(dataSources.every(url => url.startsWith(base)));
             const normalStatus = await page.locator('.seal-status').textContent();
             const toggle = page.locator('[data-seal-exclusive]');
             await toggle.check();
@@ -133,7 +141,7 @@ const server = http.createServer((req, res) => {
             assert.equal(calls.full, 2, 'detail data is cached');
             assert.equal(calls.exclusive, 2);
             assert.deepEqual(errors, []);
-            console.log(`${width}px: compact initial load, category lazy loading, retry, toggle race, cache, search, series input and full ID details passed`);
+            console.log(`${goLive ? 'Go Live' : 'Local data'} ${width}px: compact initial load, category lazy loading, retry, toggle race, cache, search, series input and full ID details passed`);
             await page.close();
         }
     } finally {
