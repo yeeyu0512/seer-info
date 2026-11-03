@@ -32,6 +32,10 @@
 .training-basic .site-picker-trigger { font-size: 14px; }
 .training-dialog-filters > .site-picker-trigger,
 .training-choice-filters > .site-picker-trigger { min-width: 0; font-size: 13px; }
+.training-choice-filters > .site-picker-trigger { flex: 0 0 145px; width: 145px; }
+@media (max-width: 500px) {
+    .training-choice-filters > .site-picker-trigger { flex-basis: 120px; width: 120px; }
+}
 .training-export-background > .site-picker-trigger { width: auto; min-width: 150px; }
 .competitive-server-control .site-picker-trigger,
 .competitive-server-control > .site-picker-trigger { width: auto; }

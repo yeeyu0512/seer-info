@@ -278,7 +278,7 @@ const server = http.createServer((req, res) => {
                 assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
                 await page.screenshot({ path: path.join(process.env.TEMP || root, `${mode}-pickers-${width}.png`), fullPage: true });
             }
-            if (width === 1440) {
+            {
                 await page.locator('#tools-nav summary').click();
                 await page.locator('[data-main-target="training"]').click();
                 await page.locator('[data-art-placeholder]').click();

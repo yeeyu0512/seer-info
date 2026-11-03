@@ -86,6 +86,77 @@ const server = http.createServer((req, res) => {
             assert.equal(await suit.textContent(), await damage.locator('[data-mode="attack"] [name="suit"] option:checked').textContent());
             await damage.locator('[data-wizard-next]').click();
             assert.ok(await damage.locator('[data-result-focus] tbody tr').count() > 0);
+            await page.evaluate(async () => {
+                const { initTrainingSelectors } = await import('/js/seer-training-selectors.js');
+                window.trainingChoices = initTrainingSelectors(document.body, {
+                    fetchJson: async () => ({ results: [{ id: 1, name: '測試套裝', bonus: { desc: '測試能力加成' } }], next: null }),
+                    traditional: text => text, simplified: text => text, getPet: () => ({ id: 1, name: '測試精靈' }),
+                    onSuit: () => {}, onSkin: () => {}, images: new Map()
+                });
+                trainingChoices.open('suit');
+            });
+            const choices = page.locator('.training-choice-dialog');
+            const choiceSearch = choices.locator('.training-choice-filters input');
+            await choices.locator('.site-picker-trigger').waitFor();
+            assert.ok((await choiceSearch.boundingBox()).width >= 90, 'training suit picker must leave room for searching');
+            await choiceSearch.fill('測試');
+            await choices.locator('.site-picker-trigger').click();
+            await page.locator('.site-picker-options:popover-open [data-value="bonus"]').click();
+            assert.equal(await choiceSearch.inputValue(), '測試');
+            assert.equal(await choices.evaluate(node => node.scrollWidth <= node.clientWidth), true);
+            await page.screenshot({ path: path.join(process.env.TEMP || root, `training-choice-picker-${width}.png`) });
+            await page.keyboard.press('Escape');
+            await page.evaluate(() => trainingChoices.open('skin'));
+            await page.waitForFunction(() => document.querySelector('.training-choice-filters .site-picker-trigger').hidden);
+            assert.ok((await choiceSearch.boundingBox()).width >= 180, 'hidden suit filter must release search width in skin mode');
+            await page.keyboard.press('Escape');
+            await page.evaluate(async () => {
+                const source = new DOMParser().parseFromString(await (await fetch('/admin.html')).text(), 'text/html');
+                const audit = document.createElement('section'); audit.id = 'compact-picker-check';
+                audit.style.cssText = 'width:calc(100% - 40px);max-width:480px;margin:auto';
+                for (const control of source.querySelectorAll('.pool-date-time-control')) {
+                    audit.append(control);
+                    const select = control.querySelector('select'); select.add(new Option('23:55', '23:55'));
+                }
+                const server = source.querySelector('.competitive-server-control'); audit.append(server);
+                document.body.append(audit);
+            });
+            const compact = page.locator('#compact-picker-check');
+            await compact.locator('.site-picker-trigger').first().waitFor();
+            for (const row of await compact.locator('.pool-date-time-control').all()) {
+                assert.ok((await row.locator('input').boundingBox()).width >= 90, 'admin time picker must preserve the date field');
+                await row.locator('input').fill('2026-11-04');
+                await row.locator('button').click();
+                const menuBox = await page.locator('.site-picker-options:popover-open').boundingBox();
+                assert.ok(menuBox.x >= 0 && menuBox.x + menuBox.width <= width + 1);
+                await page.keyboard.press('Escape');
+                assert.equal(await row.evaluate(node => node.scrollWidth <= node.clientWidth), true);
+            }
+            assert.equal(await compact.locator('.competitive-server-control').evaluate(node => node.scrollWidth <= node.clientWidth), true);
+            await page.evaluate(async () => {
+                const source = new DOMParser().parseFromString(await (await fetch('/index.html')).text(), 'text/html');
+                for (const href of ['/css/player-lookup.css', '/css/player-lookup-dialog.css']) {
+                    const link = document.createElement('link'); link.rel = 'stylesheet'; link.href = href;
+                    await new Promise(resolve => { link.onload = resolve; document.head.append(link); });
+                }
+                const dialog = source.querySelector('#player-lookup-dialog'); document.body.append(dialog);
+                document.querySelector('#player-lookup-form').addEventListener('submit', event => {
+                    event.preventDefault(); window.playerSubmission = Object.fromEntries(new FormData(event.target));
+                });
+                dialog.showModal();
+            });
+            const mimi = page.locator('#player-lookup-mimi-id');
+            const region = page.locator('#player-lookup-region + button');
+            await region.waitFor();
+            assert.ok((await mimi.boundingBox()).width >= 90, 'region picker must leave room for the Mimi ID');
+            await mimi.fill('20000001');
+            await region.click();
+            await page.locator('.site-picker-options:popover-open [data-value="cn"]').click();
+            assert.equal(await mimi.inputValue(), '20000001', 'changing server preserves the typed ID');
+            await mimi.press('Enter');
+            assert.deepEqual(await page.evaluate(() => playerSubmission), { mimi_id: '20000001', region: 'cn' });
+            assert.equal(await page.locator('#player-lookup-dialog').evaluate(node => node.scrollWidth <= node.clientWidth), true);
+            await page.screenshot({ path: path.join(process.env.TEMP || root, `player-picker-${width}.png`) });
             assert.deepEqual(errors, []);
             console.log(`${width}px passed: selection only, keyboard, same-width menu, disabled, dynamic options, restored values, dialog focus`);
             await page.close();

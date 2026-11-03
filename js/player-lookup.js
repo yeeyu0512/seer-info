@@ -1,4 +1,7 @@
+import { createPlayerPetImages } from './player-pet-images.js';
+
 // Game credentials remain on the server. Region routing is fixed, never user URLs.
+const playerPetImages = createPlayerPetImages();
 let playerNameConverters = { convertToTraditionalChinese: value => value, convertToSimplifiedChinese: value => value };
 
 export function configurePlayerNameConverters(converters) {
@@ -230,7 +233,7 @@ async function requestPlayer(mimiId, captchaAnswer, region, signal) {
     return payload;
 }
 
-function renderPetBag(container, pets) {
+export function renderPetBag(container, pets) {
     container.replaceChildren();
     container.classList.add("player-pet-list");
     if (!Array.isArray(pets) || !pets.length) {
@@ -238,28 +241,28 @@ function renderPetBag(container, pets) {
         return;
     }
     for (const pet of pets) {
-        const card = document.createElement("div");
+        const card = container.ownerDocument.createElement("div");
         card.className = "player-pet-card";
         const id = Number(pet?.id);
         if (Number.isInteger(id) && id > 0) {
-            const image = document.createElement("img");
-            image.src = `https://newseer.61.com/web/monster/head/${id}.png`;
+            const image = container.ownerDocument.createElement("img");
             image.alt = "";
             image.loading = "lazy";
-            image.addEventListener("error", () => { image.hidden = true; }, { once: true });
             card.append(image);
         }
-        const info = document.createElement("div");
-        const name = document.createElement("strong");
+        const info = container.ownerDocument.createElement("div");
+        const name = container.ownerDocument.createElement("strong");
         name.textContent = formatPlayerPetName(typeof pet === "string" ? pet : pet?.name);
         info.append(name);
         if (Number.isInteger(id) && id > 0) {
-            const number = document.createElement("small");
+            const number = container.ownerDocument.createElement("small");
             number.textContent = `#${id}`;
             info.append(number);
         }
         card.append(info);
         container.append(card);
+        const image = card.querySelector("img");
+        if (image) playerPetImages.set(image, pet);
     }
 }
 
