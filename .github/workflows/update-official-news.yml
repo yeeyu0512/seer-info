@@ -3,7 +3,14 @@ name: Refresh official news
 on:
   schedule:
     - cron: '17 * * * *'
+    # Friday 18:00 in Taiwan (UTC+8).
+    - cron: '0 10 * * 5'
   workflow_dispatch:
+    inputs:
+      refresh_mintmarks:
+        description: Refresh mintmark snapshots as well as news
+        type: boolean
+        default: false
   # Branch-based Pages publication can restore the repository's older news JSON.
   # Refresh after that deployment finishes so the current announcements win.
   workflow_run:
@@ -43,6 +50,14 @@ jobs:
       - name: Fetch Taiwan official announcements
         run: npm run news:refresh
 
+      # Reuse the currently published generation for every deployment. Only the
+      # Friday schedule, an explicit manual refresh, or first publication fetches
+      # SeerAPI. No snapshots are committed or stored in Actions caches.
+      - name: Prepare published mintmark data
+        env:
+          MINTMARK_REFRESH: ${{ github.event.schedule == '0 10 * * 5' || inputs.refresh_mintmarks == true }}
+        run: node tools/prepare-mintmarks.mjs
+
       - uses: actions/configure-pages@v6
       - name: Prepare static website
         shell: bash
@@ -50,6 +65,8 @@ jobs:
           mkdir _site
           cp *.html favicon.ico robots.txt sitemap.xml _site/
           cp -R css js assets data _site/
+          mkdir -p _site/data/mintmarks
+          cp tmp/mintmarks/*.json _site/data/mintmarks/
       - uses: actions/upload-pages-artifact@v5
         with:
           path: _site

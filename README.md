@@ -75,13 +75,17 @@ PVE 傷害計算提供傷害與承傷兩種模式，可設定屬性、我方與 
 
 ## 本機執行
 
-本專案使用 HTML、CSS 與原生 JavaScript ES Modules，沒有前端框架或打包步驟。請在專案根目錄啟動靜態 HTTP 伺服器，例如：
+本專案使用 HTML、CSS 與原生 JavaScript ES Modules，沒有前端框架或打包步驟。建議使用 Node.js 22 以上版本，在專案根目錄執行：
 
 ```bash
-python -m http.server 5500 --bind 127.0.0.1
+npm run dev
 ```
 
-開啟 [本機前台](http://127.0.0.1:5500/)；後台位於 [admin.html](http://127.0.0.1:5500/admin.html)。也可使用 VS Code Live Server 等靜態伺服器。
+啟動前會先同步線上的刻印版本；相同內容的檔案會沿用本機副本。線上版本尚未建立、無法同步或落後最近一次週五台灣時間 18:00，且本機也沒有本週版本時，才從 SeerAPI 產生資料。更新失敗時沿用完整的本機舊檔並提示日期；沒有可用資料時停止，待網路恢復後重試。這項檢查只在啟動時執行，跨過週五 18:00 後請重新啟動。
+
+所有產生的刻印列表與完整資料都放在已忽略的 `tmp/mintmarks/`，不會改寫 Git 追蹤的 `data/`。本機伺服器將 `/data/mintmarks/` 對應到這個暫存目錄。
+
+開啟 [本機前台](http://127.0.0.1:5500/)；後台位於 [admin.html](http://127.0.0.1:5500/admin.html)。如連接埠已被使用，可執行 `npm run dev -- --port 5501`。其他靜態伺服器不會自動同步資料，也不會對應刻印的暫存目錄；本機測試刻印圖鑑請使用 `npm run dev`。
 
 ES Modules 需透過 HTTP 載入，請避免直接以 `file://` 開啟。瀏覽網站不需要 Node.js 或安裝 npm 套件，但圖鑑、玩家查詢、資料庫與 CDN 資源仍需網路連線；本專案只包含網站前端，玩家與票選 API 由外部服務提供。
 
@@ -98,6 +102,8 @@ node tools/check-assets.mjs
 | 指令 | 用途 |
 | --- | --- |
 | `npm test` | 使用 Node.js 內建 test runner 執行測試 |
+| `npm run dev` | 自動檢查刻印資料日期，必要時更新後啟動本機網站 |
+| `npm run mintmarks:refresh` | 不論資料日期，立即從 SeerAPI 更新 `tmp/mintmarks/` |
 | `npm run check` | 檢查 JavaScript 語法、本地模組引用與循環依賴 |
 | `node tools/check-assets.mjs` | 依資源清單核對檔案大小與 SHA-256 |
 | `npm run news:refresh` | 擷取台服官網更新公告並更新本機 JSON |
@@ -155,6 +161,16 @@ Supabase 負責管理員驗證、競技池資料與台服進度設定。管理�
 [公告更新工作流程](.github/workflows/update-official-news.yml) 每小時執行，也可從 Actions 手動觸發，並在一般 Pages 發布完成後再次更新。流程會執行測試、檢查模組、擷取公告，再發布靜態網站；抓取失敗時中止發布，保留線上版本。
 
 使用此流程需將工作流程放在預設分支，並將 GitHub Pages 的 Source 設為 **GitHub Actions**。排程可能延遲；自動擷取的 JSON 僅寫入部署產物，不會自動提交至 Git 分支。
+
+### 刻印資料自動更新
+
+同一發布流程於每週五台灣時間 **18:00**（UTC `0 10 * * 5`）更新刻印。也可手動執行並勾選 `refresh_mintmarks`。第一次發布時，若線上尚無版本資訊，會自動建立資料。
+
+刻印資料按一般全能、專屬全能、能力、技能分成精簡列表與完整資料。圖鑑預設只下載一般全能列表；其他分類、專屬列表、詳情及匯出資料按需取得。列表已包含最終能力值，搜尋、角數、排序及台服篩選不需額外下載完整資料。模擬培養仍沿用原有資料取得方式。
+
+每次發布先從 `https://seerinfo.app/data/mintmarks/manifest.json` 取得目前線上版本並驗證檔案，放進 `tmp/mintmarks/`；只有週五、指定手動更新或首次建立時才重新抓 SeerAPI。內容相同的資料沿用原本檔名，僅更新檢查日期。新檔案以內容 SHA-256 命名，版本資訊最後寫入；目前與前一版內容會持續隨公告發布沿用，避免短時間內更新造成已開啟頁面拿不到詳情。不累積所有歷史版本；頁面若長期未重整、需要的舊版已移除，須重新整理。
+
+發布時將暫存檔案複製到 `_site/data/mintmarks/`，不提交回 Git，也不使用 Actions cache 作為資料來源。每小時的公告發布會沿用線上刻印版本。線上版本讀取、校驗或來源更新失敗時，整次發布中止，保留原網站；只有版本資訊回應 404 才允許首次建立。若更換網站網域或子路徑，需調整 `tools/mintmark-files.mjs` 的線上來源，發布流程也可透過 `MINTMARK_SOURCE_URL` 指定。
 
 ## 內容維護
 

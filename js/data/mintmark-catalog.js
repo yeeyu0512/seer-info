@@ -3,6 +3,11 @@ import { mintmarkFinalStats } from "../seer-mintmark-stats.js";
 const API = "https://api.seerapi.com/v1/mintmark";
 const STATS = [["atk", "攻擊"], ["sp_atk", "特攻"], ["def", "防禦"], ["sp_def", "特防"], ["spd", "速度"], ["hp", "體力"]];
 
+export function isExclusiveMintmark(record) {
+    return Number(record.type?.id) === 3
+        && Boolean(record.is_exclusive || record.pet?.length || /專屬|专属/.test(`${record.name} ${record.searchName || ""}`));
+}
+
 export function mintmarkCornerCount(record) {
     if (![0, 3].includes(Number(record.type?.id)) || !record.max_attr_value) return null;
     const count = STATS.filter(([key]) => mintmarkFinalStats(record)[key] > 0).length;
@@ -16,8 +21,7 @@ export function selectMintmarks(records, { query = "", type = "3", sort = "id", 
         && (type === "all" || String(record.type?.id) === type)
         && (corners === "all" || (corners === "none" ? mintmarkCornerCount(record) === null : mintmarkCornerCount(record) === Number(corners)))
         && (series === "all" || (series === "none" ? !record.mintmark_class?.id : String(record.mintmark_class?.id) === String(series)))
-        && (showExclusive || Number(record.type?.id) !== 3
-            || !(record.pet?.length || /專屬|专属/.test(`${record.name} ${record.searchName || ""}`)))
+        && (showExclusive || !isExclusiveMintmark(record))
         && (!key || String(record.id).includes(key) || record.name.toLocaleLowerCase().includes(key) || record.searchName?.toLocaleLowerCase().includes(key)))
         .sort((a, b) => sort === "id" ? b.id - a.id
             : (Number(mintmarkFinalStats(b)?.[sort]) || 0) - (Number(mintmarkFinalStats(a)?.[sort]) || 0) || b.id - a.id);

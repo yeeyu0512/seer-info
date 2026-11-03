@@ -3,9 +3,12 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "node tools/ensure-mintmarks.mjs",
+    "dev": "node tools/dev-server.mjs",
     "test": "node --test",
     "check": "node tools/check-modules.mjs",
-    "news:refresh": "node tools/fetch-official-news.mjs"
+    "news:refresh": "node tools/fetch-official-news.mjs",
+    "mintmarks:refresh": "node tools/fetch-mintmarks.mjs"
   },
   "engines": {
     "node": ">=22"
