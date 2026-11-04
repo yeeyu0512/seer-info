@@ -63,7 +63,8 @@ export function openHomeShortcut(button, { seerLookup, activateTab }) {
 }
 
 export function focusHomeShortcutTarget(targetId) {
-    const activeNav = document.querySelector('.primary-main-tabs [aria-selected="true"]');
+    const activeNav = document.querySelector('.primary-main-tabs [aria-selected="true"]')
+        || document.querySelector('.header-about[aria-pressed="true"]');
     if (activeNav) {
         activeNav.focus({ preventScroll: true });
         return;

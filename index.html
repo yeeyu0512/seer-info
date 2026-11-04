@@ -39,7 +39,7 @@
     </script>
 
     <link rel="icon" href="./favicon.ico" sizes="any">
-    <link rel="stylesheet" href="./css/style.css?v=20261103_bot_guide">
+    <link rel="stylesheet" href="./css/style.css?v=20261104_header_about">
     <link rel="stylesheet" href="./css/public-background.css?v=20261103_mobile_background">
 
 
@@ -56,10 +56,21 @@
 
         <div class="header-inner">
 
-            <a href="#" class="logo" aria-label="首頁">
-                <img class="logo-mark" src="./favicon.ico" alt="">
-                <span>賽爾號資訊站</span>
-            </a>
+            <div class="header-brand">
+                <a href="#" class="logo" aria-label="首頁">
+                    <img class="logo-mark" src="./favicon.ico" alt="">
+                    <span>賽爾號資訊站</span>
+                </a>
+                <button class="header-about" type="button" aria-label="關於本站"
+                    aria-pressed="false" aria-controls="about-section" data-main-target="about">
+                    <svg width="15" height="15" viewBox="1.5 1.5 21 21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9"/>
+                        <path d="M12 11v6"/>
+                        <circle cx="12" cy="7.5" r=".8" fill="currentColor" stroke="none"/>
+                    </svg>
+                    <span class="header-about-tooltip" aria-hidden="true">關於本站</span>
+                </button>
+            </div>
 
             <button id="home-search-open" class="main-tab" type="button" aria-label="全站搜尋" aria-haspopup="dialog" aria-controls="home-search-dialog">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
@@ -89,9 +100,6 @@
                         <button type="button" data-open-player-lookup aria-haspopup="dialog" aria-controls="player-lookup-dialog">玩家查詢</button>
                     </div>
                 </details>
-                <button class="main-tab" type="button" role="tab" aria-selected="false" aria-controls="about-section"
-                    data-main-target="about">關於本站</button>
-
                 <details id="admin-tools" class="admin-nav" hidden>
                     <summary class="main-tab">管理 <span aria-hidden="true">▾</span></summary>
                     <div class="admin-nav-menu" aria-label="管理選單">

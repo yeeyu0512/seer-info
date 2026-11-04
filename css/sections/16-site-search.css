@@ -1,4 +1,28 @@
 /* Shared navigation entry and dialog, available on every public feature view. */
+.header-brand { display: flex; align-items: center; gap: 11px; min-width: 0; }
+.site-header .header-about {
+    position: relative; display: inline-flex; align-items: center; justify-content: center;
+    order: 2; flex: 0 0 15px; width: 15px; height: 15px; min-height: 0; margin: 0; padding: 0;
+    border: 0; border-radius: 50%; background: transparent; color: var(--text-secondary);
+    box-shadow: none; transform: none;
+}
+.site-header .header-about:hover,
+.site-header .header-about:focus-visible { color: var(--text); background: transparent; }
+.site-header .header-about:focus-visible { outline: 2px solid #b8abff; outline-offset: 2px; }
+.site-header .header-about.is-active { color: #c4bfff; }
+.header-about svg { flex: none; transform-origin: center; transition: transform .22s ease; }
+@media (hover: hover) { .header-about:hover svg { transform: rotate(14deg); } }
+@media (prefers-reduced-motion: reduce) {
+    .header-about svg, .header-about:hover svg { transition: none; transform: none; }
+}
+.header-about-tooltip {
+    position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+    padding: 5px 9px; border: 1px solid var(--border); border-radius: 6px;
+    background: #1c2332; color: var(--text); font-size: 12px; font-weight: 500;
+    line-height: 1.5; white-space: nowrap; pointer-events: none; visibility: hidden;
+}
+.header-about:focus-visible .header-about-tooltip { visibility: visible; }
+@media (hover: hover) { .header-about:hover .header-about-tooltip { visibility: visible; } }
 .site-header #home-search-open {
     display: flex; align-items: center; justify-content: center; gap: 7px; flex: 0 0 auto; min-height: 38px;
     margin: 0; padding: 7px 12px; border: 0; border-radius: 8px;
@@ -19,6 +43,7 @@
 }
 @media (max-width: 760px) {
     .header-inner:has(.primary-main-tabs) { gap: 6px 12px; padding: 8px 0; }
+    .header-brand { order: 1; gap: 8px; }
     .header-inner:has(.primary-main-tabs) .logo { min-width: 0; font-size: 16px; gap: 8px; }
     .site-header #home-search-open {
         order: 2; flex: 0 0 auto; width: auto; height: 44px; min-height: 44px;
@@ -27,10 +52,10 @@
     }
     #home-search-open svg { width: 17px; height: 17px; }
     .site-header .primary-main-tabs {
-        display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
         width: 100%; gap: 4px; padding: 0; margin: 0; overflow: visible;
     }
-    .site-header .primary-main-tabs:has(#admin-tools:not([hidden])) { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .site-header .primary-main-tabs:has(#admin-tools:not([hidden])) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     .site-header .primary-main-tabs > * { min-width: 0; }
     .site-header .primary-main-tabs > .main-tab,
     .site-header .primary-main-tabs > details > .main-tab {

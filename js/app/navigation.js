@@ -132,7 +132,7 @@ export function createNavigation({
         primaryMainTabs.forEach((tab) => {
             const isActive = tab.dataset.mainTarget === mainTarget;
             tab.classList.toggle("is-active", isActive);
-            tab.setAttribute(tab.closest?.("#tools-nav") ? "aria-pressed" : "aria-selected", String(isActive));
+            tab.setAttribute(tab.matches(".header-about") || tab.closest?.("#tools-nav") ? "aria-pressed" : "aria-selected", String(isActive));
         });
         encyclopediaModeTabs.forEach((tab) => {
             const isActive = mainTarget === "encyclopedia" && (
