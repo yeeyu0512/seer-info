@@ -199,3 +199,13 @@ Supabase 負責管理員驗證、競技池資料與台服進度設定。管理�
 外部 API、圖片、CDN 或 SWF 來源無法存取時，相關功能可能暫時不可用。第三方資料及計算結果可能存在遺漏或差異，請配合遊戲內資訊判讀。
 
 《賽爾號》名稱、角色、圖片、SWF、美術素材及其他遊戲相關內容的權利歸原權利人所有。本專案不代表官方立場。
+
+## 鳴謝
+
+感謝以下開源專案及維護者提供的資料、工具與協議研究成果：
+
+- [SeerAPI](https://api.seerapi.com/)：提供本站圖鑑與工具使用的遊戲資料。
+- [Nattsu39/ironsbot](https://github.com/Nattsu39/ironsbot) 與 [Murmansk5000/IronsBot](https://github.com/Murmansk5000/IronsBot)：本站共用 Bot 後端的陸服協議、登入流程與部分玩家戰績欄位參考來源。
+- [oldml/saixiaoxi](https://github.com/oldml/saixiaoxi)：上述 IronsBot 登入實作所註明的上游來源，相關來源與授權聲明保留於 Bot 後端。
+
+網站前端、台服查詢實作與陸服後端的參考範圍不同；陸服相關模組的 GPL 授權、參考版本及第三方聲明保留於 Bot 後端的 `seer/cn_votes/`。本節為鳴謝摘要，不取代各專案及檔案的授權條款。
