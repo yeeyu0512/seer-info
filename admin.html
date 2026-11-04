@@ -177,13 +177,34 @@
                     <div class="panel-header">
                         <div>
                             <h2 class="panel-title">台服進度設定</h2>
-                            <p class="panel-description">設定台服目前最新精靈、皮膚與刻印編號，供圖鑑的台服進度篩選使用。</p>
+                            <p class="panel-description">管理精靈、皮膚、刻印與套裝的台服進度及未實裝內容。</p>
                         </div>
                     </div>
                     <form id="taiwan-seer-settings-form" class="admin-form taiwan-seer-settings-form">
-                        <label>台服最新精靈編號<input id="taiwan-latest-pet-id" type="number" min="1" step="1" inputmode="numeric" required></label>
-                        <label>台服最新皮膚編號<input id="taiwan-latest-skin-id" type="number" min="1" step="1" inputmode="numeric" required></label>
-                        <label>台服最新刻印編號<input id="taiwan-latest-mintmark-id" type="number" min="1" step="1" inputmode="numeric" placeholder="尚未設定可留空"><small>刻印圖鑑啟用台服篩選時，只顯示不超過此編號的刻印。</small></label>
+                        <section class="taiwan-progress-settings" aria-labelledby="taiwan-progress-title">
+                            <div class="taiwan-progress-copy">
+                                <h3 id="taiwan-progress-title">最新實裝編號</h3>
+                                <p id="taiwan-progress-help">台服篩選僅顯示至此進度，刻印與套裝可留空。</p>
+                            </div>
+                            <div class="taiwan-progress-fields" aria-describedby="taiwan-progress-help">
+                                <label>精靈<input id="taiwan-latest-pet-id" aria-label="台服最新精靈編號" type="number" min="1" step="1" inputmode="numeric" required></label>
+                                <label>皮膚<input id="taiwan-latest-skin-id" aria-label="台服最新皮膚編號" type="number" min="1" step="1" inputmode="numeric" required></label>
+                                <label>刻印<input id="taiwan-latest-mintmark-id" aria-label="台服最新刻印編號" type="number" min="1" step="1" inputmode="numeric" placeholder="未設定"></label>
+                                <label>套裝<input id="taiwan-latest-suit-id" aria-label="台服最新套裝編號" type="number" min="1" step="1" inputmode="numeric" placeholder="未設定"></label>
+                            </div>
+                        </section>
+                        <fieldset class="taiwan-exclusions" id="taiwan-exclusions-fields" disabled aria-describedby="taiwan-exclusions-help taiwan-exclusions-schema">
+                            <legend>台服未實裝內容排除清單</legend>
+                            <p id="taiwan-exclusions-help">每行填一個編號或一段範圍（含起訖），可在 # 後加上合作名稱。只在勾選台服進度時排除；留空表示不額外排除。</p>
+                            <p id="taiwan-exclusions-schema" role="status"></p>
+                            <div class="taiwan-exclusions-grid">
+                                <label>精靈排除編號<textarea id="taiwan-exclusions-pet" rows="5" spellcheck="false" placeholder="例：100-120 # 合作名稱&#10;150"></textarea><small data-exclusions-summary="pet" aria-live="polite"></small></label>
+                                <label>皮膚排除編號<textarea id="taiwan-exclusions-skin" rows="5" spellcheck="false" placeholder="例：200-210 # 合作名稱&#10;230"></textarea><small data-exclusions-summary="skin" aria-live="polite"></small></label>
+                                <label>刻印排除編號<textarea id="taiwan-exclusions-mintmark" rows="5" spellcheck="false" placeholder="例：41001-41020 # 合作名稱&#10;41308"></textarea><small data-exclusions-summary="mintmark" aria-live="polite"></small></label>
+                                <label>套裝排除編號<textarea id="taiwan-exclusions-suit" rows="5" spellcheck="false" placeholder="例：300-310 # 合作名稱&#10;320"></textarea><small data-exclusions-summary="suit" aria-live="polite"></small></label>
+                            </div>
+                            <p class="taiwan-exclusions-note">以上僅為格式範例，請填寫已確認未實裝的編號。精靈排除後，對應皮膚也會被台服篩選隱藏；日後實裝可刪除該行或縮小範圍。</p>
+                        </fieldset>
                         <div class="form-actions"><button id="save-taiwan-seer-settings-button" class="admin-action-button" type="submit">儲存台服設定</button></div>
                     </form>
                     <p id="taiwan-seer-settings-message" class="form-message" aria-live="polite"></p>

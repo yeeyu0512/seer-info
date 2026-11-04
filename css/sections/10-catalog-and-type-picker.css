@@ -92,6 +92,9 @@
 .suit-selection .seal-pagination { margin-top: 4px; }
 .suit-toolbar input:focus-visible, .suit-toolbar select:focus-visible { outline: 2px solid var(--primary-light); outline-offset: 3px; }
 .suit-status { margin: 0; color: var(--text-secondary); }
+.suit-description-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 16px; }
+.suit-description-row .panel-description { margin: 0; }
+.suit-description-row .suit-progress-toggle { margin: 0; width: fit-content; }
 .suit-grid { display: grid; gap: 6px; padding: 3px; }
 .suit-card { display: flex; align-items: center; justify-content: space-between; min-width: 0; gap: 12px; padding: 7px 12px; margin: 0; text-align: left; color: var(--text); background: rgba(12,16,29,.45); border: 1px solid var(--border); border-radius: 10px; box-shadow: none; }
 .suit-card:hover { border-color: var(--border-hover); background: rgba(24,29,48,.9); transform: none; box-shadow: none; }

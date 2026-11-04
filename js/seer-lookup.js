@@ -4,6 +4,8 @@ import { createLookupBrowseController } from "./lookup/browse-controller.js";
 import { createLookupDialogs } from "./lookup/dialogs.js";
 import { typeIconUrl, skinCategoryIconUrl } from "./shared/assets.js";
 import { getSeerServerSettings } from "./seer-server-settings.js";
+import { bindTaiwanProgressToggle } from "./shared/taiwan-progress-toggle.js";
+import { matchesTaiwanPetProgress, matchesTaiwanSkinProgress } from "./shared/taiwan-availability.js";
 import { SEER_TYPE_DATA } from "./seer-type-data.js";
 import { getRelatedTypeOptions } from "./shared/type-options.js";
 import { getSharedLookupRepository } from "./lookup/repository.js";
@@ -391,21 +393,6 @@ export function initSeerLookup(dependencies) {
         return seerTaiwanSettingsPromise;
     }
 
-    function matchesTaiwanPetProgress(pet, settings) {
-        if (!settings) return true;
-        const petId = Number(pet && pet.id);
-        return petId === 5000 || (Number.isSafeInteger(petId) && petId > 0 && petId <= settings.latestPetId);
-    }
-
-    function matchesTaiwanSkinProgress(skin, pet, settings) {
-        if (!settings) return true;
-        const skinId = Number(skin && skin.id);
-        return Number.isSafeInteger(skinId)
-            && skinId > 0
-            && skinId <= settings.latestSkinId
-            && matchesTaiwanPetProgress(pet || (skin && skin.pet), settings);
-    }
-
     function refreshCurrentSeerLookup() {
         invalidateSeerPetLookup();
         updateSeerPetFilterUi();
@@ -567,7 +554,7 @@ export function initSeerLookup(dependencies) {
                 if (!matchesTaiwanPetProgress(pet, settings) || !typeMatches) {
                     seerLookupMessage.textContent = !typeMatches
                         ? "此編號精靈不符合目前的屬性篩選，可按屬性旁的 × 清除條件。"
-                        : "此精靈超出台服目前進度，取消勾選「僅台服進度」即可查看。";
+                        : "此精靈不符合台服進度或未實裝排除設定，取消勾選「僅台服進度」即可查看。";
                     return;
                 }
                 await renderSeerPetPreview(pet, requestId);
@@ -647,7 +634,7 @@ export function initSeerLookup(dependencies) {
                 const settings = await getTaiwanProgressSettings();
                 if (requestId !== seerLookupRequestId) return;
                 if (!matchesTaiwanSkinProgress(entry.skin, entry.pet, settings)) {
-                    seerLookupMessage.textContent = "此皮膚或所屬精靈超出台服目前進度，已依篩選設定隱藏。";
+                    seerLookupMessage.textContent = "此皮膚或所屬精靈不符合台服進度或未實裝排除設定，已依篩選設定隱藏。";
                     return;
                 }
                 await renderSeerSkinPreview(entry, requestId);
@@ -737,7 +724,7 @@ export function initSeerLookup(dependencies) {
 
         if (visiblePets.length === 0) {
             seerLookupMessage.textContent = seerTaiwanOnlyEnabled && pets.length > 0
-                ? "符合名稱的精靈皆超出台服目前進度。"
+                ? "符合名稱的精靈皆不符合台服進度或未實裝排除設定。"
                 : "找不到符合的精靈，請確認名稱或改用精靈 ID。";
             return;
         }
@@ -1370,8 +1357,8 @@ export function initSeerLookup(dependencies) {
         isSeerLookupComposing = false;
         scheduleSeerPetLookup();
     });
-    seerTaiwanProgressOnly.addEventListener("change", () => {
-        seerTaiwanOnlyEnabled = seerTaiwanProgressOnly.checked;
+    bindTaiwanProgressToggle(seerTaiwanProgressOnly, enabled => {
+        seerTaiwanOnlyEnabled = enabled;
         refreshCurrentSeerLookup();
     });
     seerPetClearType.addEventListener("click", () => {

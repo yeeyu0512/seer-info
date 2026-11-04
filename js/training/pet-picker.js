@@ -2,6 +2,7 @@ import { openDialog, closeDialog } from "../shared/dialog-motion.js";
 import {getSharedLookupRepository} from "../lookup/repository.js";
 import {createLookupBrowseController} from "../lookup/browse-controller.js";
 import {getSeerServerSettings} from "../seer-server-settings.js";
+import {matchesTaiwanPetProgress} from "../shared/taiwan-availability.js";
 import {getRelatedTypeOptions} from "../shared/type-options.js";
 import {typeIconUrl} from "../shared/assets.js";
 import {SEER_TYPE_DATA} from "../seer-type-data.js";
@@ -38,7 +39,7 @@ export function initTrainingPetPicker(dialog,{fetchSeerJson,fetchCached,traditio
         }).catch(error => {settingsPromise = null; throw error;});
         return settingsPromise;
     };
-    const matches = (pet,value) => !value || Number(pet.id) === 5000 || Number(pet.id) <= value.latestPetId;
+    const matches = matchesTaiwanPetProgress;
     function render(pets,types,append = false) {
         if (!append) results.replaceChildren();
         for (const pet of pets) {

@@ -1,4 +1,71 @@
 /* Final Admin density overrides. */
+.admin-page .taiwan-seer-settings-form { max-width: 1100px; }
+.taiwan-progress-settings {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    min-width: 0;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, .025);
+}
+.taiwan-progress-copy h3 { margin: 0 0 5px; font-size: 14px; }
+.taiwan-progress-copy p { margin: 0; color: var(--text-secondary); font-size: 12px; line-height: 1.6; }
+.taiwan-progress-fields {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    flex: 0 1 500px;
+    gap: 12px;
+    min-width: 0;
+}
+.taiwan-progress-fields label { min-width: 0; }
+.admin-page .taiwan-progress-fields input { min-width: 0; height: 40px; padding: 8px 10px; font-variant-numeric: tabular-nums; }
+.taiwan-exclusions {
+    grid-column: 1 / -1;
+    min-width: 0;
+    margin: 6px 0 0;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+}
+.taiwan-exclusions legend { padding: 0 7px; font-weight: 700; }
+.taiwan-exclusions p { margin: 0 0 14px; color: var(--text-secondary); font-size: 13px; line-height: 1.7; overflow-wrap: anywhere; }
+.taiwan-exclusions p:empty { display: none; }
+.taiwan-exclusions-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.taiwan-exclusions-grid label { min-width: 0; }
+.taiwan-exclusions textarea {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 140px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    background: rgba(255, 255, 255, .045);
+    font: inherit;
+    font-weight: 400;
+    line-height: 1.7;
+    resize: vertical;
+}
+.taiwan-exclusions textarea:focus { outline: 2px solid var(--primary); outline-offset: 2px; }
+.taiwan-exclusions textarea[aria-invalid="true"] { border-color: #ff7f8d; }
+.taiwan-exclusions textarea:disabled { opacity: .55; cursor: not-allowed; }
+.taiwan-exclusions small { font-weight: 400; line-height: 1.6; }
+.taiwan-exclusions .taiwan-exclusions-note { margin: 14px 0 0; }
+@media (max-width: 900px) {
+    .taiwan-exclusions-grid { grid-template-columns: minmax(0, 1fr); }
+    .taiwan-exclusions { padding: 12px; }
+}
+@media (max-width: 600px) {
+    .taiwan-progress-settings { flex-direction: column; align-items: stretch; gap: 12px; padding: 12px; }
+    .taiwan-progress-fields { flex: auto; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .admin-page .taiwan-progress-fields input { padding-inline: 7px; }
+}
+
 .admin-page .admin-hero { padding: 22px 0 12px; }
 .admin-page .admin-hero h1 { margin: 2px 0 0; font-size: 27px; }
 .admin-page .admin-hero p { margin: 0 0 3px; font-size: 13px; }

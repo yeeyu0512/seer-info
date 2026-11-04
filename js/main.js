@@ -49,7 +49,7 @@ const seerLookup = initSeerLookup({
 });
 const seerTypeCalculator = initSeerTypeCalculator("#type-chart-section");
 const seerMintmarks = initSeerMintmarks(sealEncyclopediaSection, { fetchSeerJson, convertToTraditionalChinese, getSeerServerSettings });
-const seerSuits = initSeerSuits(suitEncyclopediaSection, { fetchSeerJson, convertToTraditionalChinese });
+const seerSuits = initSeerSuits(suitEncyclopediaSection, { fetchSeerJson, convertToTraditionalChinese, getSeerServerSettings });
 const seerAbnormal = initSeerAbnormal(document.getElementById("abnormal-encyclopedia-section"), { normalize: convertToSimplifiedChinese });
 const seerTraining = initSeerTraining(trainingSection, { fetchSeerJson, convertToTraditionalChinese, convertToSimplifiedChinese });
 const { createCharacterTypeIcon, clearObservedTypeIcons, loadCharacterTypeIcon, processCharacterTypeIconQueue, fetchCharacterTypeIconUrl } = createPetTypeIcons({

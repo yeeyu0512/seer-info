@@ -1,5 +1,7 @@
 import { openDialog, closeDialog } from "./shared/dialog-motion.js";
 import { selectMintmarks } from "./data/mintmark-catalog.js";
+import { isTaiwanExcluded } from "./shared/taiwan-availability.js";
+import { bindTaiwanProgressToggle, setTaiwanProgressOnly } from "./shared/taiwan-progress-toggle.js";
 export { mintmarkCornerCount, selectMintmarks, fetchMintmarkSeries, fetchMintmarkCatalog } from "./data/mintmark-catalog.js";
 import { createMintmarkSeriesSearch } from "./data/mintmark-series-search.js";
 import { observeMintmarkImage, unobserveMintmarkImages } from "./seer-mintmark-images.js";
@@ -49,6 +51,7 @@ export function initSeerMintmarks(root, { convertToTraditionalChinese = value =>
     let loaded = false;
     let page = 1;
     let latestMintmarkId = null;
+    let excludedMintmarkRanges = [];
     let settingsPending = null;
     let settingsMessage = "正在讀取台服刻印進度…";
     let seriesNames = new Map();
@@ -60,7 +63,8 @@ export function initSeerMintmarks(root, { convertToTraditionalChinese = value =>
     const localizeRecords = catalog => catalog.map(record => ({ ...record, searchName: record.name, name: convertToTraditionalChinese(record.name) }));
 
     function currentMatches() {
-        return selectMintmarks(records, { query: input.value, type: type.value, sort: sort.value, corners: selectedCorners, series: series.value, showExclusive: exclusive.checked, maxId: taiwanOnly?.checked ? latestMintmarkId : null });
+        const eligible = taiwanOnly?.checked ? records.filter(record => !isTaiwanExcluded(record.id, excludedMintmarkRanges)) : records;
+        return selectMintmarks(eligible, { query: input.value, type: type.value, sort: sort.value, corners: selectedCorners, series: series.value, showExclusive: exclusive.checked, maxId: taiwanOnly?.checked ? latestMintmarkId : null });
     }
     exportButton.addEventListener("click", async () => {
         if (exporting || !loaded || (taiwanOnly?.checked && latestMintmarkId === null)) return;
@@ -307,6 +311,7 @@ export function initSeerMintmarks(root, { convertToTraditionalChinese = value =>
                     return;
                 }
                 latestMintmarkId = id;
+                excludedMintmarkRanges = settings.excludedRanges?.mintmark ?? [];
             } catch (error) {
                 console.error("Mintmark Taiwan settings error:", error);
                 settingsMessage = "台服刻印進度讀取失敗，請重新勾選重試，或取消篩選。";
@@ -315,7 +320,7 @@ export function initSeerMintmarks(root, { convertToTraditionalChinese = value =>
         await settingsPending;
         if (loaded) render();
     }
-    taiwanOnly?.addEventListener("change", updateTaiwanFilter);
+    bindTaiwanProgressToggle(taiwanOnly, () => { if (loaded) void updateTaiwanFilter(); });
     function changePage(delta) { page += delta; render(); content.scrollIntoView({ block: "start", behavior: "smooth" }); }
     previous.addEventListener("click", () => changePage(-1));
     next.addEventListener("click", () => changePage(1));
@@ -358,7 +363,7 @@ export function initSeerMintmarks(root, { convertToTraditionalChinese = value =>
         const request = ++routeRequest;
         input.value = id; type.value = 'all'; series.value = 'all'; sort.value = 'id';
         selectedCorners = 'all'; exclusive.checked = true;
-        if (taiwanOnly) taiwanOnly.checked = false;
+        setTaiwanProgressOnly(false);
         await load();
         if (!loaded || request !== routeRequest || root.hidden) return;
         populateSeries();

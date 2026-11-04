@@ -2,6 +2,8 @@ import { ASSETS } from "./shared/assets.js";
 import { suitBattleModes, selectSuits, fetchSuitCatalog } from "./data/suit-catalog.js";
 export { suitBattleModes, selectSuits, fetchSuitCatalog } from "./data/suit-catalog.js";
 import { createSuitImageService, SUIT_PARTS } from "./seer-suit-images.js";
+import { matchesTaiwanSuitProgress } from "./shared/taiwan-availability.js";
+import { bindTaiwanProgressToggle, setTaiwanProgressOnly } from "./shared/taiwan-progress-toggle.js";
 
 const STATS = [["atk", "攻擊"], ["sp_atk", "特攻"], ["def", "防禦"], ["sp_def", "特防"], ["spd", "速度"], ["hp", "體力"]];
 const PAGE_SIZE = 6;
@@ -13,7 +15,7 @@ const BASE_URL = ASSETS.seerBase;
 
 
 
-export function initSeerSuits(root, { fetchSeerJson, convertToTraditionalChinese: traditional = value => value }) {
+export function initSeerSuits(root, { fetchSeerJson, convertToTraditionalChinese: traditional = value => value, getSeerServerSettings }) {
     const content = root.querySelector("#suit-encyclopedia-content");
     content.innerHTML = `<div class="suit-browser"><div class="suit-selection">
         <div class="suit-toolbar">
@@ -34,6 +36,7 @@ export function initSeerSuits(root, { fetchSeerJson, convertToTraditionalChinese
     </section></div>`;
     const input = content.querySelector("input"), effect = content.querySelector("[data-suit-effect]"), sort = content.querySelector("[data-suit-sort]");
     const battle = content.querySelector("[data-suit-battle]");
+    const taiwanOnly = root.querySelector("#suit-taiwan-progress-only");
     const grid = content.querySelector(".suit-grid"), status = content.querySelector(".suit-status"), retry = content.querySelector("[data-suit-retry]");
     const pagination = content.querySelector("nav"), previous = content.querySelector("[data-suit-prev]"), next = content.querySelector("[data-suit-next]");
     const preview = content.querySelector(".suit-preview"), previewImage = preview.querySelector("img"), info = content.querySelector(".suit-detail-info");
@@ -43,6 +46,30 @@ export function initSeerSuits(root, { fetchSeerJson, convertToTraditionalChinese
     const modes = preview.querySelector("[data-suit-modes]");
     const images = createSuitImageService(fetchSeerJson);
     let records = [], page = 1, loaded = false, pending, selectionVersion = 0, selectedId = null;
+    let taiwanSettings = null, settingsPending = null, settingsMessage = "正在讀取台服套裝進度…";
+    async function updateTaiwanFilter() {
+        page = 1;
+        if (taiwanOnly.checked && !taiwanSettings) {
+            settingsMessage = "正在讀取台服套裝進度…";
+            if (loaded) render();
+            if (!settingsPending) settingsPending = (async () => {
+                try {
+                    const settings = await getSeerServerSettings();
+                    if (!Number.isSafeInteger(settings.latestSuitId) || settings.latestSuitId < 1) {
+                        settingsMessage = "後台尚未設定台服最新套裝編號，可取消台服篩選查看全部資料。";
+                        return;
+                    }
+                    taiwanSettings = settings;
+                } catch (error) {
+                    console.error("Suit Taiwan settings error:", error);
+                    settingsMessage = "台服套裝進度讀取失敗，請重新勾選重試，或取消篩選。";
+                }
+            })().finally(() => { settingsPending = null; });
+            await settingsPending;
+        }
+        if (loaded) render();
+    }
+    bindTaiwanProgressToggle(taiwanOnly, () => { if (loaded) void updateTaiwanFilter(); });
     function resetPreview() {
         selectionVersion++; selectedId = null;
         preview.classList.remove("has-selection");
@@ -127,7 +154,10 @@ export function initSeerSuits(root, { fetchSeerJson, convertToTraditionalChinese
         }).catch(() => { if (selectionVersion === version) parts.title = "部件名稱載入失敗，暫以 ID 顯示。"; });
     }
     function render() {
-        const matches = selectSuits(records, { query: input.value, effect: effect.value, battleMode: battle.value, sort: sort.value });
+        const waitingForSettings = taiwanOnly.checked && !taiwanSettings;
+        const eligible = taiwanOnly.checked ? records.filter(record => matchesTaiwanSuitProgress(record, taiwanSettings || {latestSuitId: null})) : records;
+        const matches = selectSuits(eligible, { query: input.value, effect: effect.value, battleMode: battle.value, sort: sort.value });
+        if (taiwanOnly.checked && selectedId !== null && !eligible.some(record => record.id === selectedId)) resetPreview();
         const pages = Math.max(1, Math.ceil(matches.length / PAGE_SIZE)); page = Math.min(page, pages);
         grid.replaceChildren();
         matches.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).forEach(record => {
@@ -139,19 +169,21 @@ export function initSeerSuits(root, { fetchSeerJson, convertToTraditionalChinese
             identity.append(name, meta); card.append(identity, arrow); card.onclick = () => choose(record); grid.append(card);
         });
         updateSelection();
-        status.textContent = matches.length ? `${matches.length} 套套裝` : "找不到符合條件的套裝。";
+        status.textContent = waitingForSettings ? settingsMessage : matches.length ? `${matches.length} 套套裝${taiwanOnly.checked ? ` · 台服進度至 #${taiwanSettings.latestSuitId}` : ""}` : "找不到符合條件的套裝。";
         pagination.hidden = pages <= 1; pagination.querySelector("span").textContent = `${page} / ${pages}`; previous.disabled = page === 1; next.disabled = page === pages;
     }
     [input, effect, battle, sort].forEach(control => control.addEventListener(control === input ? "input" : "change", () => { page = 1; if (loaded) render(); }));
     function changePage(delta) { page += delta; render(); grid.scrollTop = 0; }
     previous.onclick = () => changePage(-1); next.onclick = () => changePage(1);
     async function load() {
-        if (loaded || pending) return pending;
+        if (loaded) { if (taiwanOnly.checked) await updateTaiwanFilter(); else render(); return; }
+        if (pending) return pending;
         retry.hidden = true; content.setAttribute("aria-busy", "true"); status.textContent = "正在載入套裝資料…";
         pending = (async () => {
             try {
                 const catalog = await fetchSuitCatalog(fetchSeerJson, (count, total) => { status.textContent = `正在載入套裝… ${count} / ${total}`; });
-                records = catalog.map(record => ({ ...record, searchName: record.name, name: traditional(record.name) })); loaded = true; render();
+                records = catalog.map(record => ({ ...record, searchName: record.name, name: traditional(record.name) })); loaded = true;
+                if (taiwanOnly.checked) await updateTaiwanFilter(); else render();
             } catch (error) { console.error("Suit catalog error", error); status.textContent = "套裝資料載入失敗，請稍後重試。"; retry.hidden = false; }
             finally { pending = null; content.removeAttribute("aria-busy"); }
         })();
@@ -163,6 +195,7 @@ export function initSeerSuits(root, { fetchSeerJson, convertToTraditionalChinese
         const id = String(value || '').trim();
         if (!/^[1-9][0-9]{0,9}$/.test(id)) return;
         const request = ++routeRequest;
+        setTaiwanProgressOnly(false);
         await load();
         if (!loaded || request !== routeRequest || root.hidden) return;
         input.value = id; effect.value = 'all'; battle.value = 'all'; sort.value = 'newest'; page = 1;

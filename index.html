@@ -318,7 +318,6 @@
                     </section>
                     <section class="home-known-issues" aria-labelledby="known-issues-title">
                         <h2 id="known-issues-title" class="home-shark-title"><img src="./assets/icons/shark.png" alt="" aria-hidden="true" class="home-shark-icon">Discord 機器人</h2>
-                        <!-- 已知問題暫存：台服未實裝的合作刻印未能隱藏。展示位置待定。 -->
                         <div class="home-bot-mini">
                             <img src="https://cdn.discordapp.com/avatars/1557598334812819519/be40bf520c4e5780f2f0750e06ba983f.png?size=128" width="40" height="40" alt="" loading="lazy">
                             <div class="home-bot-mini-copy"><h3>武心嬋</h3><p>提供小規模的賽爾號服務！</p></div>
@@ -527,9 +526,9 @@
                     <p class="seal-loading-note">首次載入可能需要較長時間，圖片會依序顯示，請稍候。</p>
                 </div>
             </div>
-            <label class="seer-taiwan-progress-filter seal-progress-toggle" title="依後台最新刻印編號篩選，部分合作刻印無法完全排除。">
+            <label class="seer-taiwan-progress-filter seal-progress-toggle" title="依後台最新刻印編號與未實裝排除清單篩選。">
                 <input id="seal-taiwan-progress-only" type="checkbox" aria-label="只顯示台服刻印進度"
-                    aria-description="依後台最新刻印編號篩選，部分合作刻印無法完全排除。">
+                    aria-description="依後台最新刻印編號與未實裝排除清單篩選。">
                 <span>僅顯示台服進度</span>
             </label>
             <div id="seal-encyclopedia-content"></div>
@@ -543,7 +542,7 @@
             <div class="panel-header">
                 <div>
                     <h2 id="suit-encyclopedia-title" class="panel-title">套裝圖鑑</h2>
-                    <p class="panel-description">圖片首次載入可能較久。</p>
+                    <div class="suit-description-row"><p class="panel-description">圖片首次載入可能較久。</p><label class="seer-taiwan-progress-filter suit-progress-toggle"><input id="suit-taiwan-progress-only" type="checkbox" aria-label="只顯示台服套裝進度"><span>僅顯示台服進度</span></label></div>
                 </div>
             </div>
             <div id="suit-encyclopedia-content"></div>
@@ -642,15 +641,11 @@
                         </section>
                         <section class="about-issue-group" aria-labelledby="about-issues-in-progress">
                             <h3 id="about-issues-in-progress"><span class="about-issue-badge is-in-progress"><span class="about-issue-status is-in-progress" aria-hidden="true"></span>處理中</span></h3>
-                            <!--<ul class="about-issues-list">
-                                <li>台服尚未實裝的合作內容目前仍會顯示，正在評估合適的隱藏方式。</li>
-                            </ul>-->
                             <p class="about-issues-empty">目前沒有處理中的問題。</p>
                         </section>
                         <section class="about-issue-group" aria-labelledby="about-issues-on-hold">
                             <h3 id="about-issues-on-hold"><span class="about-issue-badge is-on-hold"><span class="about-issue-status is-on-hold" aria-hidden="true"></span>擱置中</span></h3>
                             <ul class="about-issues-list">
-                                <li>台服尚未實裝的合作內容目前仍會顯示，正在評估合適的隱藏方式。</li>
                                 <li>管理後台競技池填入方式仍有不便，我還在思考更好的處理方法。</li>
                             </ul>
                             <!--<p class="about-issues-empty">目前沒有擱置中的問題。</p>-->
