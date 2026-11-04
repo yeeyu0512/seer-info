@@ -54,18 +54,24 @@ export function createCompetitivePreview({
         selectCompetitivePoolPreviewType(selectedCompetitivePoolPreviewType);
 
         competitivePoolPreviewReturnFocus = document.activeElement;
+        competitivePoolPreviewModal.classList.remove("is-closing");
         competitivePoolPreviewModal.hidden = false;
         document.body.classList.add("has-competitive-pool-preview");
         closeCompetitivePoolPreviewButton.focus();
     }
 
     function closeCompetitivePoolPreview() {
-        if (competitivePoolPreviewModal.hidden) return;
-        competitivePoolPreviewModal.hidden = true;
-        document.body.classList.remove("has-competitive-pool-preview");
-        if (competitivePoolPreviewReturnFocus instanceof HTMLElement && competitivePoolPreviewReturnFocus.isConnected) {
-            competitivePoolPreviewReturnFocus.focus();
-        }
+        if (competitivePoolPreviewModal.hidden || competitivePoolPreviewModal.classList.contains("is-closing")) return;
+        competitivePoolPreviewModal.classList.add("is-closing");
+        window.setTimeout(() => {
+            if (!competitivePoolPreviewModal.classList.contains("is-closing")) return;
+            competitivePoolPreviewModal.hidden = true;
+            competitivePoolPreviewModal.classList.remove("is-closing");
+            document.body.classList.remove("has-competitive-pool-preview");
+            if (competitivePoolPreviewReturnFocus instanceof HTMLElement && competitivePoolPreviewReturnFocus.isConnected) {
+                competitivePoolPreviewReturnFocus.focus();
+            }
+        }, window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 180);
     }
 
     function selectCompetitivePoolPreviewType(poolType) {

@@ -183,15 +183,20 @@ body.has-admin-confirm-modal {
     background: linear-gradient(135deg, #ff7f8d, #d94f63);
 }
 
+#seer-external-link-description {
+    font-size: 14px;
+    white-space: nowrap;
+}
+
 #seer-external-link-modal .admin-confirm-actions > * {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
-    width: 112px;
-    min-width: 112px;
-    height: 44px;
-    min-height: 44px;
+    width: 84px;
+    min-width: 84px;
+    height: 36px;
+    min-height: 36px;
     margin: 0;
     padding: 0 12px;
     font-size: 14px;
@@ -400,9 +405,9 @@ body.has-admin-confirm-modal {
     }
 
     #seer-external-link-modal .admin-confirm-actions > * {
-        flex: 1;
-        width: auto;
-        min-width: 0;
+        flex: none;
+        width: 84px;
+        min-width: 84px;
     }
 }
 

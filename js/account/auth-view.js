@@ -1,4 +1,4 @@
-export function createAuthView({ login, onAuthenticated, document = globalThis.document }) {
+export function createAuthView({ login, onAuthenticated, document = globalThis.document, window = globalThis.window }) {
     const loginModal = document.getElementById("login-modal");
     const emailInput = document.getElementById("email");
     const passwordInput = document.getElementById("password");
@@ -16,9 +16,10 @@ export function createAuthView({ login, onAuthenticated, document = globalThis.d
         loginModal.classList.add("is-closing");
         loginMessage.textContent = "";
         window.setTimeout(() => {
+            if (!loginModal.classList.contains("is-closing")) return;
             loginModal.hidden = true;
             loginModal.classList.remove("is-closing");
-        }, 180);
+        }, window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 180);
     }
     document.getElementById("about-login-trigger").addEventListener("click", openLoginModal);
     document.getElementById("login-close").addEventListener("click", closeLoginModal);
@@ -41,8 +42,7 @@ export function createAuthView({ login, onAuthenticated, document = globalThis.d
             const { error } = await login(email, password);
             if (error) throw error;
             await onAuthenticated();
-            loginModal.classList.remove("is-closing");
-            loginModal.hidden = true;
+            closeLoginModal();
             passwordInput.value = "";
             loginMessage.textContent = "";
         } catch (error) {

@@ -4,20 +4,25 @@ import { readFileSync } from 'node:fs';
 import { createAuthView } from '../js/account/auth-view.js';
 
 function setup(login = async () => ({ error: null })) {
+    const timers = [];
     const nodes = new Map(['login-modal', 'email', 'password', 'login-message', 'login-button', 'about-login-trigger', 'login-close']
         .map(id => [id, {
             hidden: true, value: '', textContent: '', disabled: false, events: {},
-            classList: { add() {}, remove() {}, contains: () => false },
+            classList: (() => {
+                const classes = new Set();
+                return { add: value => classes.add(value), remove: value => classes.delete(value), contains: value => classes.has(value) };
+            })(),
             addEventListener(name, callback) { this.events[name] = callback; },
             focus() { this.focused = true; }
         }]));
     const calls = [];
     const view = createAuthView({
         document: { getElementById(id) { assert.ok(nodes.has(id), `Unexpected auth control: ${id}`); return nodes.get(id); } },
+        window: { setTimeout: callback => timers.push(callback), matchMedia: () => ({ matches: false }) },
         login: async (...args) => { calls.push(args); return login(...args); },
         onAuthenticated: async () => { calls.push('authenticated'); }
     });
-    return { get: id => nodes.get(id), calls, view };
+    return { get: id => nodes.get(id), calls, view, finishAnimation: () => timers.splice(0).forEach(callback => callback()) };
 }
 
 test('staff login opens and authenticates using only email and password', async () => {
@@ -29,9 +34,21 @@ test('staff login opens and authenticates using only email and password', async 
     ui.get('password').value = 'secret';
     await ui.get('login-button').events.click();
     assert.deepEqual(ui.calls, [['staff@example.com', 'secret'], 'authenticated']);
+    assert.equal(ui.get('login-modal').hidden, false, 'successful login preserves the exit animation');
+    assert.equal(ui.get('login-modal').classList.contains('is-closing'), true);
+    ui.finishAnimation();
     assert.equal(ui.get('login-modal').hidden, true);
     assert.equal(ui.get('password').value, '');
     assert.equal(ui.get('login-button').disabled, false);
+});
+
+test('reopening the login modal cancels the previous exit', () => {
+    const ui = setup();
+    ui.view.openLoginModal();
+    ui.view.closeLoginModal();
+    ui.view.openLoginModal();
+    ui.finishAnimation();
+    assert.equal(ui.get('login-modal').hidden, false);
 });
 
 test('empty credentials do not submit and failed login remains retryable', async () => {

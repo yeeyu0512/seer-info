@@ -1,3 +1,4 @@
+import { openDialog, closeDialog } from "../shared/dialog-motion.js";
 import { enableDialogBackdropClose } from "../shared/dialog-backdrop.js";
 import { abnormalUrl, filterAbnormals, validateAbnormalCatalog } from "../seer-abnormal.js";
 
@@ -130,15 +131,15 @@ export function initHomeSearch({ simplified, traditional }) {
     syncScope();
 
     opener.addEventListener("click", () => {
-        dialog.showModal();
+        openDialog(dialog);
         input.focus();
     });
-    document.getElementById("home-search-close").addEventListener("click", () => dialog.close());
+    document.getElementById("home-search-close").addEventListener("click", () => closeDialog(dialog));
     dialog.addEventListener("keydown", event => {
         if (event.key !== "Escape") return;
         event.preventDefault();
         event.stopPropagation();
-        dialog.close();
+        closeDialog(dialog);
     });
     dialog.addEventListener("close", () => {
         closeScope({ focus: false });
@@ -201,7 +202,7 @@ export function initHomeSearch({ simplified, traditional }) {
                 button.type = "button";
                 button.textContent = tool.name;
                 button.addEventListener("click", () => {
-                    dialog.close();
+                    closeDialog(dialog);
                     document.querySelector(`.site-header ${tool.selector}`).click();
                 });
                 li.append(button); list.append(li);

@@ -1,3 +1,4 @@
+import { openDialog, closeDialog } from "./shared/dialog-motion.js";
 import { createShareUrl, resolveShareConfig, createShareRestorer } from "./training/share-config.js";
 import {trainingDescription as description, trainingSource} from "./training/model.js";
 import { fillLearningEffort } from "./training/learning-effort.js";
@@ -119,10 +120,10 @@ export function initSeerTraining(root, { fetchSeerJson, convertToTraditionalChin
     petDialog.innerHTML = `<div class="training-dialog-heading"><div><h3 id="training-pet-dialog-title">選擇精靈</h3><p>搜尋名稱或 ID，選擇要培養的精靈。</p></div><button type="button" class="seer-pet-info-close" data-pet-dialog-close aria-label="關閉精靈選擇">×</button></div><div data-training-pet-picker></div>`;
     root.append(petDialog);
     let petInvoker;
-    const openPet = event => { petInvoker = event.currentTarget; petDialog.showModal(); petPicker.open(); petDialog.querySelector("input[type=search]").focus(); };
+    const openPet = event => { petInvoker = event.currentTarget; openDialog(petDialog); petPicker.open(); petDialog.querySelector("input[type=search]").focus(); };
     query("[data-art-placeholder]").addEventListener("click",openPet);
     query("[data-pet-select]").addEventListener("click",openPet);
-    query("[data-pet-dialog-close]").addEventListener("click",() => petDialog.close());
+    query("[data-pet-dialog-close]").addEventListener("click",() => closeDialog(petDialog));
     petDialog.addEventListener("close",() => { const target = petInvoker?.hidden ? query("[data-pet-select]") : petInvoker; target?.focus({preventScroll:true}); });
     const choiceWindows = initTrainingSelectors(root,{fetchJson:fetchCached,traditional,simplified,getPet:() => selected.get("pet"),onSuit:record => choose("suit",record),onSkin:skin => { selectedSkin = skin; updateAppearance(); },images});
     query("[data-suit-select]").addEventListener("click",event => choiceWindows.open("suit",event.currentTarget));
@@ -222,7 +223,7 @@ export function initSeerTraining(root, { fetchSeerJson, convertToTraditionalChin
             restoring = true;
             try {
                 // Close pending picker requests before replacing the current selections.
-                for (const dialog of root.querySelectorAll("dialog[open]")) dialog.close();
+                for (const dialog of root.querySelectorAll("dialog[open]")) closeDialog(dialog);
                 selected.clear(); suitEyeVersion++; petVersion++;
                 eyeState = "free"; equipmentPickers.setAvailability("eye",true,"");
                 query("[data-suit-select]").textContent = "選擇套裝 ›"; query("[data-suit-remove]").hidden = true;

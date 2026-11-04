@@ -1,3 +1,4 @@
+import { openDialog, closeDialog } from "../shared/dialog-motion.js";
 import {getSharedLookupRepository} from "../lookup/repository.js";
 import {createLookupBrowseController} from "../lookup/browse-controller.js";
 import {getSeerServerSettings} from "../seer-server-settings.js";
@@ -45,7 +46,7 @@ export function initTrainingPetPicker(dialog,{fetchSeerJson,fetchCached,traditio
             button.addEventListener("click",async () => {
                 const request = ++version; button.disabled = true; status.textContent = "正在載入精靈資料…";
                 browse.resetBrowseState(); browse.clearSeerBrowseSentinel();
-                try { const record = await repository.fetchSeerPetDetails(pet.id); if (request === version && dialog.open) {onChoose(record); dialog.close();} }
+                try { const record = await repository.fetchSeerPetDetails(pet.id); if (request === version && dialog.open) {onChoose(record); closeDialog(dialog);} }
                 catch {if (request === version) {status.textContent = "精靈資料載入失敗，請重新選擇。"; button.disabled = false;}}
             });
         }
@@ -77,19 +78,19 @@ export function initTrainingPetPicker(dialog,{fetchSeerJson,fetchCached,traditio
             button.classList.toggle("is-active",baseType === type.name); bases.append(button);
         }
         for (const type of getRelatedTypeOptions(baseType,traditional(typeSearch.value),types)) {
-            const button = typeButton(type,() => {typeId = type.id; category = type.isDouble ? "double" : "single"; updateTypeTrigger(); typeDialog.close(); refresh();});
+            const button = typeButton(type,() => {typeId = type.id; category = type.isDouble ? "double" : "single"; updateTypeTrigger(); closeDialog(typeDialog); refresh();});
             button.classList.toggle("is-active",typeId === type.id); options.append(button);
         }
         typeDialog.querySelector("#training-pet-type-options-title").textContent = typeSearch.value ? "搜尋結果" : baseType ? `${baseType}系相關屬性` : "請選擇單屬性";
     }
-    const openTypePicker = () => {typeDialog.showModal(); typeSearch.focus();};
+    const openTypePicker = () => {openDialog(typeDialog); typeSearch.focus();};
     const typeTrigger = query(".seer-pet-type-trigger-card");
     typeTrigger.addEventListener("click",openTypePicker);
     typeTrigger.addEventListener("keydown",event => {if (event.target === typeTrigger && ["Enter"," "].includes(event.key)) {event.preventDefault(); openTypePicker();}});
-    typeDialog.querySelector("#training-pet-type-close").addEventListener("click",() => typeDialog.close());
+    typeDialog.querySelector("#training-pet-type-close").addEventListener("click",() => closeDialog(typeDialog));
     typeDialog.addEventListener("close",() => {if (dialog.open) query("[data-type-open]").focus();});
     typeSearch.addEventListener("input",renderTypes);
-    for (const button of typeDialog.querySelectorAll("[data-pet-type-category]")) button.addEventListener("click",() => {typeId = null; category = button.dataset.petTypeCategory; updateTypeTrigger(); typeDialog.close(); refresh();});
+    for (const button of typeDialog.querySelectorAll("[data-pet-type-category]")) button.addEventListener("click",() => {typeId = null; category = button.dataset.petTypeCategory; updateTypeTrigger(); closeDialog(typeDialog); refresh();});
     async function refresh() {
         clearTimeout(timer); browse.resetBrowseState(); browse.clearSeerBrowseSentinel(); const request = ++version;
         if (method === "type") return browse.startSeerPetTypeFilter(request);
@@ -115,6 +116,6 @@ export function initTrainingPetPicker(dialog,{fetchSeerJson,fetchCached,traditio
     input.addEventListener("compositionstart",() => {composing = true; version++; clearTimeout(timer);});
     input.addEventListener("compositionend",() => {composing = false; input.dispatchEvent(new Event("input"));});
     host.querySelector("form").addEventListener("submit",event => {event.preventDefault(); if (!composing) refresh();});
-    dialog.addEventListener("close",() => {version++; clearTimeout(timer); browse.resetBrowseState(); browse.clearSeerBrowseSentinel(); if (typeDialog.open) typeDialog.close();});
+    dialog.addEventListener("close",() => {version++; clearTimeout(timer); browse.resetBrowseState(); browse.clearSeerBrowseSentinel(); if (typeDialog.open) closeDialog(typeDialog);});
     return {open:refresh};
 }

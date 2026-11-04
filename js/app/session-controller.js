@@ -47,8 +47,14 @@ export function createSessionController({
         revision += 1;
         renderAccess(false);
         const modal = document.getElementById("login-modal");
-        modal.hidden = true;
-        modal.classList.remove("is-closing");
+        if (!modal.hidden) {
+            modal.classList.add("is-closing");
+            setTimeout(() => {
+                if (!modal.classList.contains("is-closing")) return;
+                modal.hidden = true;
+                modal.classList.remove("is-closing");
+            }, globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? 0 : 180);
+        }
         document.getElementById("email").value = "";
         document.getElementById("password").value = "";
         document.getElementById("login-message").textContent = "";

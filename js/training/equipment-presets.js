@@ -1,3 +1,4 @@
+import { openDialog, closeDialog } from "../shared/dialog-motion.js";
 export const EQUIPMENT_PRESETS = Object.freeze([
     {name:"晨曦神話",items:[
         {kind:"suit",resource:"suit",id:447,name:"晨曦之星戰甲"},
@@ -46,12 +47,12 @@ export function initEquipmentPresets(root,{fetchCached,apply}) {
         button.append(info,action); grid.append(button);
         button.addEventListener("click",async () => {
             const request = ++version; button.disabled = true; status.textContent = "正在載入組合裝備…";
-            try {const records = await loadEquipmentPreset(preset,fetchCached); if (request !== version || !dialog.open) return; await apply(records,() => request === version && dialog.open); if (request === version && dialog.open) dialog.close();}
+            try {const records = await loadEquipmentPreset(preset,fetchCached); if (request !== version || !dialog.open) return; await apply(records,() => request === version && dialog.open); if (request === version && dialog.open) closeDialog(dialog);}
             catch {if (request === version && dialog.open) status.textContent = "組合資料載入失敗，原本裝備保持不變，請再試一次。";}
             finally {button.disabled = false;}
         });
     }
-    trigger.addEventListener("click",() => {version++; status.textContent = ""; dialog.showModal();});
-    dialog.querySelector(".seer-pet-info-close").addEventListener("click",() => dialog.close());
+    trigger.addEventListener("click",() => {version++; status.textContent = ""; openDialog(dialog);});
+    dialog.querySelector(".seer-pet-info-close").addEventListener("click",() => closeDialog(dialog));
     dialog.addEventListener("close",() => {version++; trigger.focus({preventScroll:true});});
 }

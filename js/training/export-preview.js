@@ -1,3 +1,4 @@
+import { openDialog, closeDialog } from "../shared/dialog-motion.js";
 import {createTrainingImage, copyTrainingImage, downloadTrainingImage} from '../seer-training-export.js';
 
 export function initTrainingExportPreview(root) {
@@ -29,7 +30,7 @@ export function initTrainingExportPreview(root) {
             status.textContent=error.message || '圖片產生失敗，請再試一次。';retry.hidden=false;
         }
     }
-    dialog.querySelector('[data-export-close]').addEventListener('click',()=>dialog.close());
+    dialog.querySelector('[data-export-close]').addEventListener('click',()=>closeDialog(dialog));
     dialog.addEventListener('close',()=>{version++;release();data=null;root.querySelector('[data-export-image]').focus({preventScroll:true});});
     retry.addEventListener('click',generate);
     background.addEventListener('change',()=>{if(data){data={...data,background:background.value};generate();}});
@@ -45,5 +46,5 @@ export function initTrainingExportPreview(root) {
             if(request===version && dialog.open) status.textContent=copying && error.name==='NotAllowedError' ? '瀏覽器未允許複製圖片，請允許剪貼簿存取後重試，或改用下載圖片。' : error.message || '圖片匯出失敗，請再試一次。';
         } finally {if(request===version && dialog.open) setDisabled(false);}
     });
-    return {open(snapshot){data={...snapshot,background:background.value};dialog.showModal();generate();}};
+    return {open(snapshot){data={...snapshot,background:background.value};openDialog(dialog);generate();}};
 }

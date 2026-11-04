@@ -1,3 +1,4 @@
+import { closeDialog } from "./dialog-motion.js";
 // A selection drag can produce a click on the dialog even when it began in an input.
 // Only a primary-pointer click that starts and finishes on the backdrop dismisses it.
 export function enableDialogBackdropClose(dialog) {
@@ -22,6 +23,6 @@ export function enableDialogBackdropClose(dialog) {
         const dismiss = press && event.button === 0 && event.detail > 0
             && outside(event) && distance(event) <= 8;
         press = null;
-        if (dismiss) dialog.close();
+        if (dismiss) closeDialog(dialog);
     });
 }

@@ -1,3 +1,4 @@
+import { openDialog, closeDialog } from "./shared/dialog-motion.js";
 import { enableDialogBackdropClose } from './shared/dialog-backdrop.js';
 import { createChineseConverters } from './shared/chinese.js';
 import { Converter } from 'https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/esm/full.js';
@@ -10,11 +11,11 @@ let lastTrigger;
 document.querySelectorAll('[data-open-player-lookup]').forEach(trigger => trigger.addEventListener('click', () => {
     lastTrigger = trigger;
     import('./player-lookup.js').then(module => module.configurePlayerNameConverters(nameConverters));
-    dialog.showModal();
+    openDialog(dialog);
     dialog.dispatchEvent(new Event('player-lookup-open'));
     resizeLookup();
 }));
-document.getElementById('close-player-lookup').addEventListener('click', () => dialog.close());
+document.getElementById('close-player-lookup').addEventListener('click', () => closeDialog(dialog));
 enableDialogBackdropClose(dialog);
 dialog.addEventListener('close', () => {
     const menu = lastTrigger?.closest('details');
@@ -32,5 +33,5 @@ const contentObserver = new ResizeObserver(resizeLookup);
 contentObserver.observe(card);
 
 const explanation = document.getElementById('lookup-explanation');
-document.getElementById('open-lookup-explanation').addEventListener('click', () => explanation.showModal());
-document.getElementById('close-lookup-explanation').addEventListener('click', () => explanation.close());
+document.getElementById('open-lookup-explanation').addEventListener('click', () => openDialog(explanation));
+document.getElementById('close-lookup-explanation').addEventListener('click', () => closeDialog(explanation));

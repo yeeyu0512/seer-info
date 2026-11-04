@@ -1,3 +1,4 @@
+import { openDialog, closeDialog } from "../shared/dialog-motion.js";
 export function initTrainingSearchPickers({root, query, selected, name, simplified, fetchCached, choose, recalculate, description}) {
     const API = "https://api.seerapi.com/v1/";
     const triggers = new Map();
@@ -22,11 +23,11 @@ export function initTrainingSearchPickers({root, query, selected, name, simplifi
         availability.set(id,(enabled,message,retryCheck) => {
             trigger.disabled = !enabled; note.hidden = !message; note.textContent = message || "";
             retry.hidden = !retryCheck; retry.onclick = retryCheck || null;
-            if (!enabled && dialog.open) dialog.close();
+            if (!enabled && dialog.open) closeDialog(dialog);
         });
-        trigger.addEventListener("click",() => {input.value = ""; grid.replaceChildren(); status.textContent = `輸入${label}名稱或 ID 查找。`; dialog.showModal(); input.focus();});
+        trigger.addEventListener("click",() => {input.value = ""; grid.replaceChildren(); status.textContent = `輸入${label}名稱或 ID 查找。`; openDialog(dialog); input.focus();});
         remove.addEventListener("click",() => {selected.delete(id); query(`[data-effect="${id}"]`).textContent = ""; updateTrigger(); recalculate();});
-        dialog.querySelector("[data-equipment-close]").addEventListener("click",() => dialog.close());
+        dialog.querySelector("[data-equipment-close]").addEventListener("click",() => closeDialog(dialog));
         dialog.addEventListener("close",() => {version++; clearTimeout(timer); trigger.focus({preventScroll:true});});
         input.addEventListener("input",() => {version++; clearTimeout(timer); grid.replaceChildren(); status.textContent = ""; if (input.value.trim() && !composing) timer = setTimeout(search,400);});
         input.addEventListener("compositionstart",() => {composing = true; version++; clearTimeout(timer);});
@@ -46,7 +47,7 @@ export function initTrainingSearchPickers({root, query, selected, name, simplifi
                     const info = document.createElement("span"), title = document.createElement("strong"), meta = document.createElement("small"), detail = document.createElement("p");
                     title.textContent = name(record); meta.textContent = `#${record.id}`; detail.textContent = description(record,id);
                     info.append(title,meta,detail); button.append(info); grid.append(button);
-                    button.addEventListener("click",() => {version++; choose(id,record); updateTrigger(); dialog.close();});
+                    button.addEventListener("click",() => {version++; choose(id,record); updateTrigger(); closeDialog(dialog);});
                 }
             } catch(error) {if (request === version && dialog.open) status.textContent = /404/.test(error.message) ? `找不到此編號的${label}，請確認 ID。` : "搜尋失敗，請稍後再試或改用 ID。";}
         }

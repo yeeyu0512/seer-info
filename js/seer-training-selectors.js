@@ -1,3 +1,4 @@
+import { openDialog, closeDialog } from "./shared/dialog-motion.js";
 const API = "https://api.seerapi.com/v1/";
 import { COMMON_SUIT_IDS as COMMON_SUITS } from "./data/suit-catalog.js";
 
@@ -41,7 +42,7 @@ export function initTrainingSelectors(root,{fetchJson,traditional,simplified,get
         grid.replaceChildren();
         if (kind === "skin" && page === 1) {
             const original = document.createElement("button"); original.type = "button"; original.className = "training-choice-card training-original-skin"; original.textContent = "原始外觀";
-            original.addEventListener("click",() => { onSkin(null); dialog.close(); }); grid.append(original);
+            original.addEventListener("click",() => { onSkin(null); closeDialog(dialog); }); grid.append(original);
         }
         for (const record of filtered.slice((page-1)*8,page*8)) {
             const button = document.createElement("button"); button.type = "button"; button.className = "training-choice-card";
@@ -51,7 +52,7 @@ export function initTrainingSelectors(root,{fetchJson,traditional,simplified,get
             if (kind === "suit") { detail.textContent = traditional(record.bonus?.desc || "無能力加成"); info.append(detail); }
             else { const image = document.createElement("img"); image.width = image.height = 64; image.loading = "lazy"; image.alt = ""; button.append(image); button.append(info); grid.append(button); images.set(image,{id:skinImageId(record),skin:record}); }
             button.append(info); grid.append(button);
-            button.addEventListener("click",() => { if (kind === "suit") onSuit(record); else onSkin(record); dialog.close(); });
+            button.addEventListener("click",() => { if (kind === "suit") onSuit(record); else onSkin(record); closeDialog(dialog); });
         }
         query("nav span").textContent = `${page} / ${pages}`;
         query("[data-choice-prev]").disabled = page === 1; query("[data-choice-next]").disabled = page === pages;
@@ -64,7 +65,7 @@ export function initTrainingSelectors(root,{fetchJson,traditional,simplified,get
         try { const records = await catalogs.get(resource); if (request === version && dialog.open) render(records); }
         catch(error) { if (request === version && dialog.open) { query("[data-choice-status]").textContent = "資料載入失敗，請重試。"; query("[data-choice-retry]").hidden = false; } }
     }
-    query("[data-choice-close]").addEventListener("click",() => dialog.close());
+    query("[data-choice-close]").addEventListener("click",() => closeDialog(dialog));
     dialog.addEventListener("close",() => { version++; grid.replaceChildren(); invoker?.focus({preventScroll:true}); });
     search.addEventListener("input",() => { page = 1; load(); }); type.addEventListener("change",() => { page = 1; load(); });
     query("[data-choice-prev]").addEventListener("click",() => { page--; load(); }); query("[data-choice-next]").addEventListener("click",() => { page++; load(); }); query("[data-choice-retry]").addEventListener("click",load);
@@ -73,6 +74,6 @@ export function initTrainingSelectors(root,{fetchJson,traditional,simplified,get
         kind = nextKind; invoker = button; page = 1; search.value = ""; type.hidden = kind !== "suit";
         query("#training-choice-title").textContent = kind === "skin" ? `${traditional(getPet().name)} · 關聯皮膚` : "選擇套裝";
         query("[data-choice-caption]").textContent = kind === "skin" ? "替精靈換上喜歡的外觀。" : "選擇套裝，查看效果並套用能力加成。";
-        grid.replaceChildren(); dialog.showModal(); search.focus(); load();
+        grid.replaceChildren(); openDialog(dialog); search.focus(); load();
     } };
 }

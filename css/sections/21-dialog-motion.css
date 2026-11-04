@@ -1,0 +1,21 @@
+/* Native dialogs share the existing overlay dialogs' entrance/exit motion. */
+dialog.dialog-motion[open] {
+    animation: modal-content-in .22s cubic-bezier(.2, .8, .2, 1) both;
+}
+dialog.dialog-motion[open]::backdrop {
+    animation: modal-backdrop-in .18s ease-out both;
+}
+dialog.dialog-motion[open].is-closing {
+    animation: modal-content-out .16s ease-in both;
+}
+dialog.dialog-motion[open].is-closing::backdrop {
+    animation: modal-backdrop-out .18s ease-in both;
+}
+@media (prefers-reduced-motion: reduce) {
+    dialog.dialog-motion[open],
+    dialog.dialog-motion[open]::backdrop,
+    dialog.dialog-motion[open].is-closing,
+    dialog.dialog-motion[open].is-closing::backdrop {
+        animation: none;
+    }
+}

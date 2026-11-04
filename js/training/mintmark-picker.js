@@ -1,3 +1,4 @@
+import { openDialog, closeDialog } from "../shared/dialog-motion.js";
 import { TRAINING_STATS as STATS } from "../seer-training-core.js";
 import { fetchMintmarkCatalog, fetchMintmarkSeries, mintmarkCornerCount, selectMintmarks } from "../data/mintmark-catalog.js";
 import { observeMintmarkImage, unobserveMintmarkImages } from "../seer-mintmark-images.js";
@@ -48,7 +49,7 @@ export function createTrainingMintmarkPicker({root, query, selected, name, tradi
                     query("[data-mint-dialog-status]").textContent = "每隻精靈最多裝備 2 個同系列刻印，請改選其他系列。";
                     return;
                 }
-                choose(`mint${mintSlot}`,record); mintDialog.close();
+                choose(`mint${mintSlot}`,record); closeDialog(mintDialog);
             });
         }
         query(".training-dialog-pagination span").textContent = `${mintPage} / ${pages}`;
@@ -72,12 +73,12 @@ export function createTrainingMintmarkPicker({root, query, selected, name, tradi
     for (const button of root.querySelectorAll("[data-mint-slot]")) button.addEventListener("click",() => {
         mintSlot = Number(button.dataset.mintSlot); slotInvoker = button; mintPage = 1;
         query("#training-mint-title").textContent = `選擇刻印 ${mintSlot+1}`;
-        mintDialog.showModal(); mintSearch.focus(); loadMintChoices();
+        openDialog(mintDialog); mintSearch.focus(); loadMintChoices();
     });
     for (const button of root.querySelectorAll("[data-mint-clear]")) button.addEventListener("click",() => {
         const index = Number(button.dataset.mintClear); selected.delete(`mint${index}`); renderMintSlot(index); recalculate();
     });
-    query("[data-mint-dialog-close]").addEventListener("click",() => mintDialog.close());
+    query("[data-mint-dialog-close]").addEventListener("click",() => closeDialog(mintDialog));
     mintDialog.addEventListener("close",() => { unobserveMintmarkImages(mintGrid); mintGrid.replaceChildren(); slotInvoker?.focus({preventScroll:true}); });
     for (const element of [mintSearch,mintCorners,mintSeries,mintSort]) element.addEventListener(element === mintSearch ? "input" : "change",() => { mintPage = 1; renderMintChoices(); });
     query("[data-mint-prev]").addEventListener("click",() => { mintPage--; renderMintChoices(); });

@@ -1,3 +1,4 @@
+import { openDialog, closeDialog } from "../shared/dialog-motion.js";
 import { ATTACK_DEFAULTS, DEFENSE_DEFAULTS, calculateAttack, calculateDefense } from "./core.js";
 import { ATTACK_SUITS, DEFENSE_SUITS, EFFECTS, MODEL, REFERENCE } from "./models.js";
 import { initDamageTypePicker } from "./type-picker.js";
@@ -138,8 +139,8 @@ export function initDamageCalculator(root) {
             </div>
         </dialog>`;
     const referenceDialog = root.querySelector("#damage-reference-dialog");
-    root.querySelector("[data-reference-open]").addEventListener("click", () => referenceDialog.showModal());
-    root.querySelector("[data-reference-close]").addEventListener("click", () => referenceDialog.close());
+    root.querySelector("[data-reference-open]").addEventListener("click", () => openDialog(referenceDialog));
+    root.querySelector("[data-reference-close]").addEventListener("click", () => closeDialog(referenceDialog));
     const tabs = [...root.querySelectorAll("[data-damage-tab]")];
     let wizardStep = 1;
     const wizardSteps = [...root.querySelectorAll("[data-wizard-step]")];

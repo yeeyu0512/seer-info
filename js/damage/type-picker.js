@@ -1,3 +1,4 @@
+import { openDialog, closeDialog } from "../shared/dialog-motion.js";
 import { typePickerMethods } from "../types/picker-view.js";
 import { createTypeLabel } from "../types/labels.js";
 import { SEER_TYPE_DATA } from "../seer-type-data.js";
@@ -32,7 +33,7 @@ export function initDamageTypePicker(root, onChange) {
         renderPickerOptions: typePickerMethods.renderPickerOptions,
         setVsTypeA(id) { select("vsA", id); },
         setVsTypeB(id) { select("vsB", id); },
-        closePickerModal() { dialog.close(); },
+        closePickerModal() { closeDialog(dialog); },
     };
     function select(side, id) {
         picker[side === "vsA" ? "vsTypeAId" : "vsTypeBId"] = id;
@@ -54,14 +55,14 @@ export function initDamageTypePicker(root, onChange) {
         query("#damage-type-modal-title").textContent = side === "vsA" ? "選擇我方屬性" : "選擇 BOSS 屬性";
         picker.renderPickerBases();
         picker.renderPickerOptions();
-        dialog.showModal();
+        openDialog(dialog);
         picker.pickerSearchInput.focus();
     });
     picker.pickerSearchInput.addEventListener("input", () => {
         picker.pickerSearchQuery = picker.pickerSearchInput.value;
         picker.renderPickerOptions();
     });
-    query("#damage-type-modal-close").addEventListener("click", () => dialog.close());
-    dialog.addEventListener("click", event => { if (event.target === dialog) dialog.close(); });
+    query("#damage-type-modal-close").addEventListener("click", () => closeDialog(dialog));
+    dialog.addEventListener("click", event => { if (event.target === dialog) closeDialog(dialog); });
     dialog.addEventListener("close", () => opener?.focus({ preventScroll: true }));
 }

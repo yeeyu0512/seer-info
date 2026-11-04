@@ -923,7 +923,6 @@
 
 .home-shortcuts button[data-home-target="abnormal-encyclopedia-section"] .home-key-icon { color: #a7cde0; }
 .home-gem-dialog { width: min(420px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); padding: 24px; text-align: center; }
-.home-gem-dialog[open] { animation: home-gem-appear .2s ease-out; }
 .home-gem-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; text-align: left; }
 .home-gem-dialog h2 { margin: 0; font-size: 20px; }
 .home-gem-status { padding: 4px 10px; border: 1px solid rgba(232,188,89,.3); border-radius: 6px; background: rgba(232,188,89,.09); color: #e8c77e; font-size: 12px; }
@@ -937,11 +936,6 @@
     .home-gem-art { padding: 14px; }
     .home-gem-art img { max-width: min(190px, 100%); }
 }
-@keyframes home-gem-appear {
-    from { opacity: 0; transform: translateY(10px) scale(.98); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-}
-@media (prefers-reduced-motion: reduce) { .home-gem-dialog[open] { animation: none; } }
 
 @media (prefers-reduced-motion: reduce) {
     #home-section .home-shortcuts button {

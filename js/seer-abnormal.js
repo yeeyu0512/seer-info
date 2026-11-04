@@ -1,3 +1,4 @@
+import { openDialog, closeDialog } from "./shared/dialog-motion.js";
 import { enableDialogBackdropClose } from "./shared/dialog-backdrop.js";
 
 export const ABNORMAL_FILTERS = ["全部", "控制", "弱化", "附屬", "限制", "衍化", "其他"];
@@ -92,16 +93,16 @@ export function initSeerAbnormal(section, { normalize = value => value, fetchImp
         activeId = id;
         renderDetail(item);
         if (updateUrl) window.history.pushState(null, "", abnormalUrl(id));
-        if (!dialog.open) dialog.showModal();
+        if (!dialog.open) openDialog(dialog);
         dialog.scrollTop = 0;
         detail.querySelector("h2").focus({ preventScroll: true });
         return true;
     }
     function closeSilently() {
         activeId = null;
-        if (dialog.open) dialog.close();
+        if (dialog.open) closeDialog(dialog);
     }
-    closeButton.addEventListener("click", () => dialog.close());
+    closeButton.addEventListener("click", () => closeDialog(dialog));
     enableDialogBackdropClose(dialog);
     dialog.addEventListener("close", () => {
         if (activeId === null || dialog.open) return;

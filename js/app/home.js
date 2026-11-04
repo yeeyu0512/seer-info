@@ -1,3 +1,4 @@
+import { openDialog, closeDialog } from "../shared/dialog-motion.js";
 import { initHomeCarousel } from "./home-carousel.js";
 import { initAbout } from "./about.js";
 import { enableDialogBackdropClose } from "../shared/dialog-backdrop.js";
@@ -33,13 +34,13 @@ export function initHome({ seerLookup, activateTab }) {
     loadChangelog(home);
     const botGuide = document.getElementById("bot-guide");
     const botGuideOpener = document.getElementById("open-bot-guide");
-    botGuideOpener.addEventListener("click", () => botGuide.showModal());
-    document.getElementById("close-bot-guide").addEventListener("click", () => botGuide.close());
+    botGuideOpener.addEventListener("click", () => openDialog(botGuide));
+    document.getElementById("close-bot-guide").addEventListener("click", () => closeDialog(botGuide));
     botGuide.addEventListener("close", () => botGuideOpener.focus({ preventScroll: true }));
     const gemDialog = document.getElementById("home-gem-dialog");
     const gemOpener = document.getElementById("home-gem-catalog");
-    gemOpener.addEventListener("click", () => gemDialog.showModal());
-    document.getElementById("home-gem-close").addEventListener("click", () => gemDialog.close());
+    gemOpener.addEventListener("click", () => openDialog(gemDialog));
+    document.getElementById("home-gem-close").addEventListener("click", () => closeDialog(gemDialog));
     gemDialog.addEventListener("close", () => gemOpener.focus({ preventScroll: true }));
     enableDialogBackdropClose(gemDialog);
     document.querySelector(".site-header .logo").addEventListener("click", (event) => {
@@ -109,8 +110,8 @@ async function loadChangelog(home) {
     }
 
     // 開啟與關閉完整更新紀錄
-    openButton.addEventListener("click", () => dialog.showModal());
-    closeButton.addEventListener("click", () => dialog.close());
+    openButton.addEventListener("click", () => openDialog(dialog));
+    closeButton.addEventListener("click", () => closeDialog(dialog));
 
     function appendDetails(parent, values, forceList = false) {
         if (!Array.isArray(values)) return;

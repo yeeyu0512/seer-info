@@ -1,3 +1,4 @@
+import { openDialog, closeDialog } from "./shared/dialog-motion.js";
 import { selectMintmarks } from "./data/mintmark-catalog.js";
 export { mintmarkCornerCount, selectMintmarks, fetchMintmarkSeries, fetchMintmarkCatalog } from "./data/mintmark-catalog.js";
 import { createMintmarkSeriesSearch } from "./data/mintmark-series-search.js";
@@ -140,7 +141,7 @@ export function initSeerMintmarks(root, { convertToTraditionalChinese = value =>
         close.type = "button";
         close.textContent = "×";
         close.setAttribute("aria-label", "關閉刻印詳情");
-        close.addEventListener("click", () => dialog.close());
+        close.addEventListener("click", () => closeDialog(dialog));
         const identity = document.createElement("div");
         identity.className = "seal-detail-identity";
         const meta = document.createElement("p");
@@ -193,7 +194,7 @@ export function initSeerMintmarks(root, { convertToTraditionalChinese = value =>
             links.textContent = [record.pet?.length ? `適用精靈 ID：${record.pet.map(item => item.id).join("、")}` : "", record.skill?.length ? `適用技能 ID：${record.skill.map(item => item.id).join("、")}` : ""].filter(Boolean).join("\n");
             dialog.append(links);
         }
-        if (!dialog.open) dialog.showModal();
+        if (!dialog.open) openDialog(dialog);
     }
     async function openDetail(record) {
         const request = ++detailRequest;
@@ -204,9 +205,9 @@ export function initSeerMintmarks(root, { convertToTraditionalChinese = value =>
         const message = document.createElement('p');
         message.setAttribute('role', 'status'); message.textContent = '正在載入完整刻印資料…';
         const close = document.createElement('button');
-        close.type = 'button'; close.textContent = '關閉'; close.addEventListener('click', () => dialog.close());
+        close.type = 'button'; close.textContent = '關閉'; close.addEventListener('click', () => closeDialog(dialog));
         dialog.append(title, message, close);
-        if (!dialog.open) dialog.showModal();
+        if (!dialog.open) openDialog(dialog);
         try {
             const [complete] = await snapshot.complete([record]);
             if (request === detailRequest && dialog.open) detail(localizeRecords([complete])[0]);
@@ -221,7 +222,7 @@ export function initSeerMintmarks(root, { convertToTraditionalChinese = value =>
     }
     dialog.addEventListener("click", event => {
         const rect = dialog.getBoundingClientRect();
-        if (event.target === dialog && (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom)) dialog.close();
+        if (event.target === dialog && (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom)) closeDialog(dialog);
     });
     dialog.addEventListener("close", () => { detailRequest++; unobserveMintmarkImages(dialog); });
     function render() {

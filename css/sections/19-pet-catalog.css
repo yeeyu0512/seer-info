@@ -573,7 +573,20 @@
     #seer-lookup-section[data-lookup-mode="skin"] #seer-skin-search-tabs { margin-bottom: 0; gap: 4px; }
     #seer-lookup-section[data-lookup-mode="skin"] .seer-skin-search-tab { flex: 1; padding: 6px 4px; font-size: 12px; }
     #seer-lookup-section[data-lookup-mode="skin"] #seer-lookup-form { grid-row: 3; }
-    #seer-lookup-section[data-lookup-mode="skin"] .seer-taiwan-progress-filter { grid-column: 1; grid-row: 4; }
+    #seer-lookup-section[data-lookup-mode="skin"] #seer-pet-search-toolbar .seer-taiwan-progress-filter {
+        grid-column: 1;
+        grid-row: 4;
+        justify-self: start;
+        width: fit-content;
+        height: 36px;
+        min-height: 36px;
+    }
+    #seer-lookup-section[data-lookup-mode="skin"] .seer-lookup-preview-actions button {
+        min-height: 36px;
+        padding: 6px 10px;
+        font-size: 12px;
+        line-height: 1.4;
+    }
     #seer-lookup-section[data-lookup-mode="skin"] #seer-lookup-message { grid-column: 2; grid-row: 4; }
     #seer-lookup-section[data-lookup-mode="skin"][data-pet-presentation="direct"] .seer-taiwan-progress-filter { grid-column: 1; grid-row: 4; }
     #seer-lookup-section[data-lookup-mode="skin"][data-pet-presentation="direct"] #seer-lookup-message { grid-column: 2; grid-row: 4; }
