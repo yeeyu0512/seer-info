@@ -43,6 +43,67 @@ test('reuses the skin 840 resource correction', async () => {
     assert.equal(img.src, head(1400812));
 });
 
+test('failed 1500 skin heads try the matching 1400 head before any name fallback', async () => {
+    const calls = [];
+    const images = createPlayerPetImages({ fetchJson: async url => {
+        calls.push(url);
+        return skin(123, 7, 1500123);
+    } });
+    const img = image();
+    await images.set(img, {id:7, skin_id:123});
+    assert.equal(img.src, head(1500123), 'successful 1500 heads stay unchanged');
+    await img.onerror();
+    assert.equal(img.src, head(1400123));
+    assert.equal(img.hidden, false);
+    assert.equal(calls.length, 1, 'prefix correction needs no extra metadata query');
+});
+
+test('a missing corrected head keeps the original fallback and terminates retries', async () => {
+    const images = createPlayerPetImages({ fetchJson: async url => url.includes('/pet_skin/')
+        ? skin(123, 7, 1500001) : {results:[]} });
+    const img = image();
+    await images.set(img, {id:7, skin_id:123});
+    await img.onerror();
+    assert.equal(img.src, head(1400001), 'leading zeros in the suffix are preserved');
+    await img.onerror();
+    assert.equal(img.src, head(7));
+    await img.onerror();
+    assert.equal(img.hidden, true);
+});
+
+test('old 1500 image failures cannot overwrite a newer player pet image', async () => {
+    const images = createPlayerPetImages({fetchJson:async () => skin(123, 7, 1500123)});
+    const img = image();
+    await images.set(img, {id:7, skin_id:123});
+    const oldError = img.onerror;
+    await images.set(img, {id:8, skin_id:0});
+    await oldError();
+    assert.equal(img.src, head(8));
+});
+
+test('player skin 100512 resolves catalog 512 and retries the real 1500512 head as 1400512', async () => {
+    const calls = [];
+    const images = createPlayerPetImages({fetchJson:async url => {
+        calls.push(url);
+        return skin(512, 3788, 1400512);
+    }});
+    const pet = {id:3788, name:'混元天尊', skin_id:100512};
+    const img = image();
+    await images.set(img, pet);
+    assert.equal(img.src, head(1500512));
+    await img.onerror();
+    assert.equal(img.src, head(1400512));
+    assert.deepEqual(calls, ['https://api.seerapi.com/v1/pet_skin/512']);
+    assert.equal(pet.skin_id, 100512, 'the original player result stays unchanged');
+});
+
+test('variant skin resolution still rejects a mismatched linked pet', async () => {
+    const images = createPlayerPetImages({fetchJson:async () => skin(512, 3789, 1400512)});
+    const img = image();
+    await images.set(img, {id:3788, skin_id:100512});
+    assert.equal(img.src, head(3788));
+});
+
 test('metadata errors and wrong pet or skin IDs preserve the original head', async () => {
     for (const fetchJson of [async () => { throw new Error('offline'); }, async () => skin(123, 8),
         async () => skin(456), async () => null]) {

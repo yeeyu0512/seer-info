@@ -16,11 +16,11 @@ export function createLookupBrowseController({
     getPetSortOrder = () => "id-desc",
     renderSeerPetTypeOptions,
     fetchSeerPetCatalog,
+    fetchSeerSkinEntries,
     getPetTypeCategory,
     matchesTaiwanPetProgress,
     renderSeerPetSearchResults,
     matchesSelectedSkinCategory,
-    loadSeerSkinEntry,
     matchesTaiwanSkinProgress,
     renderSeerSkinSearchResults,
     loadSeerPetSearchTypeDetails,
@@ -49,7 +49,7 @@ export function createLookupBrowseController({
         }, { root: seerLookupResults, rootMargin: "100px" });
 
     async function startLatestSeerBrowse(requestId) {
-            if (requestId !== getLookupRequestId() || seerLookupIdInput.value.trim()) return;
+            if (requestId !== getLookupRequestId() || (getLookupMode() !== "skin" && seerLookupIdInput.value.trim())) return;
             resetSeerPetInfo();
             const isSkinResource = getLookupMode() === "skin" && ["skin", "category"].includes(getSkinSearchMode());
             const resource = isSkinResource ? "pet_skin" : "pet";
@@ -84,6 +84,19 @@ export function createLookupBrowseController({
                 const state = seerBrowseState;
                 state.taiwanSettings = await getTaiwanProgressSettings();
                 if (requestId !== getLookupRequestId()) return;
+                if (isSkinResource) {
+                    const entries = await fetchSeerSkinEntries();
+                    if (requestId !== getLookupRequestId()) return;
+                    const query = getSkinSearchMode() === "category" ? "" : seerLookupIdInput.value.trim();
+                    state.entries = entries
+                        .filter(({ skin, pet }) => matchesSelectedSkinCategory(skin, state.categoryId)
+                            && matchesPetSearchQuery(skin, query, convertToSimplifiedChinese)
+                            && matchesTaiwanSkinProgress(skin, pet, state.taiwanSettings))
+                        .sort((a, b) => Number(b.skin.id) - Number(a.skin.id));
+                    state.nextOffset = 0;
+                    await loadSeerBrowsePage(state, 0);
+                    return;
+                }
                 const firstPage = await fetchSeerJson(
                     `https://api.seerapi.com/v1/${resource}?offset=0&limit=1&expand=true`
                 );
@@ -210,7 +223,7 @@ export function createLookupBrowseController({
             try {
                 await loadSeerBrowsePage(state, offset);
                 if (seerBrowseState !== state || requestId !== getLookupRequestId()) return;
-                seerLookupMessage.textContent = `已載入 ${state.seenIds.size} 筆${state.hasMore ? "；繼續向下捲動載入更早編號" : "，已到最早編號"}。`;
+                if (!state.entries) seerLookupMessage.textContent = `已載入 ${state.seenIds.size} 筆${state.hasMore ? "；繼續向下捲動載入更早編號" : "，已到最早編號"}。`;
             } catch (error) {
                 if (seerBrowseState !== state || requestId !== getLookupRequestId()) return;
                 console.error("Load more Seer browse results error:", error);
@@ -251,43 +264,33 @@ export function createLookupBrowseController({
         }
 
     async function loadSeerBrowsePage(state, offset) {
+            if (state.entries) {
+                const entries = state.entries;
+                if (state.requestId !== getLookupRequestId()) return;
+                renderSeerSkinSearchResults(entries);
+                entries.forEach(({ skin }) => state.seenIds.add(String(skin.id)));
+                state.nextOffset = entries.length;
+                state.hasMore = false;
+                state.loading = false;
+                seerLookupResults.hidden = !state.entries.length;
+                seerLookupMessage.textContent = `共 ${entries.length} 款皮膚`;
+                updateSeerBrowseSentinel(state);
+                return;
+            }
             const page = await fetchSeerJson(
                 `https://api.seerapi.com/v1/${state.resource}?offset=${offset}&limit=${SEER_BROWSE_PAGE_SIZE}&expand=true`
             );
             if (state.requestId !== getLookupRequestId()) return;
             if (!Array.isArray(page.results)) throw new Error("SeerAPI 回傳的分頁資料格式無效。");
 
-            let orderedResults = page.results.slice().sort((first, second) => Number(second.id) - Number(first.id));
-            if (state.resource === "pet_skin") {
-                const matchingSkins = orderedResults.filter((skin) => matchesSelectedSkinCategory(skin, state.categoryId));
-                const pending = matchingSkins.slice();
-                const entries = [];
-                const workers = Array.from({ length: Math.min(4, pending.length) }, async () => {
-                    while (pending.length > 0) {
-                        const skin = pending.shift();
-                        entries.push(await loadSeerSkinEntry(skin));
-                    }
-                });
-                await Promise.all(workers);
-                if (state.requestId !== getLookupRequestId()) return;
-                const uniqueEntries = entries
-                    .filter(({ skin, pet }) =>
-                        !state.seenIds.has(String(skin.id))
-                        && matchesTaiwanSkinProgress(skin, pet, state.taiwanSettings)
-                    )
-                    .sort((first, second) => Number(second.skin.id) - Number(first.skin.id));
-                uniqueEntries.forEach(({ skin }) => state.seenIds.add(String(skin.id)));
-                renderSeerSkinSearchResults(uniqueEntries, true);
-            } else {
-                orderedResults = orderedResults.filter((pet) =>
-                    !state.seenIds.has(String(pet.id))
-                    && matchesTaiwanPetProgress(pet, state.taiwanSettings)
-                );
-                orderedResults.forEach((pet) => state.seenIds.add(String(pet.id)));
-                const typeDetailsById = await loadSeerPetSearchTypeDetails(orderedResults);
-                if (state.requestId !== getLookupRequestId()) return;
-                renderSeerPetSearchResults(orderedResults, typeDetailsById, true);
-            }
+            const orderedResults = page.results.slice()
+                .sort((first, second) => Number(second.id) - Number(first.id))
+                .filter(pet => !state.seenIds.has(String(pet.id))
+                    && matchesTaiwanPetProgress(pet, state.taiwanSettings));
+            orderedResults.forEach(pet => state.seenIds.add(String(pet.id)));
+            const typeDetailsById = await loadSeerPetSearchTypeDetails(orderedResults);
+            if (state.requestId !== getLookupRequestId()) return;
+            renderSeerPetSearchResults(orderedResults, typeDetailsById, true);
 
             state.nextOffset = Math.max(0, offset - SEER_BROWSE_PAGE_SIZE);
             state.hasMore = offset > 0 && page.results.length > 0;

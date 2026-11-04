@@ -1,3 +1,5 @@
+import { mapWithConcurrency } from "../shared/concurrency.js";
+
 const sharedRepositories = new WeakMap();
 export function getSharedLookupRepository(dependencies) {
     const key = dependencies.fetchSeerJson;
@@ -9,16 +11,27 @@ export function getSharedLookupRepository(dependencies) {
 export function createLookupRepository({ fetchSeerJson, convertToTraditionalChinese, convertToSimplifiedChinese }) {
     const elementTypeDetailsCache = new Map();
     const seerPetDetailsCache = new Map();
-    const seerPetInfoCache = new Map();
     const seerSkillDetailsCache = new Map();
     const seerSkillActivationItemCache = new Map();
     const seerSoulmarkDetailsCache = new Map();
     const seerPetAdvanceCache = new Map();
     let seerSkinCatalogPromise = null;
     let seerPetCatalogPromise = null;
+    let seerSkinEntriesPromise = null;
     let seerElementTypeCombinationsPromise = null;
     let seerElementTypeCombinations = [];
     const relatedCaches = { skill: seerSkillDetailsCache, skill_activation_item: seerSkillActivationItemCache, soulmark: seerSoulmarkDetailsCache, pet_advance: seerPetAdvanceCache };
+
+    async function fetchCatalogPage(url) {
+        for (let attempt = 0; ; attempt++) {
+            try {
+                return await fetchSeerJson(url);
+            } catch (error) {
+                if (attempt >= 2 || !(error instanceof TypeError || [429, 500, 502, 503, 504].includes(error.status))) throw error;
+                await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
+            }
+        }
+    }
 
     function fetchSeerElementTypeCombinations() {
         if (!seerElementTypeCombinationsPromise) {
@@ -54,10 +67,10 @@ export function createLookupRepository({ fetchSeerJson, convertToTraditionalChin
         return seerElementTypeCombinationsPromise;
     }
 
-    function fetchSeerPetCatalog(onProgress) {
+    function fetchSeerPetCatalog(onProgress = () => {}) {
         if (!seerPetCatalogPromise) {
             seerPetCatalogPromise = (async () => {
-                const firstPage = await fetchSeerJson(
+                const firstPage = await fetchCatalogPage(
                     "https://api.seerapi.com/v1/pet?offset=0&limit=200&expand=true"
                 );
                 if (!Array.isArray(firstPage.results)) throw new Error("SeerAPI 回傳的精靈清單格式無效。");
@@ -72,7 +85,7 @@ export function createLookupRepository({ fetchSeerJson, convertToTraditionalChin
                 const workers = Array.from({ length: Math.min(4, offsets.length) }, async () => {
                     while (offsets.length > 0) {
                         const offset = offsets.shift();
-                        const page = await fetchSeerJson(
+                        const page = await fetchCatalogPage(
                             `https://api.seerapi.com/v1/pet?offset=${offset}&limit=200&expand=true`
                         );
                         if (!Array.isArray(page.results)) throw new Error("SeerAPI 回傳的精靈分頁格式無效。");
@@ -110,6 +123,8 @@ export function createLookupRepository({ fetchSeerJson, convertToTraditionalChin
         if (!seerSkinCatalogPromise) {
             seerSkinCatalogPromise = (async () => {
                 const skins = [];
+                const seenIds = new Set();
+                let expectedCount = null;
                 let nextUrl = "https://api.seerapi.com/v1/pet_skin?offset=0&limit=200&expand=true";
                 const visitedPageUrls = new Set();
                 while (nextUrl) {
@@ -121,15 +136,33 @@ export function createLookupRepository({ fetchSeerJson, convertToTraditionalChin
                         throw new Error("SeerAPI 回傳重複的皮膚分頁網址。");
                     }
                     visitedPageUrls.add(parsedUrl.href);
-                    const page = await fetchSeerJson(parsedUrl.href);
+                    const page = await fetchCatalogPage(parsedUrl.href);
                     if (!Array.isArray(page.results)) {
                         throw new Error("SeerAPI 回傳的皮膚清單格式無效。");
                     }
-                    skins.push(...page.results);
+                    if (page.count !== undefined) {
+                        if (!Number.isSafeInteger(page.count) || page.count < 0 || page.count > 5000
+                            || (expectedCount !== null && expectedCount !== page.count)) {
+                            throw new Error("SeerAPI 回傳的皮膚筆數無效或已變動，請重試。");
+                        }
+                        expectedCount = page.count;
+                    }
+                    for (const skin of page.results) {
+                        if (!Number.isSafeInteger(Number(skin?.id)) || Number(skin.id) < 1
+                            || !Number.isSafeInteger(Number(skin?.pet?.id)) || Number(skin.pet.id) < 1
+                            || seenIds.has(String(skin.id))) {
+                            throw new Error("SeerAPI 回傳了無效或重複的皮膚資料。");
+                        }
+                        seenIds.add(String(skin.id));
+                        skins.push(skin);
+                    }
                     if (skins.length > 5000) {
                         throw new Error("SeerAPI 皮膚清單超出可處理筆數。");
                     }
                     nextUrl = page.next || null;
+                }
+                if (expectedCount !== null && skins.length !== expectedCount) {
+                    throw new Error(`SeerAPI 皮膚資料不完整（收到 ${skins.length}／${expectedCount} 筆）。`);
                 }
                 return skins;
             })().catch((error) => {
@@ -138,6 +171,28 @@ export function createLookupRepository({ fetchSeerJson, convertToTraditionalChin
             });
         }
         return seerSkinCatalogPromise;
+    }
+
+    function fetchSeerSkinEntries() {
+        if (!seerSkinEntriesPromise) {
+            seerSkinEntriesPromise = Promise.all([fetchSeerSkinCatalog(), fetchSeerPetCatalog()])
+                .then(async ([skins, pets]) => {
+                    const petsById = new Map(pets.map(pet => [String(pet.id), {
+                        id: pet.id, name: pet.name, type: pet.typeId ? { id: pet.typeId } : null
+                    }]));
+                    // Only missing catalog references need an individual request.
+                    const missingIds = [...new Set(skins.map(skin => String(skin.pet.id)))]
+                        .filter(id => !petsById.get(id)?.name);
+                    await mapWithConcurrency(missingIds, 4, async id => {
+                        petsById.set(id, await fetchSeerPetDetails(id));
+                    });
+                    return skins.map(skin => ({ skin, pet: petsById.get(String(skin.pet.id)) }));
+                }).catch(error => {
+                    seerSkinEntriesPromise = null;
+                    throw error;
+                });
+        }
+        return seerSkinEntriesPromise;
     }
 
     function fetchSeerPetDetails(petId) {
@@ -196,17 +251,7 @@ export function createLookupRepository({ fetchSeerJson, convertToTraditionalChin
     }
 
     function fetchSeerPetInfo(petId) {
-        const key = String(petId);
-        let promise = seerPetInfoCache.get(key);
-        if (!promise) {
-            promise = fetchSeerJson(`https://api.seerapi.com/v1/pet/${encodeURIComponent(key)}`)
-                .catch((error) => {
-                    seerPetInfoCache.delete(key);
-                    throw error;
-                });
-            seerPetInfoCache.set(key, promise);
-        }
-        return promise;
+        return fetchSeerPetDetails(petId);
     }
 
     async function fetchSeerPetRelatedRecords(references, resource) {
@@ -250,7 +295,7 @@ export function createLookupRepository({ fetchSeerJson, convertToTraditionalChin
             return { reference, record: id ? recordsById.get(id) : null };
         });
     }
-    return { fetchSeerElementTypeCombinations, fetchSeerPetCatalog, fetchSeerSkinCatalog, fetchSeerPetDetails, fetchSeerPetsByName, fetchSeerElementTypeDetails, fetchSeerPetInfo, fetchSeerPetRelatedRecords,
+    return { fetchSeerElementTypeCombinations, fetchSeerPetCatalog, fetchSeerSkinCatalog, fetchSeerSkinEntries, fetchSeerPetDetails, fetchSeerPetsByName, fetchSeerElementTypeDetails, fetchSeerPetInfo, fetchSeerPetRelatedRecords,
         getElementTypeCombinations: () => seerElementTypeCombinations,
         getCachedElementTypeDetails: id => elementTypeDetailsCache.get(String(id))
     };

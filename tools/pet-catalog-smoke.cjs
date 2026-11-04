@@ -3,6 +3,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const root = process.cwd();
 const pet = id => ({ id, name: `測試精靈 ${id}`, type: { id: id === 27 ? 2 : id === 28 ? 3 : 1 }, base_stats: { hp: 140, atk: 100, def: 100, sp_atk: 130, sp_def: 100, spd: 100, total: 670 }, skill: [{ id: 1, learning_level: 1 }], soulmark: [{ id: 1 }] });
 const pets = Array.from({ length: 28 }, (_, i) => pet(i + 1));
+const skins = Array.from({ length: 24 }, (_, i) => ({ id:817+i, name:`測試皮膚 ${817+i}`, resource_id:1400817+i, pet:{id:1}, category:{id:i%2} }));
 const server = http.createServer((req, res) => {
     const file = path.resolve(root, '.' + decodeURIComponent(new URL(req.url, 'http://localhost').pathname));
     if (!file.startsWith(root + path.sep) || !fs.existsSync(file)) { res.writeHead(404); return res.end(); }
@@ -17,6 +18,7 @@ const server = http.createServer((req, res) => {
         browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });
         const widths = process.env.PET_SMOKE_WIDTHS ? process.env.PET_SMOKE_WIDTHS.split(',').map(Number) : [1440, 1024, 390, 320];
         for (const width of widths) {
+            const apiRequests = [];
             const context = await browser.newContext({ viewport: { width, height: width > 900 ? 640 : width < 350 ? 740 : 844 }, reducedMotion: 'reduce' });
             await context.route('**/*', async route => {
                 const url = new URL(route.request().url());
@@ -24,14 +26,15 @@ const server = http.createServer((req, res) => {
                 if (url.href.includes('opencc-js')) return route.fulfill({ contentType: 'text/javascript', body: 'export const Converter = () => value => value;' });
                 if (url.href.includes('@supabase/supabase-js')) return route.fulfill({ contentType: 'text/javascript', body: `window.supabase={createClient(){return {auth:{getSession:async()=>({data:{session:null}}),onAuthStateChange(){}},from(table){const result={data:table==='seer_server_settings'?{latest_pet_id:8,latest_skin_id:840}:[],error:null};const q=new Proxy({}, {get(t,k){return k==='then'?Promise.resolve(result).then.bind(Promise.resolve(result)):()=>q;}});return q;}}}};` });
                 if (url.hostname === 'api.seerapi.com') {
+                    apiRequests.push(url);
                     const [, resource, id] = url.pathname.split('/').slice(1);
                     const combinations = [{ id: 1, name: '草', is_double: false }, { id: 2, name: '火', is_double: false }, { id: 3, name: '草火', is_double: true }];
                     const records = {
                         pet: pets, element_type_combination: combinations, element_type: combinations,
                         skill: [{ id: 1, name: '測試技能', power: 150, max_pp: 5, type: { id: 1 }, category: { id: 1 }, skill_effect: [{ info: '測試效果。'.repeat(40) }] }],
                         soulmark: [{ id: 1, desc: '回合開始時觸發測試效果。|受到攻擊時判定附加效果。' }],
-                        pet_skin: [{ id: 840, name: '測試皮膚', resource_id: 1400812, pet: { id: 5000 }, category: { id: 0 } }],
-                        pet_skin_category: [{ id: 0, name: '普通' }]
+                        pet_skin: skins,
+                        pet_skin_category: [{ id: 0, name: '普通' }, { id: 1, name: '限定' }]
                     };
                     const list = (records[resource] || []).filter(item => resource !== 'pet' || !url.searchParams.has('name') || item.name.includes(url.searchParams.get('name')));
                     const data = id ? resource === 'pet' ? pet(Number(id)) : list.find(x => String(x.id) === id) || {}
@@ -257,14 +260,67 @@ const server = http.createServer((req, res) => {
             assert.equal(await page.locator('#seer-lookup-description').isVisible(), true);
             await page.locator('#encyclopedia-nav summary').click();await page.locator('#encyclopedia-nav [data-lookup-mode="skin"]').click();
             assert.equal(await lookup.getAttribute('data-lookup-mode'), 'skin');
-            assert.equal(await lookup.evaluate(node => node.classList.contains('panel')), false, 'skin keeps its original two-panel layout');
+            assert.equal(await lookup.evaluate(node => node.classList.contains('panel')), true, 'skin shares the catalog workspace');
             const skinHeader = await page.evaluate(() => ({
                 titleSize: getComputedStyle(document.querySelector('#seer-lookup-title')).fontSize,
                 descriptionSize: getComputedStyle(document.querySelector('#seer-lookup-description')).fontSize,
-                accent: getComputedStyle(document.querySelector('.seer-lookup-panel'), '::before').backgroundImage
+                accent: getComputedStyle(document.querySelector('#seer-lookup-section'), '::before').backgroundImage
             }));
             assert.deepEqual(petHeader, skinHeader, 'pet and skin headers use the same shared typography and accent');
-            assert.equal(await page.locator('#seer-lookup-preview').evaluate(node => node.parentElement.classList.contains('seer-lookup-panel')), true);
+            assert.equal(await page.locator('#seer-lookup-preview').evaluate(node => node.parentElement.id), 'seer-lookup-illustration');
+            await results.first().waitFor();
+            await results.first().click();
+            await page.locator('#seer-lookup-preview:not([hidden])').waitFor();
+            assert.equal(await page.locator('#seer-lookup-id-result').textContent(), '#840');
+            assert.equal(await page.locator('#seer-lookup-message').textContent(), '共 24 款皮膚', 'selecting a skin keeps the results summary visible');
+            assert.equal(await page.locator('#seer-pet-info-toggle').textContent(), '綁定精靈資訊');
+            if (width <= 900) {
+                assert.equal(await page.locator('#seer-lookup-results').isVisible(), false);
+                await page.locator('#seer-pet-back-to-results').click();
+                assert.equal(await results.first().isVisible(), true);
+                await results.first().click();
+            }
+            await page.screenshot({ path: path.join(process.env.TEMP || root, `seer-skin-preview-${width}.png`), fullPage: true });
+            await page.locator('#seer-pet-info-toggle').click();
+            await modal.waitFor();
+            await closeInfo();
+            assert.equal(await page.locator('#seer-lookup-id-result').textContent(), '#840', 'shared pet info preserves skin preview');
+            if (width > 900) {
+                assert.equal(await page.evaluate(() => {
+                    const list = document.querySelector('#seer-lookup-results').getBoundingClientRect();
+                    const preview = document.querySelector('#seer-lookup-illustration').getBoundingClientRect();
+                    return list.right <= preview.left && Math.abs(list.top - preview.top) < 2;
+                }), true, 'skin browsing aligns its list beside the artwork preview');
+            } else {
+                assert.equal(await page.evaluate(() => {
+                    const buttons = [...document.querySelectorAll('.seer-lookup-preview-actions button')].filter(node => !node.hidden);
+                    const [info, wiki] = buttons.map(node => node.getBoundingClientRect());
+                    const art = document.querySelector('.seer-lookup-illustration-stage').getBoundingClientRect();
+                    return Math.abs(info.top - wiki.top) < 2 && info.bottom < art.top && wiki.bottom < art.top;
+                }), true, 'skin actions share a row above the mobile artwork');
+            }
+            for (const searchMode of ['pet', 'category', 'skin']) {
+                await page.locator(`[data-skin-search-mode="${searchMode}"]`).click();
+                if (searchMode === 'pet') {
+                    await page.locator('#seer-lookup-id').fill('1');
+                    await page.locator('#seer-lookup-id').press('Enter');
+                }
+                await results.first().waitFor();
+                assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+            }
+            await page.locator('#seer-lookup-id').fill('840');
+            await page.locator('#seer-lookup-id').press('Enter');
+            await page.waitForFunction(() => document.querySelector('#seer-lookup-section').dataset.petPresentation === 'direct' && !document.querySelector('#seer-lookup-preview').hidden);
+            await page.screenshot({ path: path.join(process.env.TEMP || root, `seer-skin-direct-${width}.png`), fullPage: true });
+            await page.locator('#seer-lookup-name').evaluate(node => { node.textContent = '測試用較長皮膚名稱・星海之中的永恆守望者'; });
+            await page.locator('#seer-lookup-related-pet').evaluate(node => { node.textContent = '綁定精靈：測試用較長精靈名稱・星海之中的永恆守望者 (#5000)'; });
+            assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+            await page.screenshot({ path: path.join(process.env.TEMP || root, `seer-skin-long-name-${width}.png`), fullPage: true });
+            if (width <= 900) {
+                await page.locator('#seer-pet-back-to-results').click();
+                await results.first().waitFor();
+                assert.equal(await page.locator('#seer-lookup-id').inputValue(), '');
+            }
             for (const mode of ['seal', 'suit']) {
                 await page.locator(`#encyclopedia-sub-tabs [data-lookup-mode="${mode}"]`).click();
                 const filter = page.locator(mode === 'seal' ? '[data-seal-sort] + button' : '[data-suit-sort] + button');
@@ -304,6 +360,55 @@ const server = http.createServer((req, res) => {
                 await page.keyboard.press('Escape');
             }
             assert.deepEqual(errors, []);
+            if (width === widths[0]) {
+                const cold = await context.newPage();
+                const since = apiRequests.length;
+                await cold.goto(`${base}/index.html?tab=skin`, { waitUntil:'networkidle' });
+                const skinResults = cold.locator('#seer-lookup-results .seer-lookup-result');
+                await skinResults.first().waitFor();
+                assert.equal(await skinResults.count(), 24, 'all matching skins are available together');
+                const requests = () => apiRequests.slice(since);
+                const catalogCalls = requests().filter(url => url.pathname === '/v1/pet_skin').length;
+                assert.equal(catalogCalls, 1, 'cold skin list loads the catalog once');
+                assert.equal(requests().filter(url => url.pathname === '/v1/pet/1').length, 0, 'skin names reuse the shared pet catalog');
+                assert((await cold.locator('#seer-lookup-results .seer-lookup-result-pet').allTextContents()).every(text => text === '綁定精靈：測試精靈 1'), 'linked pet names are present before selecting any skin');
+                await cold.locator('#seer-lookup-results').evaluate(node => { node.scrollTop = node.scrollHeight; });
+                await cold.waitForFunction(() => document.querySelectorAll('#seer-lookup-results .seer-lookup-result').length === 24);
+                assert.equal(requests().filter(url => url.pathname === '/v1/pet_skin').length, catalogCalls, 'scrolling pages uses the cached catalog');
+                await cold.locator('#seer-lookup-id').fill('皮膚 82');
+                await cold.locator('#seer-lookup-id').press('Enter');
+                await cold.waitForFunction(() => document.querySelectorAll('#seer-lookup-results .seer-lookup-result').length === 10);
+                assert.equal(requests().filter(url => url.searchParams.has('name') && url.pathname === '/v1/pet_skin').length, 0, 'skin name search stays local');
+                await skinResults.first().click();
+                await cold.locator('#seer-lookup-preview:not([hidden])').waitFor();
+                assert.equal(requests().filter(url => url.pathname === '/v1/pet/1').length, 0, 'preview uses catalog names and types without fetching full details');
+                await cold.locator('#seer-pet-info-toggle').click();
+                await cold.locator('.seer-pet-info-section-nav').waitFor();
+                assert.equal(requests().filter(url => url.pathname === '/v1/pet/1').length, 1, 'only opening full info requests pet details');
+                await cold.keyboard.press('Escape');
+                await cold.locator('#seer-pet-info-modal').waitFor({state:'hidden'});
+                await cold.locator('[data-skin-search-mode="pet"]').click();
+                await cold.locator('#seer-lookup-id').fill('測試精靈 1');
+                await cold.locator('#seer-lookup-id').press('Enter');
+                await cold.waitForFunction(() => document.querySelectorAll('#seer-lookup-results .seer-lookup-result').length === 24);
+                assert.equal(requests().filter(url => url.pathname === '/v1/pet' && url.searchParams.has('name')).length, 0, 'linked-pet name search also stays local');
+                await cold.locator('[data-skin-search-mode="category"]').click();
+                await cold.locator('[data-skin-category-id="1"]').click();
+                await cold.waitForFunction(() => document.querySelectorAll('#seer-lookup-results .seer-lookup-result').length === 12);
+                for (const category of ['0', '1', '0']) {
+                    await cold.locator('#seer-lookup-results .seer-lookup-result').first().click();
+                    await cold.locator('#seer-lookup-preview:not([hidden])').waitFor();
+                    assert.notEqual(await cold.locator('#seer-lookup-illustration-category-icon').getAttribute('src'), null);
+                    await cold.locator(`[data-skin-category-id="${category}"]`).click();
+                    await cold.locator('#seer-lookup-preview').waitFor({state:'hidden'});
+                    for (const icon of ['#seer-lookup-skin-category-icon', '#seer-lookup-illustration-category-icon']) {
+                        assert.equal(await cold.locator(icon).getAttribute('src'), null, 'changing categories clears the previous skin badge');
+                        assert.notEqual(await cold.locator(icon).getAttribute('hidden'), null);
+                    }
+                }
+                assert.equal(requests().filter(url => url.pathname === '/v1/pet_skin').length, catalogCalls, 'category changes reuse the same catalog');
+                await cold.close();
+            }
             await context.close();
             console.log(`${width}px passed: catalog, shared homepage info, selection/search retention, mobile return, type pagination, Taiwan progress, skin layout and overflow`);
         }

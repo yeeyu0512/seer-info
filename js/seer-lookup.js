@@ -1,3 +1,4 @@
+import { loadSkinImage, cancelSkinImage, hasSkinImageLoad } from "./lookup/skin-image.js";
 import { createPetResultButton } from "./lookup/pet-result.js";
 import { createLookupBrowseController } from "./lookup/browse-controller.js";
 import { createLookupDialogs } from "./lookup/dialogs.js";
@@ -8,7 +9,7 @@ import { getRelatedTypeOptions } from "./shared/type-options.js";
 import { getSharedLookupRepository } from "./lookup/repository.js";
 import { createPetInfoView } from "./lookup/pet-info-view.js";
 import { createSoulmarkImageResolver } from "./lookup/wiki.js";
-import { hasPetTypeFilter, matchesPetTypeFilter } from "./lookup/pet-filters.js";
+import { hasPetTypeFilter, matchesPetTypeFilter, matchesPetSearchQuery } from "./lookup/pet-filters.js";
 import { initSortPicker } from "./lookup/sort-picker.js";
 
 let lookupInstance;
@@ -38,7 +39,6 @@ export function initSeerLookup(dependencies) {
     const seerPetSort = document.getElementById("seer-pet-sort");
     initSortPicker(seerPetSort);
     const seerTaiwanFilterLabel = document.querySelector(".seer-taiwan-progress-filter");
-    const seerLookupTitleRow = document.querySelector(".seer-lookup-title-row");
     const seerPetTypeFilter = document.getElementById("seer-pet-type-filter");
     const seerPetTypeCategoryButtons = Array.from(document.querySelectorAll("[data-pet-type-category]"));
     const seerPetTypeOptions = document.getElementById("seer-pet-type-options");
@@ -57,6 +57,8 @@ export function initSeerLookup(dependencies) {
     const seerLookupPreview = document.getElementById("seer-lookup-preview");
     const seerLookupAvatar = document.getElementById("seer-lookup-avatar");
     const seerLookupName = document.getElementById("seer-lookup-name");
+    const seerSkinIdentity = document.createElement("div");
+    seerSkinIdentity.className = "seer-skin-identity";
     const seerLookupIdResult = document.getElementById("seer-lookup-id-result");
     const seerLookupRelatedPet = document.getElementById("seer-lookup-related-pet");
     const seerLookupTypeIcon = document.getElementById("seer-lookup-type-icon");
@@ -114,7 +116,7 @@ export function initSeerLookup(dependencies) {
 
     const { activateTab, convertToTraditionalChinese, convertToSimplifiedChinese, fetchSeerJson } = dependencies;
 
-    const { fetchSeerElementTypeCombinations, fetchSeerPetCatalog, fetchSeerSkinCatalog, fetchSeerPetDetails, fetchSeerPetsByName, fetchSeerElementTypeDetails, fetchSeerPetInfo, fetchSeerPetRelatedRecords, getElementTypeCombinations, getCachedElementTypeDetails } = getSharedLookupRepository(dependencies);
+    const { fetchSeerElementTypeCombinations, fetchSeerPetCatalog, fetchSeerSkinCatalog, fetchSeerSkinEntries, fetchSeerPetDetails, fetchSeerPetsByName, fetchSeerElementTypeDetails, fetchSeerPetInfo, fetchSeerPetRelatedRecords, getElementTypeCombinations, getCachedElementTypeDetails } = getSharedLookupRepository(dependencies);
     const resolveSeerWikiSoulmarkImage = createSoulmarkImageResolver(fetchSeerJson);
     const { startLatestSeerBrowse, startSeerPetTypeFilter, sortSeerPetResults, loadMoreSeerPetTypeFilterResults, loadMoreSeerBrowseResults, updateSeerBrowseLoadingProgress, loadSeerBrowsePage, updateSeerBrowseSentinel, clearSeerBrowseSentinel, getBrowseState, resetBrowseState } = createLookupBrowseController({
         seerLookupResults,
@@ -132,6 +134,7 @@ export function initSeerLookup(dependencies) {
         convertToSimplifiedChinese: (...args) => convertToSimplifiedChinese(...args),
         renderSeerPetTypeOptions: (...args) => renderSeerPetTypeOptions(...args),
         fetchSeerPetCatalog: (...args) => fetchSeerPetCatalog(...args),
+        fetchSeerSkinEntries: (...args) => fetchSeerSkinEntries(...args),
         getPetTypeCategory: () => seerPetTypeCategory,
         matchesTaiwanPetProgress: (...args) => matchesTaiwanPetProgress(...args),
         renderSeerPetSearchResults: (...args) => renderSeerPetSearchResults(...args),
@@ -208,22 +211,32 @@ export function initSeerLookup(dependencies) {
     function updateSeerPetFilterUi() {
         const isPetMode = seerLookupMode === "pet";
         seerLookupSection.dataset.lookupMode = seerLookupMode;
-        seerLookupSection.classList.toggle("panel", isPetMode);
-        seerPetBackToResults.hidden = !isPetMode;
+        seerLookupSection.classList.add("panel");
+        seerPetBackToResults.hidden = false;
+        seerLookupIllustration.prepend(seerLookupPreview);
+        seerLookupPreview.querySelector(".seer-pet-meta").append(seerLookupSkinCategoryIcon);
+        const previewContent = seerLookupPreview.querySelector(".seer-pet-preview-content");
+        const previewMeta = seerLookupPreview.querySelector(".seer-pet-meta");
         if (isPetMode) {
-            seerLookupIllustration.prepend(seerLookupPreview);
-            seerPetSearchToolbar.prepend(seerLookupForm);
-            seerPetSearchToolbar.append(seerPetSortLabel);
+            previewContent.prepend(seerLookupName);
+            previewMeta.prepend(seerLookupIdResult);
+            seerSkinIdentity.remove();
         } else {
-            seerLookupResults.after(seerLookupPreview);
-            seerPetResultsControls.append(seerPetSortLabel);
+            previewContent.prepend(seerSkinIdentity);
+            seerSkinIdentity.append(seerLookupSkinCategoryIcon, seerLookupName, seerLookupIdResult);
         }
+        seerPetSearchToolbar.prepend(seerLookupForm);
+        seerPetSearchToolbar.append(seerPetSortLabel);
         seerLookupForm.hidden = false;
         seerPetTypeFilter.hidden = !isPetMode;
         if (isPetMode) seerPetTypeFilter.append(seerTaiwanFilterLabel);
-        else seerLookupTitleRow.append(seerTaiwanFilterLabel);
-        seerTaiwanFilterLabel.querySelector(".seer-taiwan-progress-filter-copy > span").textContent = isPetMode
-            ? "僅台服進度" : "僅顯示至最新台服進度";
+        else seerPetSearchToolbar.append(seerTaiwanFilterLabel);
+        seerTaiwanFilterLabel.querySelector(".seer-taiwan-progress-filter-copy > span").textContent = "僅台服進度";
+        const emptyArt = seerLookupIllustration.querySelector(".seer-pet-illustration-empty");
+        emptyArt.replaceChildren(document.createTextNode(isPetMode ? "從清單選擇精靈" : "從清單選擇皮膚"), document.createElement("br"));
+        const emptyHint = document.createElement("span");
+        emptyHint.textContent = isPetMode ? "查看立繪與完整精靈資訊" : "查看立繪與綁定精靈資訊";
+        emptyArt.append(emptyHint);
         seerPetClearType.hidden = !isPetMode || !petTypeFilterActive();
         updatePetResultsControls();
         if (seerLookupMode === "pet") {
@@ -243,7 +256,7 @@ export function initSeerLookup(dependencies) {
 
     function updatePetResultsControls() {
         seerPetResultsControls.hidden = seerLookupMode !== "pet";
-        seerPetSortLabel.hidden = seerLookupSection.dataset.petPresentation === "direct";
+        seerPetSortLabel.hidden = seerLookupMode !== "pet" || seerLookupSection.dataset.petPresentation === "direct";
     }
 
     function setSeerPetTypeCategory(category) {
@@ -573,6 +586,9 @@ export function initSeerLookup(dependencies) {
     }
 
     function resetSeerPetInfo() {
+        cancelSkinImage(seerLookupAvatar);
+        cancelSkinImage(seerLookupIllustrationImage);
+        currentSeerSkinImageFallback = null;
         currentSeerPetData = null;
         seerLookupSection.dataset.petView = "list";
         seerLookupSection.dataset.petPresentation = "browse";
@@ -580,6 +596,10 @@ export function initSeerLookup(dependencies) {
         seerPetBrowseLatest.hidden = true;
         seerPetBackToResults.textContent = "‹ 返回清單";
         seerLookupIllustrationImage.hidden = true;
+        seerLookupSkinCategoryIcon.hidden = true;
+        seerLookupSkinCategoryIcon.removeAttribute("src");
+        seerLookupIllustrationCategoryIcon.hidden = true;
+        seerLookupIllustrationCategoryIcon.removeAttribute("src");
         seerLookupIllustrationTitle.textContent = seerLookupMode === "pet" ? "立繪預覽" : "皮膚立繪預覽";
         seerLookupIllustrationDescription.textContent = seerLookupMode === "pet"
             ? "從清單選擇精靈，查看立繪與完整資訊。"
@@ -603,6 +623,9 @@ export function initSeerLookup(dependencies) {
     }
 
     async function lookupSeerSkin(query, requestId) {
+        const isDirectLookup = seerSkinSearchMode === "skin" && /^\d+$/.test(query);
+        seerLookupSection.dataset.petPresentation = isDirectLookup ? "direct" : "browse";
+        seerPetBackToResults.textContent = isDirectLookup ? "‹ 瀏覽最新皮膚" : "‹ 返回清單";
         if (seerSkinSearchMode === "pet") {
             await searchSeerSkinsForPet(query, requestId);
             return;
@@ -618,8 +641,8 @@ export function initSeerLookup(dependencies) {
                 if (!Number.isSafeInteger(skinId) || skinId < 1) {
                     throw new Error("請輸入有效的皮膚 ID。");
                 }
-                const skin = await fetchSeerJson(`https://api.seerapi.com/v1/pet_skin/${encodeURIComponent(query)}`);
-                const entry = await loadSeerSkinEntry(skin);
+                const entry = (await fetchSeerSkinEntries()).find(item => Number(item.skin.id) === skinId);
+                if (!entry) throw new Error("找不到此編號的皮膚。");
                 if (requestId !== seerLookupRequestId) return;
                 const settings = await getTaiwanProgressSettings();
                 if (requestId !== seerLookupRequestId) return;
@@ -628,7 +651,10 @@ export function initSeerLookup(dependencies) {
                     return;
                 }
                 await renderSeerSkinPreview(entry, requestId);
-                if (requestId === seerLookupRequestId) seerLookupMessage.textContent = "";
+                if (requestId === seerLookupRequestId) {
+                    seerLookupMessage.textContent = "找到 1 款皮膚";
+                    revealMobilePetPreview();
+                }
             } else {
                 await searchSeerSkinsByName(query, requestId);
             }
@@ -642,40 +668,25 @@ export function initSeerLookup(dependencies) {
     async function searchSeerSkinsForPet(query, requestId) {
         seerLookupPreview.hidden = true;
         seerLookupResults.hidden = true;
-        if (!/^\d+$/.test(query)) {
-            await searchSeerSkinsForPetName(query, requestId);
-            return;
-        }
-        const petId = Number(query);
-        if (!Number.isSafeInteger(petId) || petId < 1) {
-            seerLookupMessage.textContent = "請輸入有效的綁定精靈 ID 或名稱。";
-            return;
-        }
-        seerLookupMessage.textContent = "正在依綁定精靈搜尋皮膚…";
+        seerLookupMessage.textContent = "正在查詢綁定皮膚…";
         try {
-            const pet = await fetchSeerPetDetails(petId);
-            if (requestId !== seerLookupRequestId) return;
+            const numeric = /^\d+$/.test(query);
+            const petId = Number(query);
+            if (numeric && (!Number.isSafeInteger(petId) || petId < 1)) {
+                throw new Error("請輸入有效的綁定精靈 ID 或名稱。");
+            }
+            const catalog = await fetchSeerSkinEntries();
             const settings = await getTaiwanProgressSettings();
             if (requestId !== seerLookupRequestId) return;
-            if (!matchesTaiwanPetProgress(pet, settings)) {
-                seerLookupMessage.textContent = "此精靈超出台服目前進度，已依篩選設定隱藏。";
-                return;
-            }
-            const skins = await fetchSeerSkinCatalog();
-            if (requestId !== seerLookupRequestId) return;
-            const matchingSkins = skins.filter((skin) =>
-                String(skin && skin.pet && skin.pet.id) === String(petId)
+            const entries = catalog.filter(({ skin, pet }) =>
+                (numeric ? Number(pet.id) === petId : matchesPetSearchQuery(pet, query, convertToSimplifiedChinese))
                 && matchesTaiwanSkinProgress(skin, pet, settings)
-            );
-            if (matchingSkins.length === 0) {
-                seerLookupMessage.textContent = `找不到綁定精靈「${convertToTraditionalChinese(pet.name || `#${petId}`)}」的皮膚。`;
-                return;
-            }
-            const entries = await Promise.all(matchingSkins.map((skin) => loadSeerSkinEntry(skin)));
-            if (requestId !== seerLookupRequestId) return;
+            ).sort((a, b) => Number(b.skin.id) - Number(a.skin.id));
             renderSeerSkinSearchResults(entries);
-            seerLookupResults.hidden = false;
-            seerLookupMessage.textContent = `找到 ${entries.length} 款綁定精靈「${convertToTraditionalChinese(pet.name || `#${petId}`)}」的皮膚。`;
+            seerLookupResults.hidden = !entries.length;
+            seerLookupMessage.textContent = entries.length
+                ? `找到 ${entries.length} 款綁定皮膚。`
+                : "找不到符合查詢與目前進度條件的綁定皮膚。";
         } catch (error) {
             if (requestId !== seerLookupRequestId) return;
             console.error("Seer skins by pet lookup error:", error);
@@ -683,105 +694,8 @@ export function initSeerLookup(dependencies) {
         }
     }
 
-    async function searchSeerSkinsForPetName(query, requestId) {
-        seerLookupMessage.textContent = "正在搜尋綁定精靈名稱…";
-        try {
-            const { pets, responses } = await fetchSeerPetsByName(query);
-            if (requestId !== seerLookupRequestId) return;
-            const settings = await getTaiwanProgressSettings();
-            if (requestId !== seerLookupRequestId) return;
-            const visiblePets = pets.filter((pet) => matchesTaiwanPetProgress(pet, settings));
-            if (visiblePets.length === 0) {
-                seerLookupMessage.textContent = seerTaiwanOnlyEnabled && pets.length > 0
-                    ? "符合名稱的精靈皆超出台服目前進度。"
-                    : "找不到符合的精靈，請確認名稱或改用精靈 ID。";
-                return;
-            }
-            const skins = await fetchSeerSkinCatalog();
-            if (requestId !== seerLookupRequestId) return;
-            const petsById = new Map(visiblePets.map((pet) => [String(pet.id), pet]));
-            const matchingSkins = skins.filter((skin) =>
-                petsById.has(String(skin && skin.pet && skin.pet.id))
-                && matchesTaiwanSkinProgress(skin, petsById.get(String(skin.pet.id)), settings)
-            );
-            if (matchingSkins.length === 0) {
-                seerLookupMessage.textContent = `找到 ${visiblePets.length} 隻精靈，但沒有找到台服進度內的綁定皮膚。`;
-                return;
-            }
-            const entries = matchingSkins.map((skin) => ({
-                skin,
-                pet: petsById.get(String(skin.pet.id))
-            }));
-            renderSeerSkinSearchResults(entries);
-            seerLookupResults.hidden = false;
-            const hasMorePets = responses.some((response) =>
-                Number(response.count) > (Array.isArray(response.results) ? response.results.length : 0)
-            );
-            const petNames = [...new Set(entries.map((entry) =>
-                convertToTraditionalChinese(entry.pet.name || "未命名精靈")
-            ))];
-            const matchMessage = `找到 ${entries.length} 款綁定精靈「${petNames.join("、")}」的皮膚。`;
-            seerLookupMessage.textContent = hasMorePets
-                ? `${matchMessage} 精靈搜尋結果較多，請輸入更完整的名稱。`
-                : matchMessage;
-        } catch (error) {
-            if (requestId !== seerLookupRequestId) return;
-            console.error("Seer skins by pet name lookup error:", error);
-            seerLookupMessage.textContent = `查詢失敗：${error.message}`;
-        }
-    }
-
     async function searchSeerSkinsByName(query, requestId) {
-        const searchTerms = [...new Set([query, convertToSimplifiedChinese(query)].filter(Boolean))];
-        const responses = await Promise.all(searchTerms.map((term) => {
-            const params = new URLSearchParams({ name: term, offset: "0", limit: "10", expand: "true" });
-            return fetchSeerJson(`https://api.seerapi.com/v1/pet_skin?${params}`);
-        }));
-        if (requestId !== seerLookupRequestId) return;
-        const skinsById = new Map();
-        responses.forEach((response) => {
-            (response.results || []).forEach((skin) => {
-                if (skin && skin.id !== undefined && !skinsById.has(String(skin.id))) {
-                    skinsById.set(String(skin.id), skin);
-                }
-            });
-        });
-
-        const skins = Array.from(skinsById.values());
-        if (skins.length === 0) {
-            seerLookupMessage.textContent = "找不到符合的皮膚，請確認名稱或改用皮膚 ID。";
-            return;
-        }
-        const pendingSkinIndexes = skins.map((skin, index) => index);
-        const entries = new Array(skins.length);
-        const workers = Array.from({ length: Math.min(4, pendingSkinIndexes.length) }, async () => {
-            while (pendingSkinIndexes.length > 0) {
-                const index = pendingSkinIndexes.shift();
-                entries[index] = await loadSeerSkinEntry(skins[index]);
-            }
-        });
-        await Promise.all(workers);
-        if (requestId !== seerLookupRequestId) return;
-        const settings = await getTaiwanProgressSettings();
-        if (requestId !== seerLookupRequestId) return;
-        const visibleEntries = entries.filter(({ skin, pet }) => matchesTaiwanSkinProgress(skin, pet, settings));
-        if (visibleEntries.length === 0) {
-            seerLookupMessage.textContent = seerTaiwanOnlyEnabled
-                ? "符合搜尋條件的皮膚皆超出台服目前進度。"
-                : "找不到符合的皮膚，請確認名稱或改用皮膚 ID。";
-            return;
-        }
-        renderSeerSkinSearchResults(visibleEntries);
-        seerLookupResults.hidden = false;
-        const hasMoreMatches = responses.some((response) =>
-            Number(response.count) > (Array.isArray(response.results) ? response.results.length : 0)
-        );
-        const resultCountMessage = visibleEntries.length === 1
-            ? "找到 1 款皮膚，點選結果查看預覽。"
-            : `找到 ${visibleEntries.length} 款皮膚，請選擇。`;
-        seerLookupMessage.textContent = hasMoreMatches
-            ? `${resultCountMessage} 結果較多，請輸入更完整的名稱以縮小範圍。`
-            : resultCountMessage;
+        await startLatestSeerBrowse(requestId);
     }
 
     function matchesSelectedSkinCategory(skin, categoryId) {
@@ -809,7 +723,9 @@ export function initSeerLookup(dependencies) {
         if (!Number.isSafeInteger(Number(petId)) || Number(petId) < 1) {
             throw new Error(`SeerAPI 回傳的皮膚 ${skinId} 未包含所屬精靈 ID。`);
         }
-        return { skin, pet: await fetchSeerPetDetails(petId) };
+        const entry = (await fetchSeerSkinEntries()).find(item => Number(item.skin.id) === Number(skinId));
+        if (!entry) throw new Error("找不到此編號的皮膚。");
+        return entry;
     }
 
     async function searchSeerPetsByName(query, requestId) {
@@ -914,27 +830,12 @@ export function initSeerLookup(dependencies) {
             visual.className = "seer-lookup-result-thumbnail";
             const thumbnail = document.createElement("img");
             const resourceId = getSeerSkinImageResourceId(skin);
-            thumbnail.src = `https://newseer.61.com/web/monster/head/${encodeURIComponent(resourceId)}.png`;
             thumbnail.alt = `${convertToTraditionalChinese(skin.name || "皮膚")}縮圖`;
             thumbnail.loading = "lazy";
-            thumbnail.addEventListener("error", async () => {
-                if (thumbnail.dataset.fallbackAttempted === "true") {
-                    thumbnail.hidden = true;
-                    return;
-                }
-                thumbnail.dataset.fallbackAttempted = "true";
-                try {
+            loadSkinImage(thumbnail, `https://newseer.61.com/web/monster/head/${encodeURIComponent(resourceId)}.png`, {
+                fallback: async () => {
                     const fallbackPet = await findSeerPetForSkinThumbnailFallback(skin, pet);
-                    if (!thumbnail.isConnected) return;
-                    if (!fallbackPet) {
-                        thumbnail.hidden = true;
-                        return;
-                    }
-                    thumbnail.src = `https://newseer.61.com/web/monster/head/${encodeURIComponent(fallbackPet.id)}.png`;
-                    thumbnail.alt = `${convertToTraditionalChinese(fallbackPet.name || "精靈")}頭像`;
-                } catch (error) {
-                    console.error(`Load fallback thumbnail for Seer skin ${skin.id} error:`, error);
-                    thumbnail.hidden = true;
+                    return fallbackPet?.id ? `https://newseer.61.com/web/monster/head/${encodeURIComponent(fallbackPet.id)}.png` : null;
                 }
             });
             visual.append(thumbnail);
@@ -945,7 +846,7 @@ export function initSeerLookup(dependencies) {
             name.textContent = convertToTraditionalChinese(skin.name || "未命名皮膚");
             const petName = document.createElement("span");
             petName.className = "seer-lookup-result-pet";
-            petName.textContent = `綁定精靈：${convertToTraditionalChinese(pet.name || "未命名精靈")}`;
+            petName.textContent = `綁定精靈：${pet.name ? convertToTraditionalChinese(pet.name) : `#${pet.id}`}`;
             details.append(name, petName);
             content.append(visual, details);
             const id = document.createElement("span");
@@ -953,9 +854,11 @@ export function initSeerLookup(dependencies) {
             id.textContent = `#${skin.id}`;
             button.append(content, id);
             button.addEventListener("click", async () => {
+                petPreviewOpener = button;
+                petListPageScroll = window.scrollY;
                 const isBrowsing = getBrowseState()
                     && getBrowseState().requestId === seerLookupRequestId
-                    && !seerLookupIdInput.value.trim();
+                    && (getBrowseState().resource === "pet_skin" || !seerLookupIdInput.value.trim());
                 if (!isBrowsing) {
                     resetBrowseState();
                     clearSeerBrowseSentinel();
@@ -971,7 +874,11 @@ export function initSeerLookup(dependencies) {
                 seerLookupMessage.textContent = "正在載入皮膚資料…";
                 try {
                     await renderSeerSkinPreview(entry, requestId);
-                    if (requestId === seerLookupRequestId) seerLookupMessage.textContent = "";
+                    if (requestId === seerLookupRequestId) {
+                        petName.textContent = `綁定精靈：${convertToTraditionalChinese(currentSeerPetData.name)}`;
+                        seerLookupMessage.textContent = `共 ${resultButtons.length} 款皮膚`;
+                        revealMobilePetPreview();
+                    }
                 } catch (error) {
                     if (requestId !== seerLookupRequestId) return;
                     console.error("Load searched Seer skin error:", error);
@@ -1111,7 +1018,11 @@ export function initSeerLookup(dependencies) {
     }
 
     async function renderSeerSkinPreview(entry, requestId) {
-        const { skin, pet } = entry;
+        const { skin } = entry;
+        const pet = entry.pet?.name && entry.pet?.type?.id
+            ? entry.pet : await fetchSeerPetDetails(skin.pet.id);
+        if (requestId !== seerLookupRequestId) return;
+        entry.pet = pet;
         const skinId = Number(skin && skin.id);
         const petId = pet && pet.id;
         const skinName = convertToTraditionalChinese(skin && skin.name ? String(skin.name).trim() : "");
@@ -1126,11 +1037,10 @@ export function initSeerLookup(dependencies) {
         currentSeerSkinImageFallback = {
             requestId,
             skinName: String(skin.name).trim(),
-            linkedPetId: String(petId),
-            attempted: false
+            linkedPetId: String(petId)
         };
         const imageResourceId = getSeerSkinImageResourceId(skin);
-        seerLookupAvatar.src = `https://newseer.61.com/web/monster/head/${encodeURIComponent(imageResourceId)}.png`;
+        loadSeerSkinPreviewImage(seerLookupAvatar, "head", imageResourceId);
         seerLookupName.textContent = skinName;
         seerLookupIdResult.textContent = `#${skinId}`;
         seerLookupRelatedPet.textContent = `綁定精靈：${petName} (#${petId})`;
@@ -1149,16 +1059,18 @@ export function initSeerLookup(dependencies) {
         }
         seerLookupTypeIcon.src = typeIconUrl(typeDetails.id);
         seerLookupTypeName.textContent = typeDetails.name || "未知";
-        seerLookupIllustrationImage.src = `https://newseer.61.com/web/monster//body/${encodeURIComponent(imageResourceId)}.png`;
+        loadSeerSkinPreviewImage(seerLookupIllustrationImage, "body", imageResourceId);
         seerLookupIllustrationImage.alt = `${skinName}立繪`;
         seerLookupSkinMoreInfoButton.hidden = false;
         seerLookupPetSkinsButton.hidden = true;
         seerLookupIllustrationTitle.textContent = "皮膚立繪預覽";
         seerLookupIllustrationDescription.textContent = `綁定精靈：${petName}`;
         currentSeerInfoUrl = `https://wiki.biligame.com/seer/${encodeURI(`皮肤:${getSeerSkinResourceId(skin)}`)}`;
-        currentSeerPetId = null;
-        currentSeerPetData = null;
-        seerPetInfoToggle.hidden = true;
+        currentSeerPetId = String(petId);
+        currentSeerPetData = pet;
+        seerPetInfoToggle.textContent = "綁定精靈資訊";
+        seerPetInfoToggle.hidden = false;
+        seerLookupSection.dataset.petView = "preview";
         seerLookupIllustrationImage.hidden = false;
         seerLookupPreview.hidden = false;
     }
@@ -1201,41 +1113,17 @@ export function initSeerLookup(dependencies) {
         return fallbackPromise;
     }
 
-    async function handleSeerLookupImageError(image) {
-        const fallback = currentSeerSkinImageFallback;
-        if (!fallback || fallback.requestId !== seerLookupRequestId) {
-            image.hidden = true;
-            return;
-        }
-        if (fallback.attempted) {
-            image.hidden = true;
-            return;
-        }
-        fallback.attempted = true;
-        seerLookupMessage.textContent = "皮膚圖片不存在，正在依皮膚名稱搜尋精靈圖片…";
-        try {
-            const pet = await findSeerPetForSkinFallback(fallback.skinName, fallback.linkedPetId);
-            if (fallback !== currentSeerSkinImageFallback || fallback.requestId !== seerLookupRequestId) return;
-            if (!pet || !pet.id) {
-                image.hidden = true;
-                seerLookupMessage.textContent = `找不到名稱與「${convertToTraditionalChinese(fallback.skinName)}」完全相同的精靈。`;
-                return;
+    function loadSeerSkinPreviewImage(image, part, resourceId) {
+        const context = currentSeerSkinImageFallback;
+        loadSkinImage(image, `https://newseer.61.com/web/monster/${part}/${encodeURIComponent(resourceId)}.png`, {
+            isCurrent: () => context === currentSeerSkinImageFallback && context.requestId === seerLookupRequestId,
+            fallback: async () => {
+                const pet = await findSeerPetForSkinThumbnailFallback(
+                    { name: context.skinName }, { id: context.linkedPetId }
+                );
+                return pet?.id ? `https://newseer.61.com/web/monster/${part}/${encodeURIComponent(pet.id)}.png` : null;
             }
-            const petId = encodeURIComponent(pet.id);
-            const petName = convertToTraditionalChinese(pet.name ? String(pet.name).trim() : "");
-            seerLookupAvatar.src = `https://newseer.61.com/web/monster/head/${petId}.png`;
-            seerLookupAvatar.alt = `${petName || "精靈"}頭像`;
-            seerLookupAvatar.hidden = false;
-            seerLookupIllustrationImage.src = `https://newseer.61.com/web/monster//body/${petId}.png`;
-            seerLookupIllustrationImage.alt = `${petName || "精靈"}立繪`;
-            seerLookupIllustrationImage.hidden = false;
-            seerLookupMessage.textContent = "";
-        } catch (error) {
-            if (fallback !== currentSeerSkinImageFallback || fallback.requestId !== seerLookupRequestId) return;
-            console.error("Seer skin image fallback lookup error:", error);
-            image.hidden = true;
-            seerLookupMessage.textContent = `搜尋替代精靈圖片失敗：${error.message}`;
-        }
+        });
     }
 
     function clearSeerLookupResult() {
@@ -1358,11 +1246,11 @@ export function initSeerLookup(dependencies) {
     }
 
     seerLookupAvatar.addEventListener("error", () => {
-        void handleSeerLookupImageError(seerLookupAvatar);
+        if (!hasSkinImageLoad(seerLookupAvatar)) seerLookupAvatar.hidden = true;
     });
 
     seerLookupIllustrationImage.addEventListener("error", () => {
-        void handleSeerLookupImageError(seerLookupIllustrationImage);
+        if (!hasSkinImageLoad(seerLookupIllustrationImage)) seerLookupIllustrationImage.hidden = true;
     });
 
     updateSeerPetFilterUi();
@@ -1511,6 +1399,11 @@ export function initSeerLookup(dependencies) {
 
     seerPetBackToResults.addEventListener("click", () => {
         if (seerLookupSection.dataset.petPresentation === "direct") {
+            if (seerLookupMode === "skin") {
+                seerLookupIdInput.value = "";
+                scheduleSeerPetLookup();
+                return;
+            }
             browseLatestPets();
             return;
         }

@@ -1,7 +1,11 @@
 // Keep the public and admin error contracts distinct. Both support non-SeerAPI URLs.
 export async function fetchSeerJson(url, options = {}) {
     const response = await fetch(url, { headers: { Accept: "application/json" }, ...options });
-    if (!response.ok) throw new Error(`SeerAPI 請求失敗（${response.status}）`);
+    if (!response.ok) {
+        const error = new Error(`SeerAPI 請求失敗（${response.status}）`);
+        error.status = response.status;
+        throw error;
+    }
     return response.json();
 }
 
