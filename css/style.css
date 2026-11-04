@@ -3,7 +3,7 @@
 @import url("./sections/01-admin-and-lookup-base.css?v=20261103_login_only");
 @import url("./sections/02-pet-dialogs.css");
 @import url("./sections/03-footer-and-responsive.css");
-@import url("./sections/04-product-refinements.css");
+@import url("./sections/04-product-refinements.css?v=20261104_site_icon");
 @import url("./sections/05-catalog-and-about-refinements.css");
 @import url("./sections/06-auth-and-character-refinements.css");
 @import url("./sections/07-admin-and-auth-overrides.css?v=20261103_login_only");

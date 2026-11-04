@@ -179,6 +179,7 @@ Supabase 負責管理員驗證、競技池資料與台服進度設定。管理�
 | 內容 | 維護位置 |
 | --- | --- |
 | 首頁輪播 | `js/app/home-carousel.js` 的 `homeCarouselSlides`，圖片放在 `assets/site/` |
+| 網站圖示 | `assets/site/site-icon.png` 為原始圖，`favicon.ico` 包含 16／32／48／64／128px；另有 `assets/site/favicon-32.png` 與 180px 的 `assets/site/apple-touch-icon.png`。更新時同步三個 HTML 頁面的圖示版本與公開頁面分享圖片 |
 | 公開更新紀錄 | `data/changelog.json`；每筆包含 `date`、`title` 與 `details`，首頁顯示最新四筆 |
 | 官網公告 | `data/official-news.json`，以 `npm run news:refresh` 更新 |
 | 異常狀態 | `data/abnormal.json`、`assets/icons/abnormal/`；見 [維護說明](docs/abnormal-catalog.md) |
