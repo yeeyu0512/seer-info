@@ -22,6 +22,7 @@ const server = http.createServer((req, res) => {
             const context = await browser.newContext({ viewport: { width, height: width > 900 ? 640 : width < 350 ? 740 : 844 }, reducedMotion: 'reduce' });
             await context.route('**/*', async route => {
                 const url = new URL(route.request().url());
+                if (url.origin === base && url.pathname === '/data/mintmarks/manifest.json') return route.fulfill({ status: 503 });
                 if (url.origin === base) return route.continue();
                 if (url.href.includes('opencc-js')) return route.fulfill({ contentType: 'text/javascript', body: 'export const Converter = () => value => value;' });
                 if (url.href.includes('@supabase/supabase-js')) return route.fulfill({ contentType: 'text/javascript', body: `window.supabase={createClient(){return {auth:{getSession:async()=>({data:{session:null}}),onAuthStateChange(){}},from(table){const result={data:table==='seer_server_settings'?{latest_pet_id:8,latest_skin_id:840}:[],error:null};const q=new Proxy({}, {get(t,k){return k==='then'?Promise.resolve(result).then.bind(Promise.resolve(result)):()=>q;}});return q;}}}};` });
@@ -31,11 +32,17 @@ const server = http.createServer((req, res) => {
                     const combinations = [{ id: 1, name: '草', is_double: false }, { id: 2, name: '火', is_double: false }, { id: 3, name: '草火', is_double: true }];
                     const records = {
                         pet: pets, element_type_combination: combinations, element_type: combinations,
+                        mintmark: [
+                            { id: 41001, name: '備援刻印', type: { id: 3 }, mintmark_class: { id: 1 }, max_attr_value: { hp: 30 } },
+                            { id: 41002, name: '其他精靈的刻印', type: { id: 0 }, pet: [{ id: 1 }], max_attr_value: { hp: 30 } }
+                        ],
+                        mintmark_class: [{ id: 1, name: '備援系列' }],
                         skill: [{ id: 1, name: '測試技能', power: 150, max_pp: 5, type: { id: 1 }, category: { id: 1 }, skill_effect: [{ info: '測試效果。'.repeat(40) }] }],
                         soulmark: [{ id: 1, desc: '回合開始時觸發測試效果。|受到攻擊時判定附加效果。' }],
                         pet_skin: skins,
                         pet_skin_category: [{ id: 0, name: '普通' }, { id: 1, name: '限定' }]
                     };
+                    if (resource === 'pet_skin' && id === '817') return route.fulfill({ status: 503 });
                     const list = (records[resource] || []).filter(item => resource !== 'pet' || !url.searchParams.has('name') || item.name.includes(url.searchParams.get('name')));
                     const data = id ? resource === 'pet' ? pet(Number(id)) : list.find(x => String(x.id) === id) || {}
                         : { count: list.length, next: null, results: list.slice(Number(url.searchParams.get('offset') || 0), Number(url.searchParams.get('offset') || 0) + Number(url.searchParams.get('limit') || 500)) };
@@ -357,7 +364,12 @@ const server = http.createServer((req, res) => {
                 await page.locator('.training-mint-dialog select[aria-label="刻印排序"] + button').click();
                 await page.screenshot({ path: path.join(process.env.TEMP || root, 'training-pickers.png') });
                 await page.locator('.site-picker-options:popover-open button').last().click();
-                await page.keyboard.press('Escape');
+                const mintPicker = page.locator('.training-mint-dialog').filter({ has: page.locator('.training-dialog-grid') });
+                const backup = mintPicker.getByRole('button', { name: /備援刻印/ });
+                await backup.waitFor({ timeout: 5000 });
+                assert.equal(await mintPicker.locator('.training-dialog-mint').count(), 1, 'fallback keeps other pets’ bound mintmarks out');
+                await backup.click();
+                assert.match(await page.locator('[data-mint-slot="0"]').textContent(), /#41001/);
             }
             assert.deepEqual(errors, []);
             if (width === widths[0]) {
@@ -407,6 +419,13 @@ const server = http.createServer((req, res) => {
                     }
                 }
                 assert.equal(requests().filter(url => url.pathname === '/v1/pet_skin').length, catalogCalls, 'category changes reuse the same catalog');
+                await cold.locator('[data-skin-search-mode="skin"]').click();
+                await cold.locator('#seer-lookup-id').fill('817');
+                await cold.locator('#seer-lookup-id').press('Enter');
+                await cold.locator('#seer-lookup-preview:not([hidden])').waitFor({ timeout: 5000 });
+                assert.equal(await cold.locator('#seer-lookup-id-result').textContent(), '#817');
+                assert(requests().some(url => url.pathname === '/v1/pet_skin/817'), 'direct lookup tried the detail endpoint first');
+                assert.equal(requests().filter(url => url.pathname === '/v1/pet_skin').length, catalogCalls, 'detail failure reuses the cached catalog');
                 await cold.close();
             }
             await context.close();

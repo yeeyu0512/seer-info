@@ -628,21 +628,28 @@ export function initSeerLookup(dependencies) {
                 if (!Number.isSafeInteger(skinId) || skinId < 1) {
                     throw new Error("請輸入有效的皮膚 ID。");
                 }
-                const skin = await fetchSeerJson(`https://api.seerapi.com/v1/pet_skin/${skinId}`);
-                if (requestId !== seerLookupRequestId) return;
-                if (Number(skin?.id) !== skinId) throw new Error("找不到此編號的皮膚。");
-                const pet = skin.pet;
-                const petId = Number(pet?.id);
-                if (!Number.isSafeInteger(petId) || petId < 1) {
-                    throw new Error(`SeerAPI 回傳的皮膚 ${skinId} 未包含所屬精靈 ID。`);
+                let entry;
+                try {
+                    const skin = await fetchSeerJson(`https://api.seerapi.com/v1/pet_skin/${skinId}`, { signal: AbortSignal.timeout(8000) });
+                    const petId = Number(skin?.pet?.id);
+                    if (Number(skin?.id) !== skinId || typeof skin.name !== "string" || !skin.name.trim()
+                        || !Number.isSafeInteger(petId) || petId < 1) {
+                        throw new Error("SeerAPI 回傳的皮膚資料不完整。");
+                    }
+                    entry = { skin, pet: skin.pet };
+                } catch {
+                    if (requestId !== seerLookupRequestId) return;
+                    entry = (await fetchSeerSkinEntries()).find(({ skin }) => Number(skin.id) === skinId);
                 }
+                if (requestId !== seerLookupRequestId) return;
+                if (!entry) throw new Error("找不到此編號的皮膚。");
                 const settings = await getTaiwanProgressSettings();
                 if (requestId !== seerLookupRequestId) return;
-                if (!matchesTaiwanSkinProgress(skin, pet, settings)) {
+                if (!matchesTaiwanSkinProgress(entry.skin, entry.pet, settings)) {
                     seerLookupMessage.textContent = "此皮膚或所屬精靈不符合台服進度或未實裝排除設定，已依篩選設定隱藏。";
                     return;
                 }
-                await renderSeerSkinPreview({ skin, pet }, requestId);
+                await renderSeerSkinPreview(entry, requestId);
                 if (requestId === seerLookupRequestId) {
                     seerLookupMessage.textContent = "找到 1 款皮膚";
                     revealMobilePetPreview();

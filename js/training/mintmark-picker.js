@@ -1,6 +1,6 @@
 import { openDialog, closeDialog, getDialogSession } from "../shared/dialog-motion.js";
 import { TRAINING_STATS as STATS } from "../seer-training-core.js";
-import { mintmarkCornerCount, selectMintmarks } from "../data/mintmark-catalog.js";
+import { fetchMintmarkCatalog, fetchMintmarkSeries, mintmarkCornerCount, selectMintmarks } from "../data/mintmark-catalog.js";
 import { mintmarkSnapshot } from "../data/mintmark-snapshot.js";
 import { observeMintmarkImage, unobserveMintmarkImages } from "../seer-mintmark-images.js";
 import { mintmarkFinalStats } from "../seer-mintmark-stats.js";
@@ -8,7 +8,7 @@ import { canEquipMintmark } from "./mintmark-limit.js";
 import { createMintmarkSeriesSearch } from "../data/mintmark-series-search.js";
 import { getSeerServerSettings } from "../seer-server-settings.js";
 import { isTaiwanExcluded } from "../shared/taiwan-availability.js";
-export function createTrainingMintmarkPicker({root, query, selected, name, traditional, simplified, choose, recalculate, bindTaiwanProgressToggle}) {
+export function createTrainingMintmarkPicker({root, query, selected, name, traditional, simplified, choose, recalculate, bindTaiwanProgressToggle, fetchSeerJson}) {
     const mintDialog = query(".training-mint-dialog"), mintGrid = query(".training-dialog-grid");
     let mintCatalog = [], mintPending, mintSlot = 0, mintPage = 1, mintReady = false, slotInvoker;
     const mintSearch = mintDialog.querySelector("input"), mintCorners = mintDialog.querySelector('select[aria-label="刻印角數"]'), mintSeries = mintDialog.querySelector('select[aria-label="刻印系列"]');
@@ -90,21 +90,37 @@ export function createTrainingMintmarkPicker({root, query, selected, name, tradi
             if (taiwanOnly.checked) renderMintChoices();
         });
     }
+    async function loadMintCatalog() {
+        try {
+            // Ability and exclusive records need their bound-pet data, which compact lists omit.
+            const [general, full] = await Promise.all([
+                mintmarkSnapshot.lists(["general"]), mintmarkSnapshot.fullRecords(["ability", "exclusive"])
+            ]);
+            return { series: general.series, records: [...general.records, ...full] };
+        } catch {
+            const fetchPage = url => fetchSeerJson(url, { signal: AbortSignal.timeout(20000) });
+            const [records, series] = await Promise.all([fetchMintmarkCatalog(fetchPage), fetchMintmarkSeries(fetchPage)]);
+            return { series, records };
+        }
+    }
     async function loadMintChoices() {
         loadTaiwanSettings();
         if (mintReady) { renderMintChoices(); return; }
         previous.disabled = next.disabled = true;
         retry.hidden = true;
         if (!mintPending) {
-            const generalPending = mintmarkSnapshot.lists(["general"]).then(({series, records}) => {
+            mintPending = loadMintCatalog().then(({series, records}) => {
                 seriesSearch.setOptions([{value:"all",label:"全部系列"},...series.map(item => ({value:String(item.id),label:traditional(item.name)}))]);
-                return records;
-            }).catch(error => {seriesSearch.setError("系列載入失敗，請重試。"); throw error;});
-            // Ability and exclusive records need their bound-pet data, which compact lists omit.
-            mintPending = Promise.all([generalPending, mintmarkSnapshot.fullRecords(["ability", "exclusive"])]).then(([general, full]) => {
-                mintCatalog = [...general, ...full];
+                mintCatalog = records;
                 mintReady = true;
-            }).catch(() => { mintPending = null; if (getDialogSession(mintDialog)) { status.textContent = "刻印資料載入失敗，請重試。"; retry.hidden = false; } });
+            }).catch(() => {
+                mintPending = null;
+                seriesSearch.setError("系列載入失敗，請重試。");
+                if (getDialogSession(mintDialog)) {
+                    status.textContent = "刻印資料載入失敗，請重試。";
+                    retry.hidden = false;
+                }
+            });
         }
         status.textContent = "正在載入刻印資料…";
         await mintPending; renderMintChoices();
