@@ -1,12 +1,14 @@
 import {typeIconUrl} from "../shared/assets.js";
+import {loadMonsterImage} from "./skin-image.js";
 
 export function createPetResultButton(pet,typeDetailsById,traditional,{showAdvance = false} = {}) {
     const button = document.createElement("button"); button.className = "seer-lookup-result"; button.type = "button";
     const content = document.createElement("span"); content.className = "seer-lookup-result-content";
     const visual = document.createElement("span"); visual.className = "seer-lookup-result-thumbnail";
-    const thumbnail = document.createElement("img"); thumbnail.src = `https://newseer.61.com/web/monster/head/${encodeURIComponent(pet.id)}.png`;
+    const thumbnail = document.createElement("img");
     thumbnail.alt = `${traditional(pet.name || "精靈")}頭像`; thumbnail.loading = "lazy";
-    thumbnail.addEventListener("error",() => {thumbnail.hidden = true;}); visual.append(thumbnail);
+    loadMonsterImage(thumbnail,pet.id);
+    visual.append(thumbnail);
     const typeDetails = typeDetailsById.get(String(pet.type?.id || pet.typeId));
     const type = document.createElement("span"); type.className = "seer-lookup-result-type";
     if (typeDetails) {const icon = document.createElement("img"); icon.src = typeIconUrl(typeDetails.id); icon.alt = typeDetails.name || "屬性"; type.append(icon);} else type.textContent = "-";

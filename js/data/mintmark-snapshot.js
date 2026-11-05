@@ -44,8 +44,13 @@ export function createMintmarkSnapshotLoader(fetchJson = async url => {
         }).catch(error => { requests.delete(entry.file); throw error; }));
         return requests.get(entry.file);
     }
+    async function fullRecords(categories) {
+        const groups = await Promise.all(categories.map(category => partition(category, 'full')));
+        return groups.flat();
+    }
     return {
         manifest,
+        fullRecords,
         async lists(categories) {
             const [info, ...groups] = await Promise.all([manifest(), ...categories.map(category => partition(category, 'list'))]);
             return { series: info.series, records: groups.flat() };
@@ -53,10 +58,12 @@ export function createMintmarkSnapshotLoader(fetchJson = async url => {
         async complete(matches) {
             const ids = new Set(matches.map(item => item.id));
             const categories = [...new Set(matches.map(item => item.type?.id === 0 ? 'ability' : item.type?.id === 1 ? 'skill' : item.is_exclusive ? 'exclusive' : 'general'))];
-            const groups = await Promise.all(categories.map(category => partition(category, 'full')));
-            const byId = new Map(groups.flat().filter(item => ids.has(item.id) && !item.is_hidden).map(item => [item.id, item]));
+            const records = await fullRecords(categories);
+            const byId = new Map(records.filter(item => ids.has(item.id) && !item.is_hidden).map(item => [item.id, item]));
             if (byId.size !== ids.size) throw new Error('刻印完整資料不齊，請重試。');
             return matches.map(item => byId.get(item.id));
         },
     };
 }
+
+export const mintmarkSnapshot = createMintmarkSnapshotLoader();

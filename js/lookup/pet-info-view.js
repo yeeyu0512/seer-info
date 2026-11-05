@@ -1,5 +1,6 @@
 import { typeIconUrl, genderIconUrl, ASSETS } from "../shared/assets.js";
 import { SEER_TYPE_DATA } from "../seer-type-data.js";
+import { cancelSkinImage, loadMonsterImage } from "./skin-image.js";
 
 export function createPetInfoView({ seerPetInfoPanel, seerPetInfoTitle, seerPetInfoAvatar, seerPetInfoMeta, convertToTraditionalChinese, openTypeLookup, closeSeerPetInfoModal, resolveSeerWikiSoulmarkImage }) {
     function renderSeerPetInfo(pet, skills, soulmarks, advanceStats, advanceLoadError, typeDetails, activationItemsById) {
@@ -444,14 +445,11 @@ export function createPetInfoView({ seerPetInfoPanel, seerPetInfoTitle, seerPetI
         seerPetInfoAvatar.hidden = !petId;
         seerPetInfoAvatar.alt = `${petName}縮圖`;
         if (petId) {
-            seerPetInfoAvatar.src =
-                `https://newseer.61.com/web/monster/head/${encodeURIComponent(petId)}.png`;
+            loadMonsterImage(seerPetInfoAvatar, petId);
         } else {
+            cancelSkinImage(seerPetInfoAvatar);
             seerPetInfoAvatar.removeAttribute("src");
         }
-        seerPetInfoAvatar.onerror = () => {
-            seerPetInfoAvatar.hidden = true;
-        };
         seerPetInfoMeta.replaceChildren();
 
         const addMeta = (label, value, iconUrl = "", onClick = null) => {

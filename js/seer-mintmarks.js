@@ -7,7 +7,7 @@ import { createMintmarkSeriesSearch } from "./data/mintmark-series-search.js";
 import { observeMintmarkImage, unobserveMintmarkImages } from "./seer-mintmark-images.js";
 import { downloadMintmarkWorkbook } from "./seer-mintmark-export.js";
 import { mintmarkFinalStats } from "./seer-mintmark-stats.js";
-import { createMintmarkSnapshotLoader, mintmarkCategories } from "./data/mintmark-snapshot.js";
+import { mintmarkSnapshot as snapshot, mintmarkCategories } from "./data/mintmark-snapshot.js";
 
 const TYPES = { 0: "能力刻印", 1: "技能刻印", 3: "全能刻印" };
 const STATS = [["atk", "攻擊"], ["sp_atk", "特攻"], ["def", "防禦"], ["sp_def", "特防"], ["spd", "速度"], ["hp", "體力"]];
@@ -57,7 +57,6 @@ export function initSeerMintmarks(root, { convertToTraditionalChinese = value =>
     let seriesNames = new Map();
     let selectedCorners = "all";
     let exporting = false;
-    const snapshot = createMintmarkSnapshotLoader();
     let loadRequest = 0, loadKey = '', pendingKey = '', loadError = false;
     let detailRequest = 0;
     const localizeRecords = catalog => catalog.map(record => ({ ...record, searchName: record.name, name: convertToTraditionalChinese(record.name) }));

@@ -59,6 +59,22 @@ test('late fallback cannot replace a newly selected skin', async () => {
     assert.equal(image.hidden, false);
 });
 
+test('a transient fallback failure retries the fallback path and restores visibility', async () => {
+    const image = new Image();
+    const fallback = 'https://example.com/body/4450.png';
+    loadSkinImage(image, url, { retryDelay: 0, fallback: () => fallback });
+    image.fail();
+    await wait();
+    image.fail();
+    await wait();
+    assert.equal(image.src, fallback);
+    image.fail();
+    await wait();
+    assert.equal(image.src, `${fallback}?skin_retry=1`);
+    image.succeed();
+    assert.equal(image.hidden, false);
+});
+
 test('fallback failure terminates without a retry loop', async () => {
     const image = new Image();
     let calls = 0;
@@ -67,6 +83,9 @@ test('fallback failure terminates without a retry loop', async () => {
     await wait();
     image.fail();
     await wait();
+    image.fail();
+    await wait();
+    assert.equal(image.src, 'https://example.com/body/4450.png?skin_retry=1');
     image.fail();
     await wait();
     assert.equal(calls, 1);

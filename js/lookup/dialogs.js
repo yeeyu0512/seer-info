@@ -1,3 +1,5 @@
+import { loadMonsterImage, monsterImageUrl } from "./skin-image.js";
+
 export function createLookupDialogs({
     seerRelatedSkinsModal,
     updateSeerModalScrollLock,
@@ -90,29 +92,16 @@ export function createLookupDialogs({
                 button.type = "button";
                 const thumbnail = document.createElement("img");
                 thumbnail.className = "seer-related-skin-thumbnail";
-                thumbnail.src =
-                    `https://newseer.61.com/web/monster/head/${encodeURIComponent(getSeerSkinImageResourceId(skin))}.png`;
                 thumbnail.alt = `${convertToTraditionalChinese(skin.name || "皮膚")}縮圖`;
                 thumbnail.loading = "lazy";
-                thumbnail.addEventListener("error", async () => {
-                    if (thumbnail.dataset.fallbackAttempted === "true") {
-                        thumbnail.hidden = true;
-                        return;
-                    }
-                    thumbnail.dataset.fallbackAttempted = "true";
-                    try {
+                const isCurrent = () => requestId === seerRelatedSkinsRequestId && !seerRelatedSkinsModal.hidden;
+                loadMonsterImage(thumbnail, getSeerSkinImageResourceId(skin), {
+                    isCurrent,
+                    fallback: async () => {
                         const fallbackPet = await findSeerPetForSkinThumbnailFallback(skin, pet);
-                        if (!thumbnail.isConnected || requestId !== seerRelatedSkinsRequestId) return;
-                        if (!fallbackPet) {
-                            thumbnail.hidden = true;
-                            return;
-                        }
-                        thumbnail.src =
-                            `https://newseer.61.com/web/monster/head/${encodeURIComponent(fallbackPet.id)}.png`;
+                        if (!thumbnail.isConnected || !isCurrent() || !fallbackPet?.id) return null;
                         thumbnail.alt = `${convertToTraditionalChinese(fallbackPet.name || "精靈")}頭像`;
-                    } catch (error) {
-                        console.error(`Load fallback thumbnail for related Seer skin ${skin.id} error:`, error);
-                        thumbnail.hidden = true;
+                        return monsterImageUrl(fallbackPet.id);
                     }
                 });
                 const categoryId = Number(skin && skin.category && skin.category.id);

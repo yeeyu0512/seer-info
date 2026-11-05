@@ -2,6 +2,7 @@ import { competitiveServerLabel } from "../competitive/servers.js";
 import { renderCompetitivePoolTitle } from "../competitive/pool-title.js";
 import { normalizePetQuery, searchPets } from "../shared/pet-search.js";
 import { competitivePoolTitle, normalizeSeasonName, requirePoolNumber } from "../competitive/seasons.js";
+import { cancelSkinImage, loadMonsterImage } from "../lookup/skin-image.js";
 
 export function createCompetitiveEditor({
     getAdminCompetitivePools,
@@ -426,10 +427,9 @@ export function createCompetitiveEditor({
                     const removeButton = document.createElement("button");
 
                     item.className = "competitive-pool-pet";
-                    avatar.src = `https://newseer.61.com/web/monster/head/${encodeURIComponent(character.seer_pet_id)}.png`;
                     avatar.alt = "";
                     avatar.loading = "lazy";
-                    avatar.addEventListener("error", () => { avatar.hidden = true; }, { once: true });
+                    loadMonsterImage(avatar, character.seer_pet_id);
                     name.textContent = character.pet_name;
                     id.textContent = `#${character.seer_pet_id}`;
                     removeButton.type = "button";
@@ -454,7 +454,7 @@ export function createCompetitiveEditor({
         resolvedCompetitivePet = pet;
         resolvedCompetitivePetQuery = query;
         competitivePetPreview.hidden = false;
-        competitivePetAvatar.src = `https://newseer.61.com/web/monster/head/${pet.id}.png`;
+        loadMonsterImage(competitivePetAvatar, pet.id);
         competitivePetAvatar.alt = `${pet.name} 精靈頭像`;
         competitivePetName.textContent = pet.name;
         competitivePetIdPreview.textContent = `#${pet.id}`;
@@ -502,10 +502,9 @@ export function createCompetitiveEditor({
                 const label = document.createElement("span");
                 button.type = "button";
                 button.className = "secondary-button competitive-pet-search-result";
-                avatar.src = `https://newseer.61.com/web/monster/head/${encodeURIComponent(pet.id)}.png`;
                 avatar.alt = "";
                 avatar.loading = "lazy";
-                avatar.addEventListener("error", () => { avatar.hidden = true; }, { once: true });
+                loadMonsterImage(avatar, pet.id);
                 label.textContent = `${toTraditionalChinese(pet.name)} #${pet.id}`;
                 button.append(avatar, label);
                 button.addEventListener("click", () => {
@@ -546,6 +545,7 @@ export function createCompetitiveEditor({
         competitivePetMessage.textContent = "";
         if (!competitivePetPreview) return;
         competitivePetPreview.hidden = true;
+        cancelSkinImage(competitivePetAvatar);
         competitivePetAvatar.removeAttribute("src");
         competitivePetName.textContent = "";
         competitivePetIdPreview.textContent = "";

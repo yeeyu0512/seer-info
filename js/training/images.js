@@ -1,3 +1,5 @@
+import { cancelSkinImage, loadMonsterImage, monsterImageUrl, skinThumbnailPetId } from "../lookup/skin-image.js";
+
 const API = "https://api.seerapi.com/v1/";
 
 export function createTrainingImages({fetchCached, simplified}) {
@@ -9,32 +11,37 @@ export function createTrainingImages({fetchCached, simplified}) {
             matches.set(key, fetchCached(`${API}pet?${params}`).then(data => {
                 const exact = (data.results || []).filter(pet => simplified(pet.name).trim() === simplified(skin.name).trim());
                 const pet = exact.find(pet => Number(pet.id) === Number(skin.pet?.id)) || exact.sort((a,b) => b.id-a.id)[0];
-                return pet ? Number(pet.resource_id) || pet.id : null;
+                return pet?.id ?? null;
             }).catch(error => { matches.delete(key); throw error; }));
         }
         return matches.get(key);
     }
-    function set(image, {id, skin, kind = "head", onUnavailable = () => { image.hidden = true; }}) {
-        const token = {}; image.trainingImageToken = token;
-        image.hidden = true; image.removeAttribute("src");
-        let retried = false;
-        const current = () => image.trainingImageToken === token && image.isConnected;
-        const show = resource => {
-            if (!current()) return;
-            image.hidden = false;
-            image.src = `https://newseer.61.com/web/monster/${kind}/${resource}.png`;
-        };
-        image.onerror = async () => {
-            if (!current()) return;
-            if (!skin || retried) { onUnavailable(); return; }
-            retried = true;
-            try { const resource = await fallback(skin); if (!current()) return; if (resource && resource !== Number(id)) show(resource); else onUnavailable(); }
-            catch { if (current()) onUnavailable(); }
-        };
-        // Category 0 contains original appearances stored as pets rather than skin PNGs.
-        if (skin && Number(skin.category?.id) === 0) {
-            fallback(skin).then(resource => { retried = !!resource; show(resource || id); }).catch(() => show(id));
-        } else show(id);
+    function clear(image) {
+        cancelSkinImage(image);
+        image.trainingImageToken = null;
+        image.hidden = true;
+        image.removeAttribute("src");
     }
-    return {set, clear(image) { image.trainingImageToken = null; image.onerror = null; image.hidden = true; image.removeAttribute("src"); }};
+    function set(image, {id, skin, kind = "head", onUnavailable}) {
+        clear(image);
+        const token = {}; image.trainingImageToken = token;
+        const current = () => image.trainingImageToken === token && image.isConnected;
+        const show = (resource, resolveFallback) => {
+            if (!current()) return;
+            loadMonsterImage(image, resource, {kind, isCurrent:current, onUnavailable, fallback:resolveFallback});
+        };
+        const resolveFallback = skin && (async () => {
+            const resource = await fallback(skin);
+            return resource ? monsterImageUrl(resource, kind) : null;
+        });
+        const thumbnailPetId = kind === "head" ? skinThumbnailPetId(skin) : null;
+        // Category 0 contains original appearances stored as pets rather than skin PNGs.
+        if (thumbnailPetId !== null) {
+            show(thumbnailPetId, resolveFallback);
+        } else if (skin && Number(skin.category?.id) === 0) {
+            fallback(skin).then(resource => show(resource || id, resource ? null : resolveFallback))
+                .catch(() => show(id, resolveFallback));
+        } else show(id, resolveFallback);
+    }
+    return {set, clear};
 }

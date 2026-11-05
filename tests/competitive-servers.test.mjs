@@ -15,6 +15,7 @@ function node() {
         set textContent(value) { this._textContent = String(value); this.children = []; },
         classList: { toggle() {}, add() {}, remove() {} },
         addEventListener(name, fn) { this.events[name] = fn; },
+        removeEventListener(name, fn) { if (this.events[name] === fn) delete this.events[name]; },
         setAttribute(name, value) { this[name] = value; }, removeAttribute(name) { delete this[name]; },
         append(...items) { this.children.push(...items); }, replaceChildren(...items) { this._textContent = ''; this.children = items; },
         querySelector() { return this.counter ??= node(); }, reset() {}, scrollIntoView() {},

@@ -1,4 +1,4 @@
-import { openDialog, closeDialog } from "../shared/dialog-motion.js";
+import { openDialog, closeDialog, getDialogSession } from "../shared/dialog-motion.js";
 import {getSharedLookupRepository} from "../lookup/repository.js";
 import {createLookupBrowseController} from "../lookup/browse-controller.js";
 import {getSeerServerSettings} from "../seer-server-settings.js";
@@ -9,7 +9,7 @@ import {SEER_TYPE_DATA} from "../seer-type-data.js";
 import {searchTrainingPets} from "./pet-search.js";
 import {createPetResultButton} from "../lookup/pet-result.js";
 
-export function initTrainingPetPicker(dialog,{fetchSeerJson,fetchCached,traditional,simplified,onChoose}) {
+export function initTrainingPetPicker(dialog,{fetchSeerJson,fetchCached,traditional,simplified,bindTaiwanProgressToggle,onChoose}) {
     const repository = getSharedLookupRepository({fetchSeerJson,convertToTraditionalChinese:traditional,convertToSimplifiedChinese:simplified});
     const host = dialog.querySelector("[data-training-pet-picker]");
     host.innerHTML = `<div class="seer-pet-search-method-tabs main-tabs view-sub-tabs" role="tablist" aria-label="精靈查詢方式"><button type="button" class="main-tab is-active" data-method="query" role="tab" aria-selected="true">ID／名稱查詢</button><button type="button" class="main-tab" data-method="type" role="tab" aria-selected="false">屬性篩選</button></div><label class="seer-taiwan-progress-filter"><input type="checkbox" data-progress>僅顯示至最新台服進度</label><form class="training-search"><input type="search" aria-label="精靈 ID／名稱" placeholder="例如：5000 或 聖靈譜尼" autocomplete="off"><button type="submit">搜尋</button></form><div data-type-filter hidden><button type="button" class="secondary-button" data-type-open>全部單屬性 · 選擇屬性 ▾</button></div><p class="training-search-status" role="status"></p><div class="training-options seer-lookup-results"></div>`;
@@ -43,12 +43,22 @@ export function initTrainingPetPicker(dialog,{fetchSeerJson,fetchCached,traditio
     function render(pets,types,append = false) {
         if (!append) results.replaceChildren();
         for (const pet of pets) {
-            const button = createPetResultButton(pet,types,traditional,{showAdvance:true}); results.append(button);
+            const button = createPetResultButton(pet,types,traditional,{showAdvance:true});
+            results.append(button);
             button.addEventListener("click",async () => {
+                const session = getDialogSession(dialog);
+                if (!session) return;
                 const request = ++version; button.disabled = true; status.textContent = "正在載入精靈資料…";
+                const isCurrent = () => request === version && session === getDialogSession(dialog);
                 browse.resetBrowseState(); browse.clearSeerBrowseSentinel();
-                try { const record = await repository.fetchSeerPetDetails(pet.id); if (request === version && dialog.open) {onChoose(record); closeDialog(dialog);} }
-                catch {if (request === version) {status.textContent = "精靈資料載入失敗，請重新選擇。"; button.disabled = false;}}
+                try {
+                    const record = await repository.fetchSeerPetDetails(pet.id);
+                    if (!isCurrent()) return;
+                    onChoose(record);
+                    closeDialog(dialog);
+                } catch {
+                    if (isCurrent()) {status.textContent = "精靈資料載入失敗，請重新選擇。"; button.disabled = false;}
+                }
             });
         }
     }
@@ -112,11 +122,13 @@ export function initTrainingPetPicker(dialog,{fetchSeerJson,fetchCached,traditio
         for (const tab of host.querySelectorAll("[data-method]")) {tab.classList.toggle("is-active",tab === button); tab.setAttribute("aria-selected",String(tab === button));}
         refresh();
     });
-    progress.addEventListener("change",refresh);
+    bindTaiwanProgressToggle(progress,() => {
+        if (getDialogSession(dialog)) refresh();
+    });
     input.addEventListener("input",() => {version++; clearTimeout(timer); if (!composing) timer = setTimeout(refresh,400);});
     input.addEventListener("compositionstart",() => {composing = true; version++; clearTimeout(timer);});
     input.addEventListener("compositionend",() => {composing = false; input.dispatchEvent(new Event("input"));});
     host.querySelector("form").addEventListener("submit",event => {event.preventDefault(); if (!composing) refresh();});
-    dialog.addEventListener("close",() => {version++; clearTimeout(timer); browse.resetBrowseState(); browse.clearSeerBrowseSentinel(); if (typeDialog.open) closeDialog(typeDialog);});
+    dialog.addEventListener("close",() => {if (dialog.open) return; version++; clearTimeout(timer); browse.resetBrowseState(); browse.clearSeerBrowseSentinel(); if (typeDialog.open) closeDialog(typeDialog);});
     return {open:refresh};
 }

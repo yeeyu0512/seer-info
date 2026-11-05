@@ -1,6 +1,7 @@
 import { normalizeCompetitiveServer } from "./servers.js";
 import { renderCompetitivePoolTitle } from "./pool-title.js";
 import { createVotesView } from "./votes-view.js";
+import { loadMonsterImage } from "../lookup/skin-image.js";
 
 export function createCompetitiveView({
     getCurrentCompetitivePool,
@@ -175,10 +176,9 @@ export function createCompetitiveView({
             item.type = "button";
             item.setAttribute("aria-label", `查看${character.pet_name}精靈資訊`);
             avatar.className = "character-portrait";
-            avatar.src = `https://newseer.61.com/web/monster/head/${encodeURIComponent(character.seer_pet_id)}.png`;
             avatar.alt = `${character.pet_name} 精靈頭像`;
             avatar.loading = "lazy";
-            avatar.addEventListener("error", () => { avatar.classList.add("is-unavailable"); }, { once: true });
+            loadMonsterImage(avatar, character.seer_pet_id, { onUnavailable: () => avatar.classList.add("is-unavailable") });
             marker.className = `character-check competitive-pool-limit-indicator ${type.className}`;
             marker.textContent = type.marker;
             marker.title = type.title;

@@ -1,4 +1,5 @@
 import { fetchCnVotes } from "./votes-api.js";
+import { loadMonsterImage } from "../lookup/skin-image.js";
 
 export function createVotesView({ seerLookup, fetchVotes = fetchCnVotes,
     convertToTraditionalChinese = value => value, convertToSimplifiedChinese = value => value }) {
@@ -57,9 +58,8 @@ export function createVotesView({ seerLookup, fetchVotes = fetchCnVotes,
             const row = element("tr"), rank = element("td", String(item.rank).padStart(2, "0"), `competitive-vote-rank${item.rank <= 3 ? " is-top" : ""}`);
             const petCell = element("td"), pet = element("div", undefined, "competitive-vote-pet");
             const image = element("img");
-            image.src = `https://newseer.61.com/web/monster/head/${item.pet_id}.png`;
             image.alt = ""; image.loading = "lazy";
-            image.addEventListener("error", () => image.classList.add("is-unavailable"), { once: true });
+            loadMonsterImage(image, item.pet_id, { onUnavailable: () => image.classList.add("is-unavailable") });
             // The API already applies generic s2t. Normalize it back before applying
             // the site's cn→tw policy, including the 岳杰托里背 name exceptions.
             const petName = typeof item.name === "string" && item.name.trim()

@@ -4,12 +4,20 @@ export function cancelSkinImage(image) {
     loads.get(image)?.cancel();
 }
 
-export function hasSkinImageLoad(image) {
-    return loads.has(image);
+export function monsterImageUrl(id, kind = 'head') {
+    return `https://newseer.61.com/web/monster/${kind}/${encodeURIComponent(id)}.png`;
+}
+
+export function skinThumbnailPetId(skin) {
+    return Number(skin?.id) === 702 ? 164 : null;
+}
+
+export function loadMonsterImage(image, id, { kind, ...options } = {}) {
+    loadSkinImage(image, monsterImageUrl(id, kind), options);
 }
 
 // Each image owns its retry and fallback; a failed head must not replace a valid body.
-export function loadSkinImage(image, url, { fallback, isCurrent = () => true, retryDelay = 300 } = {}) {
+export function loadSkinImage(image, url, { fallback, onUnavailable = () => { image.hidden = true; }, isCurrent = () => true, retryDelay = 300 } = {}) {
     cancelSkinImage(image);
     let timer;
     let retried = false;
@@ -40,7 +48,7 @@ export function loadSkinImage(image, url, { fallback, isCurrent = () => true, re
             timer = setTimeout(() => {
                 timer = null;
                 if (!current()) return;
-                const retry = new URL(url);
+                const retry = new URL(source);
                 retry.searchParams.set('skin_retry', '1');
                 assign(retry.href);
             }, retryDelay);
@@ -53,6 +61,7 @@ export function loadSkinImage(image, url, { fallback, isCurrent = () => true, re
                 if (!current()) return;
                 if (next && next !== url) {
                     usingFallback = true;
+                    retried = false;
                     assign(next);
                     return;
                 }
@@ -62,7 +71,7 @@ export function loadSkinImage(image, url, { fallback, isCurrent = () => true, re
                 findingFallback = false;
             }
         }
-        if (current()) image.hidden = true;
+        if (current()) onUnavailable();
     }
     loads.set(image, state);
     image.addEventListener('load', loaded);

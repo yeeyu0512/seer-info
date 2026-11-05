@@ -5,6 +5,7 @@ import { fillLearningEffort } from "./training/learning-effort.js";
 import {initTrainingSearchPickers} from "./training/search-picker.js";
 import {trainingTemplate, teamLimits} from "./training/template.js";
 import {createTrainingMintmarkPicker} from "./training/mintmark-picker.js";
+import { createTaiwanProgressToggle } from "./shared/taiwan-progress-toggle.js";
 import {createTrainingResultView} from "./training/result-view.js";
 import {createTrainingExportData} from "./training/export-data.js";
 import { TRAINING_STATS as STATS } from "./seer-training-core.js";
@@ -46,12 +47,12 @@ export function initSeerTraining(root, { fetchSeerJson, convertToTraditionalChin
     }
     function updateAppearance() {
         const pet = selected.get("pet"); if (!pet) return;
-        const imageId = selectedSkin ? skinImageId(selectedSkin) : pet.resource_id || pet.id;
+        const appearance = selectedSkin ? {id:skinImageId(selectedSkin),skin:selectedSkin} : {id:pet.id};
         const art = query("[data-training-art]"); art.hidden = false; art.alt = selectedSkin ? name(selectedSkin) : name(pet);
-        images.set(art,{id:imageId,skin:selectedSkin,kind:"body",onUnavailable:() => { art.hidden = true; query("[data-art-placeholder]").hidden = false; query("[data-art-placeholder] p").textContent = "立繪暫時無法取得"; }});
+        images.set(art,{...appearance,kind:"body",onUnavailable:() => { art.hidden = true; query("[data-art-placeholder]").hidden = false; query("[data-art-placeholder] p").textContent = "立繪暫時無法取得"; }});
         query("[data-art-placeholder]").hidden = true;
         query("[data-appearance-name]").textContent = selectedSkin ? name(selectedSkin) : "原始外觀";
-        images.set(query(".training-pet img"),{id:imageId,skin:selectedSkin});
+        images.set(query(".training-pet img"),appearance);
     }
     async function fetchCached(url) {
         if (!cache.has(url)) cache.set(url, fetchSeerJson(url, {signal: AbortSignal.timeout(20000)}).catch(error => { cache.delete(url); throw error; }));
@@ -105,7 +106,7 @@ export function initSeerTraining(root, { fetchSeerJson, convertToTraditionalChin
             query("[data-race-mode]").value = "normal";
             query("[data-race-status]").textContent = "";
             query("[data-race-retry]").hidden = true;
-            const preview = query(".training-pet"); preview.hidden = false; preview.querySelector("img").src = `https://newseer.61.com/web/monster/head/${record.resource_id || record.id}.png`; preview.querySelector("img").alt = name(record); preview.querySelector("strong").textContent = name(record); preview.querySelector("p").textContent = `#${record.id} · 種族值總和 ${record.base_stats?.total ?? "—"}`;
+            const preview = query(".training-pet"); preview.hidden = false; preview.querySelector("img").alt = name(record); preview.querySelector("strong").textContent = name(record); preview.querySelector("p").textContent = `#${record.id} · 種族值總和 ${record.base_stats?.total ?? "—"}`;
             selectedSkin = null; query("[data-pet-select]").hidden = false; updateAppearance(); query("[data-skin-select]").disabled = false;
             renderRace();
             if (!restored && record.advance?.id != null) loadAdvance(record);
@@ -129,10 +130,11 @@ export function initSeerTraining(root, { fetchSeerJson, convertToTraditionalChin
     query("[data-suit-select]").addEventListener("click",event => choiceWindows.open("suit",event.currentTarget));
     query("[data-skin-select]").addEventListener("click",event => choiceWindows.open("skin",event.currentTarget));
     query("[data-suit-remove]").addEventListener("click",() => { selected.delete("suit"); suitEyeVersion++; eyeState = "free"; equipmentPickers.setAvailability("eye",true,""); query("[data-suit-select]").textContent = "選擇套裝 ›"; query("[data-suit-remove]").hidden = true; query('[data-effect="suit"]').textContent = ""; recalculate(); });
-    const {renderMintSlot} = createTrainingMintmarkPicker({root, query, selected, name, traditional, simplified, fetchCached, choose, recalculate});
+    const {bindTaiwanProgressToggle} = createTaiwanProgressToggle();
+    const {renderMintSlot} = createTrainingMintmarkPicker({root, query, selected, name, traditional, simplified, choose, recalculate, bindTaiwanProgressToggle});
     const clearPet = () => { query("[data-pet-select]").hidden = true; petVersion++; advancedStats = null; selectedSkin = null; query("[data-skin-select]").disabled = true; query("[data-appearance-name]").textContent = "原始外觀"; query(".training-pet").hidden = true; query("[data-race-picker]").hidden = true; query("[data-race-status]").textContent = ""; query("[data-race-retry]").hidden = true; query("[data-race-mode]").value = "normal"; images.clear(query("[data-training-art]")); images.clear(query(".training-pet img")); query("[data-art-placeholder]").hidden = false; query("[data-art-placeholder] p").innerHTML = "選擇一隻精靈<br>開始模擬培養"; renderRace(); };
     query("[data-pet-clear]").addEventListener("click",() => { selected.delete("pet"); clearPet(); recalculate(); });
-    const petPicker = initTrainingPetPicker(petDialog,{fetchSeerJson,fetchCached,traditional,simplified,onChoose:record => choose("pet",record)});
+    const petPicker = initTrainingPetPicker(petDialog,{fetchSeerJson,fetchCached,traditional,simplified,bindTaiwanProgressToggle,onChoose:record => choose("pet",record)});
     const equipmentPickers = initTrainingSearchPickers({root, query, selected, name, simplified, fetchCached, choose, recalculate, description:(record,id) => traditional(description(record,id))});
     initEquipmentPresets(root,{fetchCached,apply:async (records,active) => {
         const suit = records.find(([id]) => id === "suit")?.[1];

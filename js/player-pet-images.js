@@ -1,5 +1,6 @@
 import { skinImageId } from './seer-training-selectors.js';
 import { createTrainingImages } from './training/images.js';
+import { skinThumbnailPetId } from './lookup/skin-image.js';
 
 async function fetchImageData(url) {
     const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
@@ -30,24 +31,8 @@ export function createPlayerPetImages({ fetchJson = fetchImageData } = {}) {
             const token = {};
             image.playerPetImageToken = token;
             const current = () => image.playerPetImageToken === token && image.isConnected;
-            const setImage = options => {
-                images.set(image, options);
-                const fallback = image.onerror;
-                let corrected = false;
-                image.onerror = async event => {
-                    if (!current()) return;
-                    const match = String(image.src).match(/^(https:\/\/newseer\.61\.com\/web\/monster\/head\/)1500(\d+)(\.png)$/);
-                    if (!corrected && match) {
-                        corrected = true;
-                        image.hidden = false;
-                        image.src = `${match[1]}1400${match[2]}${match[3]}`;
-                        return;
-                    }
-                    return fallback?.call(image, event);
-                };
-            };
             const original = () => {
-                if (current()) setImage({ id });
+                if (current()) images.set(image, { id });
             };
             original();
             if (!Number.isSafeInteger(skinId) || skinId <= 0 || skinId > 0xffffffff) return;
@@ -57,8 +42,14 @@ export function createPlayerPetImages({ fetchJson = fetchImageData } = {}) {
             try {
                 const skin = await fetchCached(`https://api.seerapi.com/v1/pet_skin/${catalogSkinId}`);
                 if (!current() || Number(skin?.id) !== catalogSkinId || Number(skin?.pet?.id) !== id) return;
-                const resource = String(skinImageId(skin));
-                setImage({ id: variantSkin ? resource.replace(/^1400/, '1500') : resource, skin, onUnavailable: original });
+                const baseResource = String(skinThumbnailPetId(skin) ?? skinImageId(skin));
+                const resource = variantSkin ? baseResource.replace(/^1400/, '1500') : baseResource;
+                const corrected = resource.replace(/^1500(?=\d+$)/, '1400');
+                if (corrected !== resource && Number(skin.category?.id) !== 0) {
+                    images.set(image, { id: resource, onUnavailable: () => {
+                        if (current()) images.set(image, { id: corrected, skin, onUnavailable: original });
+                    } });
+                } else images.set(image, { id: resource, skin, onUnavailable: original });
             } catch {
                 // The original image remains available when skin metadata fails.
             }

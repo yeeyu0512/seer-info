@@ -1,4 +1,5 @@
 import { renderCompetitivePoolTitle } from "../competitive/pool-title.js";
+import { loadMonsterImage } from "../lookup/skin-image.js";
 
 export function createCompetitivePreview({
     competitivePoolNameInput,
@@ -113,10 +114,9 @@ export function createCompetitivePreview({
 
             item.className = `character-card public-character-card competitive-pool-pet ${type.className}`;
             avatar.className = "character-portrait";
-            avatar.src = `https://newseer.61.com/web/monster/head/${encodeURIComponent(characterId)}.png`;
             avatar.alt = `${character.pet_name} 精靈頭像`;
             avatar.loading = "lazy";
-            avatar.addEventListener("error", () => avatar.classList.add("is-unavailable"), { once: true });
+            loadMonsterImage(avatar, characterId, { onUnavailable: () => avatar.classList.add("is-unavailable") });
             typeIcon.className = "admin-character-type-icon character-type-icon";
             typeIcon.alt = "";
             typeIcon.setAttribute("aria-hidden", "true");

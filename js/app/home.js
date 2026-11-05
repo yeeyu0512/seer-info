@@ -2,6 +2,7 @@ import { openDialog, closeDialog } from "../shared/dialog-motion.js";
 import { initHomeCarousel } from "./home-carousel.js";
 import { initAbout } from "./about.js";
 import { enableDialogBackdropClose } from "../shared/dialog-backdrop.js";
+import { loadMonsterImage } from "../lookup/skin-image.js";
 
 // Home only routes to the existing tools; lookup remains owned by seer-lookup.
 export function initHome({ seerLookup, activateTab }) {
@@ -51,6 +52,8 @@ export function initHome({ seerLookup, activateTab }) {
         button.addEventListener("click", () => openHomeShortcut(button, { seerLookup, activateTab }));
     });
     home.querySelectorAll("[data-home-pet-id]").forEach((button) => {
+        const portrait = button.querySelector("[data-home-portrait-id]");
+        if (portrait) loadMonsterImage(portrait, portrait.dataset.homePortraitId);
         button.addEventListener("click", () => seerLookup.openPetInfo(button.dataset.homePetId));
     });
 }
