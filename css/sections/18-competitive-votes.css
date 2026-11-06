@@ -61,6 +61,15 @@
 .competitive-vote-table th:first-child { width: 72px; }
 .competitive-vote-table th:last-child { width: 140px; }
 .competitive-vote-table th:last-child, .competitive-vote-table td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+.competitive-vote-cutoff td { padding-block: 0; border-top: 0; }
+.competitive-vote-cutoff + tr td { border-top: 0; }
+.competitive-vote-cutoff span {
+    display: flex; align-items: center; gap: 10px;
+    color: var(--primary-light); font-size: 11px; white-space: nowrap;
+}
+.competitive-vote-cutoff span::before, .competitive-vote-cutoff span::after {
+    content: ""; flex: 1; border-top: 1px solid currentColor; opacity: .65;
+}
 .competitive-vote-rank { color: var(--text-secondary); font-variant-numeric: tabular-nums; }
 .competitive-vote-rank.is-top { color: var(--primary-light); font-weight: 700; }
 .competitive-vote-pet { display: flex; align-items: center; gap: 14px; min-width: 0; }

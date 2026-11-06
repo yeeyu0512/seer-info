@@ -1,4 +1,5 @@
 import { loadMonsterImage, monsterImageUrl } from "./skin-image.js";
+import { petSkinOwnerId } from "./pet-forms.js";
 
 export function createLookupDialogs({
     seerRelatedSkinsModal,
@@ -52,7 +53,7 @@ export function createLookupDialogs({
             seerRelatedSkinsMessage.textContent = "正在載入關聯皮膚…";
             updateSeerModalScrollLock();
             seerRelatedSkinsClose.focus();
-            void loadSeerRelatedSkins(getCurrentPetId(), requestId);
+            void loadSeerRelatedSkins(petSkinOwnerId(getCurrentPetId()), requestId);
         }
 
     async function loadSeerRelatedSkins(petId, requestId) {
@@ -64,7 +65,7 @@ export function createLookupDialogs({
                 const matchingSkins = skins
                     .filter((skin) =>
                         String(skin && skin.pet && skin.pet.id) === String(petId)
-                        && matchesTaiwanSkinProgress(skin, getCurrentPetData(), settings)
+                        && matchesTaiwanSkinProgress(skin, skin.pet, settings)
                     )
                     .sort((first, second) => Number(second.id) - Number(first.id));
                 if (!matchingSkins.length) {

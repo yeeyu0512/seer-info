@@ -97,7 +97,9 @@ const server = http.createServer((req, res) => {
                 assert.equal(desktopLayout.consistentHeight, true, 'toolbar controls share the same height');
                 assert(desktopLayout.resultsOffset < 210, `desktop results stay within the heading and toolbar area (${desktopLayout.resultsOffset}px)`);
             }
-            await results.first().click();
+            assert.match(await results.first().textContent(), /聖光靈神 SP.*#13311$/);
+            const latestRegularPet = results.filter({ hasText: /#28$/ });
+            await latestRegularPet.click();
             await page.locator('#seer-lookup-preview:not([hidden])').waitFor();
             const selectedName = await page.locator('#seer-lookup-name').textContent();
             if (width <= 900) {
@@ -116,20 +118,20 @@ const server = http.createServer((req, res) => {
                 }), true, 'mobile info and skin actions appear together above artwork and within the viewport after selection');
                 await page.screenshot({ path: path.join(process.env.TEMP || root, `seer-mobile-preview-${width}.png`) });
             }
-            assert.match(await page.locator('#seer-lookup-message').textContent(), /共 28 隻精靈.*已顯示 20 隻/);
+            assert.match(await page.locator('#seer-lookup-message').textContent(), /共 29 隻精靈.*已顯示 20 隻/);
             await page.locator('#seer-pet-sort-trigger').click(); await page.locator('#seer-pet-sort-options [data-value="id-asc"]').click();
             assert.match(await results.first().textContent(), /#1$/);
             assert.equal(await page.locator('#seer-lookup-name').textContent(), selectedName, 'sorting preserves the selected pet preview');
             if (width <= 900) await page.locator('#seer-pet-back-to-results').click();
             await page.locator('#seer-lookup-results .seer-lookup-browse-sentinel').click();
-            assert.equal(await results.count(), 28);
-            assert.match(await results.last().textContent(), /#28$/);
+            assert.equal(await results.count(), 29);
+            assert.match(await results.last().textContent(), /#13311$/);
             await page.locator('#seer-pet-sort-trigger').click(); await page.locator('#seer-pet-sort-options [data-value="name"]').click();
             assert.match(await results.first().textContent(), /#1$/);
             await page.locator('#seer-pet-sort-trigger').click(); await page.locator('#seer-pet-sort-options [data-value="id-desc"]').click();
-            assert.match(await results.first().textContent(), /#28$/);
-            assert.equal(await results.first().getAttribute('aria-pressed'), 'true');
-            if (width <= 900) { await results.first().click(); await page.locator('#seer-lookup-preview:not([hidden])').waitFor(); }
+            assert.match(await results.first().textContent(), /#13311$/);
+            assert.equal(await latestRegularPet.getAttribute('aria-pressed'), 'true');
+            if (width <= 900) { await latestRegularPet.click(); await page.locator('#seer-lookup-preview:not([hidden])').waitFor(); }
             if (width > 900) {
                 await page.evaluate(() => window.scrollTo(0, 0));
                 assert.equal(await page.evaluate(() => {
@@ -145,13 +147,18 @@ const server = http.createServer((req, res) => {
                 }), true, 'both equally styled actions stay together beside the name and visible without scrolling in a 640px-high desktop viewport');
             }
             await page.screenshot({ path: path.join(process.env.TEMP || root, `seer-preview-${width}.png`), fullPage: true });
-            assert.equal(await results.first().getAttribute('aria-pressed'), 'true');
+            assert.equal(await latestRegularPet.getAttribute('aria-pressed'), 'true');
             assert.equal(await page.locator('#seer-lookup-preview').evaluate(node => node.parentElement.id), 'seer-lookup-illustration');
             await page.locator('#seer-pet-info-toggle').click();
-            await page.locator('.seer-pet-info-section-nav').waitFor();
+            const infoContent = page.locator('#seer-pet-info');
+            await infoContent.getByRole('heading', { name: '種族值', exact: true }).waitFor();
+            assert.equal(await infoContent.locator(':scope > :first-child > h3').textContent(), '種族值');
             assert.equal(await page.locator('#seer-pet-info-title').textContent(), selectedName);
-            await page.locator('.seer-pet-info-section-nav button').getByText('技能', { exact: true }).click();
-            assert.equal(await page.locator('#seer-pet-info').evaluate(node => node.scrollHeight <= node.clientHeight || node.scrollTop > 0), true);
+            await infoContent.getByRole('heading', { name: /^技能（/ }).waitFor();
+            assert.equal(await infoContent.evaluate(node => {
+                node.scrollTo({ top: node.scrollHeight, behavior: 'instant' });
+                return node.scrollHeight <= node.clientHeight || node.scrollTop > 0;
+            }), true);
             await closeInfo();
             assert.equal(await page.locator('#seer-pet-info-toggle').evaluate(node => node === document.activeElement), true);
             if (width > 900) await page.locator('#seer-lookup-results').evaluate(node => { node.scrollTop = 120; });
@@ -167,7 +174,7 @@ const server = http.createServer((req, res) => {
             await closeInfo();
             await openCatalog();
             assert.equal(await page.locator('#seer-lookup-name').textContent(), selectedName, 'external info preserves the catalog pet');
-            assert.equal(await results.first().getAttribute('aria-pressed'), 'true');
+            assert.equal(await latestRegularPet.getAttribute('aria-pressed'), 'true');
             if (width > 900) assert.equal(await page.locator('#seer-lookup-results').evaluate(node => node.scrollTop), 120, 'external info preserves the catalog scroll position');
             await page.locator('#seer-pet-info-toggle').click();
             await page.waitForFunction(name => document.querySelector('#seer-pet-info-title').textContent === name, selectedName);
@@ -255,7 +262,7 @@ const server = http.createServer((req, res) => {
             assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
             assert.equal(await page.locator('#seer-lookup-results').evaluate(node => node.scrollWidth <= node.clientWidth), true);
             await page.screenshot({ path: path.join(process.env.TEMP || root, `seer-catalog-${width}.png`), fullPage: true });
-            await results.first().click();await page.locator('#seer-pet-info-toggle').click();await page.locator('.seer-pet-info-section-nav').waitFor();
+            await results.first().click();await page.locator('#seer-pet-info-toggle').click();await infoContent.getByRole('heading', { name: '種族值', exact: true }).waitFor();
             assert.equal(await page.locator('.seer-pet-info-dialog').evaluate(node => node.scrollWidth <= node.clientWidth), true);
             await page.screenshot({ path: path.join(process.env.TEMP || root, `seer-info-${width}.png`), fullPage: true });
             await closeInfo();
@@ -395,7 +402,7 @@ const server = http.createServer((req, res) => {
                 await cold.locator('#seer-lookup-preview:not([hidden])').waitFor();
                 assert.equal(requests().filter(url => url.pathname === '/v1/pet/1').length, 0, 'preview uses catalog names and types without fetching full details');
                 await cold.locator('#seer-pet-info-toggle').click();
-                await cold.locator('.seer-pet-info-section-nav').waitFor();
+                await cold.locator('#seer-pet-info').getByRole('heading', { name: '種族值', exact: true }).waitFor();
                 assert.equal(requests().filter(url => url.pathname === '/v1/pet/1').length, 1, 'only opening full info requests pet details');
                 await cold.keyboard.press('Escape');
                 await cold.locator('#seer-pet-info-modal').waitFor({state:'hidden'});

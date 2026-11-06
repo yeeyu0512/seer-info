@@ -54,7 +54,17 @@ export function createVotesView({ seerLookup, fetchVotes = fetchCnVotes,
         const head = element("thead"), heading = element("tr"), body = element("tbody");
         ["排名", "精靈", "票數"].forEach(label => { const th = element("th", label); th.scope = "col"; heading.append(th); });
         head.append(heading);
-        for (const item of [...pool.list].sort((a, b) => a.rank - b.rank)) {
+        const cutoff = selected === 2 ? 12 : 25;
+        const ranking = [...pool.list].sort((a, b) => a.rank - b.rank);
+        for (const [index, item] of ranking.entries()) {
+            if (index > 0 && ranking[index - 1].rank <= cutoff && item.rank > cutoff) {
+                const divider = element("tr", undefined, "competitive-vote-cutoff");
+                const cell = element("td");
+                cell.colSpan = 3;
+                cell.append(element("span", `最多限制至前 ${cutoff} 名`));
+                divider.append(cell);
+                body.append(divider);
+            }
             const row = element("tr"), rank = element("td", String(item.rank).padStart(2, "0"), `competitive-vote-rank${item.rank <= 3 ? " is-top" : ""}`);
             const petCell = element("td"), pet = element("div", undefined, "competitive-vote-pet");
             const image = element("img");

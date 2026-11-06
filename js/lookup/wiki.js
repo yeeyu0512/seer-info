@@ -2,6 +2,9 @@ export function createSoulmarkImageResolver(fetchSeerJson) {
     const seerSoulmarkImageCache = new Map();
     function resolveSeerWikiSoulmarkImage(soulmarkId) {
         const key = String(soulmarkId);
+        if (key === "2162") {
+            return Promise.resolve(new URL("../../assets/icons/soulmarks/2162.png", import.meta.url).href);
+        }
         let promise = seerSoulmarkImageCache.get(key);
         if (!promise) {
             const query = new URLSearchParams({

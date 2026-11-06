@@ -417,7 +417,7 @@
     transform: none;
 }
 
-.seer-pet-stat-tab[aria-selected="true"] {
+.seer-pet-stat-tab:is([aria-selected="true"], [aria-pressed="true"]) {
     border-color: rgba(167, 160, 255, .55);
     color: var(--text);
     background: rgba(130, 113, 244, .22);

@@ -17,7 +17,7 @@ export function loadMonsterImage(image, id, { kind, ...options } = {}) {
 }
 
 // Each image owns its retry and fallback; a failed head must not replace a valid body.
-export function loadSkinImage(image, url, { fallback, onUnavailable = () => { image.hidden = true; }, isCurrent = () => true, retryDelay = 300 } = {}) {
+export function loadSkinImage(image, url, { fallback, onLoaded, onUnavailable = () => { image.hidden = true; }, isCurrent = () => true, retryDelay = 300 } = {}) {
     cancelSkinImage(image);
     let timer;
     let retried = false;
@@ -38,7 +38,9 @@ export function loadSkinImage(image, url, { fallback, onUnavailable = () => { im
         image.src = next;
     }
     function loaded() {
-        if (current() && image.naturalWidth > 0) image.hidden = false;
+        if (!current() || !image.complete || image.naturalWidth === 0) return;
+        image.hidden = false;
+        onLoaded?.();
     }
     async function failed() {
         // An event queued for the previous source must not affect a pending/new image.

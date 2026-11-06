@@ -480,6 +480,11 @@
                             <span id="seer-lookup-related-pet" hidden></span>
                             <span class="seer-pet-type"><img id="seer-lookup-type-icon" class="seer-pet-type-icon"
                                     alt="" aria-hidden="true"><span id="seer-lookup-type-name">-</span></span>
+                            <div id="seer-pet-preview-forms" role="group" aria-label="出戰型態" hidden>
+                                <button type="button" class="seer-pet-stat-tab" data-pet-form="3311" aria-pressed="false">原型態</button>
+                                <button type="button" class="seer-pet-stat-tab" data-pet-form="13311" aria-label="SP 型態" aria-pressed="false">SP</button>
+                            </div>
+                            <span id="seer-pet-preview-form-status" role="status"></span>
                         </div>
                         <img id="seer-lookup-skin-category-icon" class="seer-lookup-skin-category-icon" alt="皮膚種類"
                             hidden>
@@ -696,6 +701,8 @@
                     </div>
                 </div>
                 <div class="seer-pet-info-header-actions">
+                    <button id="seer-pet-info-form" class="secondary-button compact-button seer-pet-info-wiki-button"
+                        type="button" hidden>切換型態</button>
                     <button id="seer-pet-info-skins" class="secondary-button compact-button seer-pet-info-wiki-button"
                         type="button">關聯皮膚</button>
                     <button id="seer-lookup-more-info" class="secondary-button compact-button seer-pet-info-wiki-button"

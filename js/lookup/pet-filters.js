@@ -12,7 +12,9 @@ export function matchesPetTypeFilter(pet, { category, typeId }, combinations) {
 
 export function matchesPetSearchQuery(pet, query, normalize) {
     const text = normalize(String(query || "")).trim().toLowerCase();
-    return !text || normalize(String(pet.name || "")).toLowerCase().includes(text);
+    return !text || [pet.name, ...(pet.searchAliases || [])].some(name =>
+        normalize(String(name || "")).toLowerCase().includes(text)
+    );
 }
 
 export function sortPetResults(pets, order, traditional = value => value) {
