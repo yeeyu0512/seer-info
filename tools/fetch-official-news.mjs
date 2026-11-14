@@ -18,7 +18,7 @@ while (page && visited.size < 20 && items.size < 12) {
     if (!rows.length) throw new Error('Official list layout changed; preserving previous data.');
     for (const row of rows) {
         const title = clean(row[2]);
-        if (!/^\d{1,2}月\d{1,2}日維護與活動更新公告$/.test(title.replace(/\s+/g, ''))) continue;
+        if (!/^\d{1,2}月\d{1,2}日(?:維護與)?活動更新公告$/.test(title.replace(/\s+/g, ''))) continue;
         const url = new URL(row[1], page);
         const published = clean(row[3]).match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/)?.[0];
         if (url.origin !== address.origin || !url.pathname.startsWith('/seer_df/news/page/') || !published) throw new Error('Invalid announcement');
@@ -27,11 +27,11 @@ while (page && visited.size < 20 && items.size < 12) {
     const next = html.match(/<a\b[^>]*href="([^"]+)"[^>]*>\s*下一頁\s*<\/a>/)?.[1];
     page = next ? new URL(next, page).href : null;
 }
-if (!items.size) throw new Error('No maintenance announcements found; preserving previous data.');
+if (!items.size) throw new Error('No update announcements found; preserving previous data.');
 const sorted = [...items.values()].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)).slice(0, 12);
 const file = new URL('../data/official-news.json', import.meta.url);
 const temporary = new URL('../data/official-news.json.tmp', import.meta.url);
 await mkdir(new URL('../data/', import.meta.url), { recursive: true });
 await writeFile(temporary, JSON.stringify({ source, fetchedAt: new Date().toISOString(), items: sorted }, null, 2) + '\n');
 await rename(temporary, file);
-console.log(`Saved ${sorted.length} maintenance announcements from ${visited.size} pages.`);
+console.log(`Saved ${sorted.length} update announcements from ${visited.size} pages.`);
