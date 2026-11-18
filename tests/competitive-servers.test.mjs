@@ -235,21 +235,26 @@ test('preview titles show the selected server', () => {
 
 async function setupSearchEditor(fetchJson) {
     const ui = setupDocument(), writes = [];
+    let rosterReads = 0;
     const editor = createCompetitiveEditor({
         getAdminCompetitivePools: async () => [pool('tw-period', 'tw')],
         showAdminNotification() {}, getAdminErrorMessage, formatDate: value => value, setPoolDateValue() {},
         competitivePoolNameInput: ui.get('competitive-pool-name'), toLocalDateTime: value => value,
-        getCompetitivePoolCharacters: async () => [],
+        getCompetitivePoolCharacters: async () => { rosterReads++; return []; },
         competitivePoolImportProgress: node(), parseCompetitivePoolPetIds: () => ({ ids: [], invalidLines: [], duplicateCount: 0 }),
         fetchJson,
         toTraditionalChinese: value => value.replaceAll('圣灵谱尼', '聖靈譜尼'),
         convertToSimplifiedChinese: value => value.replaceAll('聖靈譜尼', '圣灵谱尼'),
-        addCompetitivePoolCharacter: async (...args) => { writes.push(args); }
+        addCompetitivePoolCharacter: async (...args) => {
+            writes.push(args);
+            const [competitive_pool_id, seer_pet_id, pet_name, pool_type] = args;
+            return { id: writes.length, competitive_pool_id, seer_pet_id, pet_name, pool_type };
+        }
     });
     await editor.loadAdminCompetitivePools();
     await editor.openCompetitivePoolEditor('tw-period');
     ui.get('competitive-pet-type').value = 'restricted';
-    return { ...ui, editor, writes };
+    return { ...ui, editor, writes, getRosterReads: () => rosterReads };
 }
 
 test('admin name search accepts traditional names and requires choosing a candidate before adding by its ID', async () => {
@@ -271,13 +276,17 @@ test('admin name search accepts traditional names and requires choosing a candid
         assert.equal(ui.get('add-competitive-pet-button').disabled, true);
         await ui.editor.addSelectedCompetitivePet({ preventDefault() {} });
         assert.deepEqual(ui.writes, []);
-        await candidates.children[1].events.click();
-        assert.equal(urls[1], 'https://api.seerapi.com/v1/pet/5001');
+        candidates.children[1].events.click();
+        assert.equal(urls.length, 1);
         assert.equal(ui.get('competitive-pet-name').textContent, '聖靈譜尼·真身');
         assert.equal(ui.get('competitive-pet-id').value, '聖靈譜尼');
         assert.equal(ui.get('add-competitive-pet-button').disabled, false);
         await ui.editor.addSelectedCompetitivePet({ preventDefault() {} });
         assert.deepEqual(ui.writes, [['tw-period', 5001, '聖靈譜尼·真身', 'restricted']]);
+        assert.equal(ui.getRosterReads(), 1);
+        assert.equal(ui.editor.getPreviewCharacters()[0].seer_pet_id, 5001);
+        assert.equal(ui.get('competitive-pet-type').value, 'restricted');
+        assert.equal(ui.get('competitive-pet-id').value, '');
         assert.equal(ui.get('competitive-pet-preview').hidden, true);
     } finally { Object.assign(globalThis, original); }
 });
@@ -292,7 +301,7 @@ test('admin ID lookup supports full-width digits and input changes invalidate th
         assert.deepEqual(urls, ['https://api.seerapi.com/v1/pet/5000']);
         assert.equal(ui.get('add-competitive-pet-button').disabled, false);
         ui.get('competitive-pet-id').value = '其他';
-        ui.get('competitive-pet-id').events.input();
+        ui.get('competitive-pet-id').events.input({});
         await ui.editor.addSelectedCompetitivePet({ preventDefault() {} });
         assert.equal(ui.get('add-competitive-pet-button').disabled, true);
         assert.deepEqual(ui.writes, []);
@@ -314,10 +323,11 @@ test('Enter searches names without inserting and old candidates cannot select a 
         assert.deepEqual(ui.writes, []);
         const oldCandidate = ui.get('competitive-pet-search-results').children[0];
         ui.get('competitive-pet-id').value = '其他';
-        ui.get('competitive-pet-id').events.input();
+        ui.get('competitive-pet-id').events.input({});
         await oldCandidate.events.click();
         assert.equal(requests, 1);
         assert.equal(ui.get('competitive-pet-search-results').hidden, true);
+        ui.editor.clearCompetitivePetPreview();
     } finally { Object.assign(globalThis, original); }
 });
 

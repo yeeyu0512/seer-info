@@ -986,7 +986,6 @@ html:has(.site-header .primary-main-tabs) { scroll-padding-top: 84px; }
     box-sizing: border-box;
     width: 100%;
     min-width: 0;
-    height: 36px;
     padding: 0 10px;
     border: 1px solid rgba(196, 191, 255, .16);
     border-radius: 9px;
@@ -996,13 +995,23 @@ html:has(.site-header .primary-main-tabs) { scroll-padding-top: 84px; }
     font: inherit;
 }
 
+.competitive-pool-character-form input,
+.competitive-pool-character-form select,
+.competitive-pool-character-form .site-picker-trigger,
+.competitive-pet-actions button {
+    min-height: 36px;
+}
+
+.competitive-pool-character-form .site-picker-trigger {
+    padding-block: 5px;
+}
+
 .competitive-pet-actions {
     display: flex;
     gap: 8px;
 }
 
 .competitive-pet-actions button {
-    min-height: 36px;
     padding: 7px 11px;
     font-size: 12px;
     white-space: nowrap;
@@ -1029,8 +1038,28 @@ html:has(.site-header .primary-main-tabs) { scroll-padding-top: 84px; }
 }
 
 .competitive-pool-character-list .competitive-pool-pet > .delete-character-button {
-    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    flex: 0 0 32px;
+    min-height: 36px;
     margin-left: auto !important;
+    padding: 0;
+    border-radius: 7px;
+    background: transparent;
+    box-shadow: none;
+    font-size: 17px;
+    line-height: 1;
+}
+
+.competitive-pool-character-list .delete-character-button:hover {
+    background: rgba(255, 111, 125, .12);
+    box-shadow: none;
+    transform: none;
+}
+
+.competitive-pool-character-list .delete-character-button:focus-visible {
+    outline: 2px solid var(--danger);
+    outline-offset: 2px;
 }
 
 .info-card {

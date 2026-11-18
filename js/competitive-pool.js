@@ -80,16 +80,19 @@ export async function getCompetitivePoolCharacters(poolId) {
 }
 
 export async function addCompetitivePoolCharacter(poolId, petId, petName, poolType) {
-    const { error } = await supabaseClient
+    const { data, error } = await supabaseClient
         .from("competitive_pool_characters")
         .insert({
             competitive_pool_id: poolId,
             seer_pet_id: petId,
             pet_name: petName,
             pool_type: poolType
-        });
+        })
+        .select(COMPETITIVE_POOL_CHARACTER_FIELDS)
+        .single();
 
     if (error) throw error;
+    return data;
 }
 
 export async function addCompetitivePoolCharacters(poolId, characters, poolType) {
