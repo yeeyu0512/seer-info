@@ -71,6 +71,13 @@ const server = http.createServer((req, res) => {
             };
             await page.goto(`${base}/index.html?tab=pet`, { waitUntil: 'networkidle' });
             await results.first().waitFor();
+            const dimensions = selector => page.locator(selector).evaluate(node => {
+                const { width, height } = node.getBoundingClientRect();
+                return { width, height };
+            });
+            const artworkSize = () => dimensions('.seer-lookup-illustration-stage');
+            const emptyPetArtworkSize = width > 900 ? await artworkSize() : null;
+            const petListSize = width > 900 ? await dimensions('#seer-lookup-results') : null;
             if (width <= 900) {
                 assert.equal(await page.evaluate(() => {
                     const attribute = document.querySelector('.seer-pet-attribute-control').getBoundingClientRect();
@@ -147,6 +154,7 @@ const server = http.createServer((req, res) => {
                         && getComputedStyle(skinNode).backgroundColor === getComputedStyle(document.querySelector('#seer-pet-info-toggle')).backgroundColor;
                 }), true, 'both equally styled actions stay together beside the name and visible without scrolling in a 640px-high desktop viewport');
             }
+            const petArtworkSize = await artworkSize();
             await page.screenshot({ path: path.join(process.env.TEMP || root, `seer-preview-${width}.png`), fullPage: true });
             assert.equal(await latestRegularPet.getAttribute('aria-pressed'), 'true');
             assert.equal(await page.locator('#seer-lookup-preview').evaluate(node => node.parentElement.id), 'seer-lookup-illustration');
@@ -284,9 +292,16 @@ const server = http.createServer((req, res) => {
             assert.deepEqual(petHeader, skinHeader, 'pet and skin headers use the same shared typography and accent');
             assert.equal(await page.locator('#seer-lookup-preview').evaluate(node => node.parentElement.id), 'seer-lookup-illustration');
             await results.first().waitFor();
+            if (width > 900) {
+                assert.deepEqual(await dimensions('#seer-lookup-results'), petListSize, 'desktop lists use the same dimensions');
+                assert.deepEqual(await artworkSize(), emptyPetArtworkSize, 'empty desktop artwork areas use the same dimensions');
+            }
             await results.first().click();
             await page.locator('#seer-lookup-preview:not([hidden])').waitFor();
             assert.equal(await page.locator('#seer-lookup-id-result').textContent(), '#840');
+            const skinArtworkSize = await artworkSize();
+            assert.equal(skinArtworkSize.width, petArtworkSize.width, 'selected artwork areas use the same width');
+            if (width > 900) assert.equal(skinArtworkSize.height, petArtworkSize.height, 'selected desktop artwork areas use the same height');
             assert.equal(await page.locator('#seer-lookup-message').textContent(), '共 24 款皮膚', 'selecting a skin keeps the results summary visible');
             assert.equal(await page.locator('#seer-pet-info-toggle').textContent(), '綁定精靈資訊');
             if (width <= 900) {

@@ -249,7 +249,8 @@
 /* Desktop: one compact query row and a continuous list / preview workspace. */
 @media (min-width: 901px) {
     #seer-lookup-section:is([data-lookup-mode="pet"], [data-lookup-mode="skin"]) {
-        grid-template-columns: repeat(12, minmax(0, 1fr));
+        grid-template-columns: minmax(260px, 1fr) minmax(0, 2fr);
+        column-gap: 28px;
     }
     #seer-lookup-section:is([data-lookup-mode="pet"], [data-lookup-mode="skin"]) #seer-pet-search-toolbar { flex-wrap: nowrap; }
     #seer-lookup-section:is([data-lookup-mode="pet"], [data-lookup-mode="skin"]) #seer-lookup-id { font-size: 14px; }
@@ -259,10 +260,8 @@
         margin: 0;
     }
     #seer-lookup-section:is([data-lookup-mode="pet"], [data-lookup-mode="skin"]) #seer-lookup-form {
-        grid-column: 1 / span 7;
         grid-template-columns: minmax(0, 1fr);
     }
-    #seer-lookup-section:is([data-lookup-mode="pet"], [data-lookup-mode="skin"]) #seer-pet-type-filter { grid-column: 8 / -1; }
     #seer-lookup-section:is([data-lookup-mode="pet"], [data-lookup-mode="skin"]) #seer-lookup-input-label {
         position: absolute;
         width: 1px;
@@ -278,9 +277,9 @@
         padding-bottom: 8px;
     }
     #seer-lookup-section:is([data-lookup-mode="pet"], [data-lookup-mode="skin"]) #seer-lookup-results {
-        grid-column: 1 / span 6;
+        grid-column: 1;
         grid-row: 4;
-        max-height: min(62vh, 520px);
+        max-height: clamp(460px, 66vh, 650px);
         gap: 2px;
     }
     #seer-lookup-section:is([data-lookup-mode="pet"], [data-lookup-mode="skin"]) .seer-lookup-result {
@@ -290,9 +289,9 @@
     }
     #seer-lookup-section:is([data-lookup-mode="pet"], [data-lookup-mode="skin"]) .seer-lookup-result-name { font-size: 14px; }
     #seer-lookup-section:is([data-lookup-mode="pet"], [data-lookup-mode="skin"]) .seer-lookup-illustration {
-        grid-column: 7 / -1;
+        grid-column: 2;
         grid-row: 4;
-        padding: 8px 0 8px 24px;
+        padding: 4px 0 0 28px;
         min-height: 0;
         border: 0;
         border-left: 1px solid var(--border);
@@ -343,10 +342,14 @@
     #seer-lookup-section:is([data-lookup-mode="pet"], [data-lookup-mode="skin"])[data-pet-presentation="browse"] .seer-lookup-illustration-stage {
         grid-column: 1 / -1;
         grid-row: 3;
-        margin-top: 16px;
+        min-height: 0;
+        height: clamp(360px, 48vh, 500px);
+        margin-top: 18px;
+        border-radius: 0;
     }
-    #seer-lookup-section[data-lookup-mode="pet"][data-pet-presentation="browse"] .seer-lookup-illustration:has(#seer-pet-preview-forms:not([hidden])) .seer-lookup-illustration-stage {
-        min-height: 260px;
+    #seer-lookup-section:is([data-lookup-mode="pet"], [data-lookup-mode="skin"])[data-pet-presentation="browse"] .seer-lookup-illustration-stage img {
+        height: 100%;
+        max-height: none;
     }
     #seer-lookup-section:is([data-lookup-mode="pet"], [data-lookup-mode="skin"])[data-pet-presentation="direct"] .seer-lookup-illustration {
         grid-column: 1 / -1;
@@ -501,21 +504,8 @@
 #seer-lookup-section[data-lookup-mode="skin"] #seer-lookup-related-pet { order: 1; flex-basis: auto; }
 #seer-lookup-section[data-lookup-mode="skin"] #seer-lookup-id { min-width: 0; }
 
-/* Give skin artwork the main share of the workspace, with one compact identity header. */
+/* Skin previews use a compact identity header. */
 @media (min-width: 901px) {
-    #seer-lookup-section[data-lookup-mode="skin"] {
-        grid-template-columns: minmax(260px, 1fr) minmax(0, 2fr);
-        column-gap: 28px;
-    }
-    #seer-lookup-section[data-lookup-mode="skin"] #seer-lookup-results {
-        grid-column: 1;
-        max-height: clamp(460px, 66vh, 650px);
-    }
-    #seer-lookup-section[data-lookup-mode="skin"] .seer-lookup-illustration {
-        grid-column: 2;
-        padding: 4px 0 0 28px;
-        background: transparent;
-    }
     #seer-lookup-section[data-lookup-mode="skin"][data-pet-presentation="browse"] .seer-lookup-illustration:has(#seer-lookup-preview:not([hidden])) {
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
@@ -546,22 +536,6 @@
         width: auto;
         min-width: 0;
         padding: 0 14px;
-    }
-    #seer-lookup-section[data-lookup-mode="skin"][data-pet-presentation="browse"] .seer-lookup-illustration-stage {
-        order: 4;
-        min-height: 0;
-        height: clamp(360px, 48vh, 500px);
-        margin-top: 18px;
-        background: transparent;
-        border-radius: 0;
-    }
-    #seer-lookup-section[data-lookup-mode="skin"][data-pet-presentation="browse"] .seer-lookup-illustration-stage img {
-        height: 100%;
-        max-height: none;
-    }
-    #seer-lookup-section[data-lookup-mode="skin"][data-pet-presentation="direct"] .seer-lookup-illustration {
-        grid-column: 1 / -1;
-        padding: 12px 24px;
     }
     #seer-lookup-section[data-lookup-mode="skin"][data-pet-presentation="direct"] .seer-skin-identity {
         grid-column: 2;
