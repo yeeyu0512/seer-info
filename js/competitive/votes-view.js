@@ -1,7 +1,8 @@
-import { fetchCnVotes } from "./votes-api.js";
+import { fetchVotes as fetchVoteSnapshot } from "./votes-api.js";
+import { competitiveServerLabel } from "./servers.js";
 import { loadMonsterImage } from "../lookup/skin-image.js";
 
-export function createVotesView({ seerLookup, fetchVotes = fetchCnVotes,
+export function createVotesView({ seerLookup, fetchVotes = fetchVoteSnapshot,
     convertToTraditionalChinese = value => value, convertToSimplifiedChinese = value => value }) {
     const get = id => document.getElementById(`competitive-vote-${id}`);
     const container = document.getElementById("competitive-votes");
@@ -9,7 +10,11 @@ export function createVotesView({ seerLookup, fetchVotes = fetchCnVotes,
     const policyDetails = get("policy-details");
     const results = get("results"), refresh = get("refresh");
     const tabs = [get("restricted"), get("semi")];
-    let snapshot = null, selected = 2, active = false, request = null, version = 0, retryAt = 0;
+    const serverData = {
+        tw: { snapshot: null, retryAt: 0 },
+        cn: { snapshot: null, retryAt: 0 }
+    };
+    let server = "cn", selected = 2, active = false, request = null, version = 0;
     const date = value => new Date(value).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", dateStyle: "medium", timeStyle: "medium" });
     const shortDate = (value, includeYear = false) => {
         const parts = new Intl.DateTimeFormat("en-GB", {
@@ -27,6 +32,7 @@ export function createVotesView({ seerLookup, fetchVotes = fetchCnVotes,
     };
 
     function render() {
+        const { snapshot } = serverData[server];
         tabs.forEach((tab, i) => {
             const isSelected = selected === i + 2;
             tab.classList.toggle("is-active", isSelected);
@@ -38,6 +44,11 @@ export function createVotesView({ seerLookup, fetchVotes = fetchCnVotes,
         period.replaceChildren();
         if (!snapshot) return;
         const pool = snapshot.pools.find(item => item.limit === selected);
+        if (!pool) {
+            period.title = "";
+            results.append(element("p", "目前沒有此池的票選期別。", "competitive-vote-empty"));
+            return;
+        }
         const labels = { upcoming: "尚未開始", active: "進行中", ended: "已結束" };
         const badge = element("span", labels[pool.status], "competitive-vote-state");
         badge.setAttribute("data-status", pool.status);
@@ -57,7 +68,7 @@ export function createVotesView({ seerLookup, fetchVotes = fetchCnVotes,
         const cutoff = selected === 2 ? 12 : 25;
         const ranking = [...pool.list].sort((a, b) => a.rank - b.rank);
         for (const [index, item] of ranking.entries()) {
-            if (index > 0 && ranking[index - 1].rank <= cutoff && item.rank > cutoff) {
+            if (server === "cn" && index > 0 && ranking[index - 1].rank <= cutoff && item.rank > cutoff) {
                 const divider = element("tr", undefined, "competitive-vote-cutoff");
                 const cell = element("td");
                 cell.colSpan = 3;
@@ -72,8 +83,9 @@ export function createVotesView({ seerLookup, fetchVotes = fetchCnVotes,
             loadMonsterImage(image, item.pet_id, { onUnavailable: () => image.classList.add("is-unavailable") });
             // The API already applies generic s2t. Normalize it back before applying
             // the site's cn→tw policy, including the 岳杰托里背 name exceptions.
-            const petName = typeof item.name === "string" && item.name.trim()
-                ? convertToTraditionalChinese(convertToSimplifiedChinese(item.name.trim())) : `精靈 #${item.pet_id}`;
+            const rawName = typeof item.name === "string" ? item.name.trim() : "";
+            const petName = (server === "cn" ? convertToTraditionalChinese(convertToSimplifiedChinese(rawName)) : rawName)
+                || `精靈 #${item.pet_id}`;
             const details = element("div"), name = element("button", petName);
             name.type = "button";
             name.setAttribute("aria-label", `查看${name.textContent}精靈資訊`);
@@ -88,6 +100,9 @@ export function createVotesView({ seerLookup, fetchVotes = fetchCnVotes,
 
     async function load() {
         if (!active || request) return;
+        const state = serverData[server];
+        const { snapshot, retryAt } = state;
+        const label = competitiveServerLabel(server);
         if (Date.now() < retryAt) {
             status.textContent = `服務冷卻中，請約 ${Math.ceil((retryAt - Date.now()) / 1000)} 秒後重試。`;
             return;
@@ -96,23 +111,29 @@ export function createVotesView({ seerLookup, fetchVotes = fetchCnVotes,
         request = controller;
         refresh.disabled = true;
         status.classList.remove("competitive-vote-error");
-        status.textContent = `正在取得陸服票選資料；跨區連線與排隊等候可能較久…${snapshot ? ` 下方資料時間：${date(snapshot.fetched_at)}（台灣時間）。` : ""}`;
+        const loading = server === "cn" ? "正在取得陸服票選資料；跨區連線與排隊等候可能較久…" : "正在取得台服票選資料…";
+        status.textContent = `${loading}${snapshot ? ` 下方資料時間：${date(snapshot.fetched_at)}（台灣時間）。` : ""}`;
         const timeout = setTimeout(() => controller.abort(), 130000);
         try {
-            const data = await fetchVotes({ signal: controller.signal });
+            const data = await fetchVotes({ server, signal: controller.signal });
             if (!active || version !== id) return;
-            snapshot = data;
+            state.snapshot = data;
             status.textContent = `${data.realtime ? "即時模式" : data.cached ? "快取資料" : "最新取得"} · 更新於 ${shortDate(data.fetched_at)}（台灣時間）`;
             status.title = `資料時間：${date(data.fetched_at)}（台灣時間）`;
-            policy.textContent = data.realtime ? "週三 23:45～23:59 為即時模式，每次查詢重新取得票數。" : `一般時段共用 ${Math.round(data.cache_seconds / 60)} 分鐘快取；更新資料可能仍會取得同一份快取。`;
+            if (data.realtime) {
+                policy.textContent = server === "cn" ? "週三 23:45～23:59 為即時模式，每次查詢重新取得票數。"
+                    : "票選開放後，每次查詢都會重新取得票數。";
+            } else {
+                policy.textContent = `一般時段共用 ${Math.round(data.cache_seconds / 60)} 分鐘快取；更新資料可能仍會取得同一份快取。`;
+            }
             policyDetails.hidden = false;
             render();
         } catch (error) {
             if (!active || version !== id) return;
-            if (error.retryAfter) retryAt = Date.now() + error.retryAfter * 1000;
+            if (error.retryAfter) state.retryAt = Date.now() + error.retryAfter * 1000;
             status.classList.add("competitive-vote-error");
             const message = controller.signal.aborted ? "查詢等候逾時，請稍後重試。"
-                : error instanceof TypeError ? "無法連線至陸服票選服務，請稍後重試。" : error.message || "票選資料載入失敗。";
+                : error instanceof TypeError ? `無法連線至${label}票選服務，請稍後重試。` : error.message || "票選資料載入失敗。";
             status.textContent = `${message}${snapshot ? ` 下方保留上次成功取得的資料（${date(snapshot.fetched_at)}，台灣時間）。` : ""}`;
         } finally {
             clearTimeout(timeout);
@@ -129,9 +150,20 @@ export function createVotesView({ seerLookup, fetchVotes = fetchCnVotes,
             tabs[next].focus(); tabs[next].click();
         });
     });
-    function setActive(value) {
+    function setActive(value, nextServer = server) {
+        const changed = server !== nextServer;
         active = value; container.hidden = !value;
-        if (!value) { ++version; request?.abort(); request = null; refresh.disabled = false; }
+        if (!value || changed) { ++version; request?.abort(); request = null; refresh.disabled = false; }
+        if (changed) {
+            server = nextServer;
+            status.textContent = "";
+            status.title = "";
+            period.title = "";
+            status.classList.remove("competitive-vote-error");
+            policyDetails.hidden = true;
+            policyDetails.open = false;
+            render();
+        }
     }
     return { setActive, load };
 }

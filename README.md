@@ -74,6 +74,7 @@ PVE 傷害計算提供傷害與承傷兩種模式，可設定屬性、我方與 
 | 傷害計算 | `?tab=damage` |
 | 台服／陸服競技池 | `?tab=competitive&server=tw`、`?tab=competitive&server=cn` |
 | 陸服票選排名 | `?tab=competitive&server=cn&poolview=votes` |
+| 台服票選排名 | `?tab=competitive&server=tw&poolview=votes` |
 
 ## 本機執行
 
@@ -162,7 +163,7 @@ Supabase 負責管理員驗證、競技池資料與台服進度設定。管理�
 
 排除僅在啟用台服進度篩選時生效，包含精靈／皮膚圖鑑、關聯皮膚、培養精靈和刻印選擇器、刻印圖鑑與其匯出結果，以及套裝圖鑑；排除精靈也會隱藏其關聯皮膚。培養刻印選擇器預設顯示所有符合培養條件的刻印，勾選「僅顯示台服項目」只篩選候選清單。共用資訊視窗、培養套裝選單與既有培養配置仍保留原有資料。內容實裝後可刪除規則或拆分範圍；儲存後請重新整理已開啟的前台，以載入新設定。靜態網站部署不會自動套用資料庫遷移。
 
-競技池的伺服器／賽季遷移順序、前後台版本相容性與管理規則，見 [競技池維護與資料庫遷移](docs/competitive-pool-maintenance.md)。玩家查詢及陸服票選的外部服務設定分別位於 `js/player-lookup.js` 與 `js/competitive/votes-api.js`。
+競技池的伺服器／賽季遷移順序、前後台版本相容性與管理規則，見 [競技池維護與資料庫遷移](docs/competitive-pool-maintenance.md)。玩家查詢及票選排名的外部服務設定分別位於 `js/player-lookup.js` 與 `js/competitive/votes-api.js`。
 
 ### 官網公告自動更新
 

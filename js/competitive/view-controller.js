@@ -25,7 +25,7 @@ export function createCompetitiveView({
 
     function selectContent(votes) {
         const url = new URL(window.location.href);
-        if (votes && serverSelect.value === "cn") url.searchParams.set("poolview", "votes");
+        if (votes) url.searchParams.set("poolview", "votes");
         else url.searchParams.delete("poolview");
         window.history.pushState(null, "", url);
         return loadCurrentCompetitivePool();
@@ -73,11 +73,11 @@ export function createCompetitiveView({
         server = normalizeCompetitiveServer(server);
         serverSelect.value = server;
         const requestId = ++competitivePoolRequestId;
-        const showVotes = server === "cn" && new URL(window.location.href).searchParams.get("poolview") === "votes";
-        contentTabs.hidden = server !== "cn";
+        const showVotes = new URL(window.location.href).searchParams.get("poolview") === "votes";
+        contentTabs.hidden = false;
         listButton.setAttribute("aria-pressed", String(!showVotes));
         votesButton.setAttribute("aria-pressed", String(showVotes));
-        votesView.setActive(showVotes);
+        votesView.setActive(showVotes, server);
         refreshCompetitivePoolButton.hidden = showVotes;
         renderCompetitivePoolTitle(competitivePoolMessage, server, "正在載入競技池資料…");
         competitivePoolPeriod.textContent = "";
@@ -89,7 +89,7 @@ export function createCompetitiveView({
         refreshCompetitivePoolButton.disabled = true;
 
         if (showVotes) {
-            renderCompetitivePoolTitle(competitivePoolMessage, "cn", "競技池投票數據");
+            renderCompetitivePoolTitle(competitivePoolMessage, server, "競技池投票數據");
             competitivePoolPeriod.textContent = "查看遊戲內競技池的投票數據、排名與票數。";
             await votesView.load();
             return;

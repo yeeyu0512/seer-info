@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { CN_VOTES_ENDPOINT, fetchCnVotes, validateVoteSnapshot } from '../js/competitive/votes-api.js';
+import { fetchVotes, validateVoteSnapshot } from '../js/competitive/votes-api.js';
 import { createVotesView } from '../js/competitive/votes-view.js';
 import { createChineseConverters } from '../js/shared/chinese.js';
 
@@ -9,12 +9,15 @@ const snapshot = () => ({ server: 'cn', fetched_at: '2026-11-02T10:40:00Z', cach
         status: limit === 2 ? 'active' : 'upcoming', list: limit === 2 ? [{ pet_id: 5000, rank: 1, votes: 1234, name: '<img onerror=bad>' }] : [] })) });
 
 test('vote requests use the fixed public endpoint without credentials or browser cache', async () => {
-    const data = snapshot(), signal = new AbortController().signal;
-    assert.equal(await fetchCnVotes({ signal, fetchImpl: async (url, options) => {
-        assert.equal(url, CN_VOTES_ENDPOINT);
-        assert.deepEqual(options, { signal, cache: 'no-store', credentials: 'omit' });
-        return { ok: true, json: async () => data };
-    } }), data);
+    const signal = new AbortController().signal;
+    for (const server of ['tw', 'cn']) {
+        const data = { ...snapshot(), server };
+        assert.equal(await fetchVotes({ server, signal, fetchImpl: async (url, options) => {
+            assert.equal(url, `https://seer-info-tw-api.koreacentral.cloudapp.azure.com/api/${server}/votes`);
+            assert.deepEqual(options, { signal, cache: 'no-store', credentials: 'omit' });
+            return { ok: true, json: async () => data };
+        } }), data);
+    }
 });
 
 test('malformed responses fail instead of appearing as an empty ranking', () => {
@@ -23,16 +26,21 @@ test('malformed responses fail instead of appearing as an empty ranking', () => 
         d => d.pools[1].limit = 2, d => d.pools[0].status = 'broken']) {
         const data = snapshot(); mutate(data); assert.throws(() => validateVoteSnapshot(data), /格式異常/);
     }
+    const tw = { ...snapshot(), server: 'tw' };
+    tw.pools.pop();
+    assert.equal(validateVoteSnapshot(tw, 'tw'), tw);
 });
 
 test('service errors expose useful messages and a bounded retry cooldown', async () => {
     for (const status of [429, 502, 503, 504]) {
-        await assert.rejects(fetchCnVotes({ fetchImpl: async () => ({ ok: false, status, headers: new Headers({ 'Retry-After': '30' }) }) }), error => {
+        await assert.rejects(fetchVotes({ fetchImpl: async () => ({ ok: false, status, headers: new Headers({ 'Retry-After': '30' }) }) }), error => {
             assert.match(error.message, /稍後/);
             if (status === 429) assert.equal(error.retryAfter, 30);
             return true;
         });
     }
+    await assert.rejects(fetchVotes({ server: 'tw', fetchImpl: async () => new Response(
+        JSON.stringify({ code: 'captcha_required' }), { status: 503 }) }), /台服登入需要驗證/);
 });
 
 function node(id = '') {
@@ -81,6 +89,43 @@ test('leaving vote mode aborts the request and ignores its late response', async
         resolve(snapshot()); await pending;
         assert.equal(ui.get('results').children.length, 0);
         assert.equal(document.getElementById('competitive-votes').hidden, true);
+    } finally { ui.restore(); }
+});
+
+test('switching servers aborts old requests and preserves only that server’s rankings on failure', async () => {
+    const ui = setup();
+    try {
+        const tw = { ...snapshot(), server: 'tw', cached: false, realtime: true, cache_seconds: 0 };
+        tw.pools[0].list = [12, 13].map(rank => ({ rank, pet_id: 5000 + rank, name: '台服原名', votes: 415 }));
+        tw.pools.pop();
+        let resolveCn, cnSignal, taiwanRequests = 0;
+        const view = createVotesView({ seerLookup: {}, convertToTraditionalChinese: () => '陸服轉換',
+            fetchVotes: async ({ server, signal }) => {
+                if (server === 'cn') {
+                    cnSignal = signal;
+                    return new Promise(resolve => { resolveCn = resolve; });
+                }
+                if (++taiwanRequests === 1) return tw;
+                throw new Error('服務暫停');
+            } });
+        view.setActive(true, 'tw'); await view.load();
+        assert.match(flatten(ui.get('results')), /台服原名/);
+        assert.doesNotMatch(flatten(ui.get('results')), /最多限制|陸服轉換/);
+        assert.match(ui.get('policy').textContent, /每次查詢/);
+        assert.doesNotMatch(ui.get('policy').textContent, /週三/);
+        ui.get('semi').click();
+        assert.match(flatten(ui.get('results')), /目前沒有此池的票選期別/);
+        ui.get('restricted').click();
+        view.setActive(true, 'cn');
+        assert.equal(ui.get('results').children.length, 0);
+        const pending = view.load();
+        view.setActive(true, 'tw');
+        assert.equal(cnSignal.aborted, true);
+        await view.load();
+        resolveCn(snapshot()); await pending;
+        assert.match(ui.get('status').textContent, /保留上次/);
+        assert.match(flatten(ui.get('results')), /台服原名/);
+        assert.doesNotMatch(flatten(ui.get('results')), /1,234/);
     } finally { ui.restore(); }
 });
 

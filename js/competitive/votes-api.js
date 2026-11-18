@@ -1,11 +1,14 @@
-export const CN_VOTES_ENDPOINT = "https://seer-info-tw-api.koreacentral.cloudapp.azure.com/api/cn/votes";
+import { competitiveServerLabel, requireCompetitiveServer } from "./servers.js";
 
-export function validateVoteSnapshot(data) {
+const VOTES_API_BASE = "https://seer-info-tw-api.koreacentral.cloudapp.azure.com/api";
+
+export function validateVoteSnapshot(data, server = "cn") {
     const validDate = value => typeof value === "string" && Number.isFinite(Date.parse(value));
-    if (!data || data.server !== "cn" || !validDate(data.fetched_at)
+    if (!data || data.server !== server || !validDate(data.fetched_at)
         || typeof data.cached !== "boolean" || typeof data.realtime !== "boolean"
         || !Number.isInteger(data.cache_seconds) || data.cache_seconds < 0
-        || !Array.isArray(data.pools) || data.pools.length !== 2) throw new Error("票選資料格式異常，請稍後重試。");
+        || !Array.isArray(data.pools) || data.pools.length > 2
+        || data.pools.length < (server === "tw" ? 1 : 2)) throw new Error("票選資料格式異常，請稍後重試。");
     const limits = new Set();
     for (const pool of data.pools) {
         if (![2, 3].includes(pool.limit) || limits.has(pool.limit)
@@ -23,13 +26,19 @@ export function validateVoteSnapshot(data) {
     return data;
 }
 
-export async function fetchCnVotes({ signal, fetchImpl = globalThis.fetch } = {}) {
-    const response = await fetchImpl(CN_VOTES_ENDPOINT, { signal, cache: "no-store", credentials: "omit" });
+export async function fetchVotes({ server = "cn", signal, fetchImpl = globalThis.fetch } = {}) {
+    requireCompetitiveServer(server);
+    const label = competitiveServerLabel(server);
+    const response = await fetchImpl(`${VOTES_API_BASE}/${server}/votes`, { signal, cache: "no-store", credentials: "omit" });
     if (!response.ok) {
+        if (server === "tw" && response.status === 503) {
+            const data = await response.json().catch(() => null);
+            if (data?.code === "captcha_required") throw new Error("台服登入需要驗證，請稍後重試。");
+        }
         const messages = {
             429: "查詢過於頻繁或服務暫時冷卻，請稍後再試。",
-            502: "陸服票選資料取得失敗，請稍後重試。",
-            503: "陸服票選服務暫停，請稍後再試。",
+            502: `${label}票選資料取得失敗，請稍後重試。`,
+            503: `${label}票選服務暫停，請稍後再試。`,
             504: "查詢等候逾時，請稍後重試。"
         };
         const error = new Error(messages[response.status] || "票選資料載入失敗，請稍後重試。");
@@ -39,5 +48,5 @@ export async function fetchCnVotes({ signal, fetchImpl = globalThis.fetch } = {}
         }
         throw error;
     }
-    return validateVoteSnapshot(await response.json());
+    return validateVoteSnapshot(await response.json(), server);
 }

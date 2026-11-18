@@ -92,20 +92,29 @@ test('a server without an active period clears old characters and shows a server
     } finally { Object.assign(globalThis, original); }
 });
 
-test('mainland vote entry is hidden on Taiwan and switching back clears the vote route', async () => {
-    const original = { document: globalThis.document, window: globalThis.window };
+test('both servers expose voting and switching servers selects the list by default', async () => {
+    const original = { document: globalThis.document, window: globalThis.window, fetch: globalThis.fetch };
     try {
+        const requests = [];
+        globalThis.fetch = async url => {
+            requests.push(new URL(url).pathname);
+            return new Response('{}', { status: 503 });
+        };
         const ui = setupDocument();
         const view = createCompetitiveView({ getCurrentCompetitivePool: async () => null,
             clearObservedTypeIcons() {}, createCharacterTypeIcon: node, seerLookup: {} });
         window.location.href = 'https://example.com/?tab=competitive&server=tw&poolview=votes';
         await view.loadCurrentCompetitivePool('tw');
-        assert.equal(ui.get('competitive-content-tabs').hidden, true);
-        assert.equal(ui.get('competitive-votes').hidden, true);
+        assert.equal(ui.get('competitive-content-tabs').hidden, false);
+        assert.equal(ui.get('competitive-votes').hidden, false);
+        assert.equal(ui.get('competitive-pool-message').children[0].dataset.server, 'tw');
         window.location.href = 'https://example.com/?tab=competitive&server=cn';
         await view.loadCurrentCompetitivePool('cn');
         assert.equal(ui.get('competitive-content-tabs').hidden, false);
         assert.equal(ui.get('competitive-content-list')['aria-pressed'], 'true');
+        await ui.get('competitive-content-votes').events.click();
+        assert.equal(ui.get('competitive-votes').hidden, false);
+        assert.deepEqual(requests, ['/api/tw/votes', '/api/cn/votes']);
         window.location.href = 'https://example.com/?tab=home&poolview=votes';
         ui.get('competitive-pool-server').value = 'cn';
         await ui.get('competitive-pool-server').events.change();
