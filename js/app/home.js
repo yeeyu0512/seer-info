@@ -92,7 +92,7 @@ async function loadOfficialNews(home) {
         list.replaceChildren(...entries.map(item => {
             const row = document.createElement("li"), date = document.createElement("time"), link = document.createElement("a");
             date.textContent = item.date.replace("/", " / ");
-            link.textContent = item.title;
+            link.textContent = item.title.replace(/^(\d{1,2}月\d{1,2}日)\s*活動更新公告$/, "$1維護與活動更新公告");
             link.href = item.url; link.target = "_blank"; link.rel = "noopener noreferrer";
             row.append(date, link); return row;
         }));

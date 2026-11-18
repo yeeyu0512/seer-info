@@ -2,7 +2,8 @@ const fs = require('node:fs'), path = require('node:path'), http = require('node
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const root = process.cwd();
 const pet = id => ({ id, name: `測試精靈 ${id}`, type: { id: id === 27 ? 2 : id === 28 ? 3 : 1 }, base_stats: { hp: 140, atk: 100, def: 100, sp_atk: 130, sp_def: 100, spd: 100, total: 670 }, skill: [{ id: 1, learning_level: 1 }], soulmark: [{ id: 1 }] });
-const pets = Array.from({ length: 28 }, (_, i) => pet(i + 1));
+const spPet = { ...pet(13311), name: '聖光靈神SP', type: { id: 65 }, base_stats: { ...pet(13311).base_stats, hp: 181 } };
+const pets = [...Array.from({ length: 28 }, (_, i) => pet(i + 1)), spPet];
 const skins = Array.from({ length: 24 }, (_, i) => ({ id:817+i, name:`測試皮膚 ${817+i}`, resource_id:1400817+i, pet:{id:1}, category:{id:i%2} }));
 const server = http.createServer((req, res) => {
     const file = path.resolve(root, '.' + decodeURIComponent(new URL(req.url, 'http://localhost').pathname));
@@ -29,7 +30,7 @@ const server = http.createServer((req, res) => {
                 if (url.hostname === 'api.seerapi.com') {
                     apiRequests.push(url);
                     const [, resource, id] = url.pathname.split('/').slice(1);
-                    const combinations = [{ id: 1, name: '草', is_double: false }, { id: 2, name: '火', is_double: false }, { id: 3, name: '草火', is_double: true }];
+                    const combinations = [{ id: 1, name: '草', is_double: false }, { id: 2, name: '火', is_double: false }, { id: 3, name: '草火', is_double: true }, { id: 65, name: '聖靈', is_double: false }];
                     const records = {
                         pet: pets, element_type_combination: combinations, element_type: combinations,
                         mintmark: [
@@ -44,7 +45,7 @@ const server = http.createServer((req, res) => {
                     };
                     if (resource === 'pet_skin' && id === '817') return route.fulfill({ status: 503 });
                     const list = (records[resource] || []).filter(item => resource !== 'pet' || !url.searchParams.has('name') || item.name.includes(url.searchParams.get('name')));
-                    const data = id ? resource === 'pet' ? pet(Number(id)) : list.find(x => String(x.id) === id) || {}
+                    const data = id ? resource === 'pet' ? (id === '13311' ? spPet : pet(Number(id))) : list.find(x => String(x.id) === id) || {}
                         : { count: list.length, next: null, results: list.slice(Number(url.searchParams.get('offset') || 0), Number(url.searchParams.get('offset') || 0) + Number(url.searchParams.get('limit') || 500)) };
                     return route.fulfill({ contentType: 'application/json', body: JSON.stringify(data) });
                 }
@@ -97,7 +98,7 @@ const server = http.createServer((req, res) => {
                 assert.equal(desktopLayout.consistentHeight, true, 'toolbar controls share the same height');
                 assert(desktopLayout.resultsOffset < 210, `desktop results stay within the heading and toolbar area (${desktopLayout.resultsOffset}px)`);
             }
-            assert.match(await results.first().textContent(), /聖光靈神 SP.*#13311$/);
+            assert.match(await results.first().textContent(), /聖光靈神SP.*#13311$/);
             const latestRegularPet = results.filter({ hasText: /#28$/ });
             await latestRegularPet.click();
             await page.locator('#seer-lookup-preview:not([hidden])').waitFor();
@@ -433,6 +434,20 @@ const server = http.createServer((req, res) => {
                 assert.equal(await cold.locator('#seer-lookup-id-result').textContent(), '#817');
                 assert(requests().some(url => url.pathname === '/v1/pet_skin/817'), 'direct lookup tried the detail endpoint first');
                 assert.equal(requests().filter(url => url.pathname === '/v1/pet_skin').length, catalogCalls, 'detail failure reuses the cached catalog');
+                await cold.goto(`${base}/index.html?tab=pet`);
+                const petQuery = cold.locator('#seer-lookup-id');
+                await petQuery.fill('13311');
+                await petQuery.press('Enter');
+                await cold.locator('#seer-lookup-name').filter({ hasText: '聖光靈神SP' }).waitFor();
+                await cold.locator('#seer-pet-info-toggle').click();
+                const petInfo = cold.locator('#seer-pet-info');
+                await petInfo.getByText('181', { exact: true }).waitFor();
+                assert(requests().some(url => url.pathname === '/v1/pet/13311'));
+                await cold.locator('#seer-pet-info-form').click();
+                await cold.locator('#seer-pet-info-title').filter({ hasText: '測試精靈 3311' }).waitFor();
+                await cold.locator('#seer-pet-info-form').click();
+                await petInfo.getByText('181', { exact: true }).waitFor();
+                assert.equal(requests().filter(url => url.pathname === '/v1/pet/13311').length, 1, 'form switching reuses API details');
                 await cold.close();
             }
             await context.close();
