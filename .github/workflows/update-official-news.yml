@@ -52,12 +52,11 @@ jobs:
       - name: Fetch Taiwan official announcements
         run: npm run news:refresh
 
-      # Reuse the currently published generation for every deployment. Only the
-      # Friday schedule, an explicit manual refresh, or first publication fetches
-      # SeerAPI. No snapshots are committed or stored in Actions caches.
+      # Reuse the published generation if it has been fetched since Friday 18:00
+      # Taiwan time. Any later run can catch up if the Friday schedule was missed.
       - name: Prepare published mintmark data
         env:
-          MINTMARK_REFRESH: ${{ github.event.schedule == '0 10 * * 5' || inputs.refresh_mintmarks == true }}
+          MINTMARK_REFRESH: ${{ inputs.refresh_mintmarks == true }}
         run: node tools/prepare-mintmarks.mjs
 
       - uses: actions/configure-pages@v6

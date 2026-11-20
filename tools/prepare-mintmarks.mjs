@@ -1,20 +1,21 @@
 import { pathToFileURL } from 'node:url';
-import { LOCAL_MINTMARKS, PUBLISHED_MINTMARKS, syncPublishedMintmarks } from './mintmark-files.mjs';
+import { latestMintmarkRefresh, LOCAL_MINTMARKS, PUBLISHED_MINTMARKS, syncPublishedMintmarks } from './mintmark-files.mjs';
 import { refreshMintmarkFiles } from './fetch-mintmarks.mjs';
 
 export async function preparePublishedMintmarks({
     directory = LOCAL_MINTMARKS, source = PUBLISHED_MINTMARKS,
-    refreshRequested = false, sync = syncPublishedMintmarks, refresh = refreshMintmarkFiles,
+    now = new Date(), refreshRequested = false, sync = syncPublishedMintmarks, refresh = refreshMintmarkFiles,
 } = {}) {
-    let initial = false;
-    try { await sync({ directory, source }); }
+    let published;
+    try { published = await sync({ directory, source }); }
     catch (error) {
         // Only an absent manifest permits first-publication bootstrap. A timeout,
         // malformed manifest or missing content file must stop publication.
         if (!error.manifestMissing) throw error;
-        initial = true;
     }
-    if (initial || refreshRequested) await refresh({ directory });
+    if (!published || refreshRequested || new Date(published.fetchedAt) < latestMintmarkRefresh(now)) {
+        await refresh({ directory });
+    }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

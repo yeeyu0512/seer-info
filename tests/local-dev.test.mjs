@@ -4,9 +4,9 @@ import { mkdtemp, writeFile, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, relative, resolve, isAbsolute } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
-import { ensureMintmarks, latestMintmarkRefresh } from '../tools/ensure-mintmarks.mjs';
+import { ensureMintmarks } from '../tools/ensure-mintmarks.mjs';
 import { refreshMintmarkFiles } from '../tools/fetch-mintmarks.mjs';
-import { readMintmarkFiles, writeMintmarkFiles, syncPublishedMintmarks } from '../tools/mintmark-files.mjs';
+import { latestMintmarkRefresh, readMintmarkFiles, writeMintmarkFiles, syncPublishedMintmarks } from '../tools/mintmark-files.mjs';
 import { preparePublishedMintmarks } from '../tools/prepare-mintmarks.mjs';
 import { createDevServer, devPort } from '../tools/dev-server.mjs';
 import { bundle, source } from './helpers/mintmark-fixture.mjs';
@@ -97,15 +97,20 @@ test('writer preserves unchanged filenames and refuses incomplete sources before
 test('publication reuses deployed data and bootstraps only missing manifests, never network or blob failures', async () => {
     let fetched = 0;
     const refresh = async () => { fetched++; };
-    const sync = async () => {};
-    await preparePublishedMintmarks({ sync, refresh }); assert.equal(fetched, 0);
-    await preparePublishedMintmarks({ sync, refresh, refreshRequested: true }); assert.equal(fetched, 1);
+    const sync = async () => ({ fetchedAt: '2026-11-13T17:25:01.707Z' });
+    const beforeWeeklyRefresh = new Date('2026-11-20T09:59:59Z');
+    const afterWeeklyRefresh = new Date('2026-11-20T11:31:24Z');
+    await preparePublishedMintmarks({ sync, refresh, now: beforeWeeklyRefresh }); assert.equal(fetched, 0);
+    await preparePublishedMintmarks({ sync, refresh, now: beforeWeeklyRefresh, refreshRequested: true }); assert.equal(fetched, 1);
+    await preparePublishedMintmarks({ sync, refresh, now: afterWeeklyRefresh }); assert.equal(fetched, 2);
+    const current = async () => ({ fetchedAt: '2026-11-20T10:00:00Z' });
+    await preparePublishedMintmarks({ sync: current, refresh, now: afterWeeklyRefresh }); assert.equal(fetched, 2);
     await preparePublishedMintmarks({ sync: async () => { throw Object.assign(new Error('404'), { manifestMissing: true }); }, refresh });
-    assert.equal(fetched, 2);
+    assert.equal(fetched, 3);
     for (const error of [new Error('timeout'), Object.assign(new Error('missing blob'), { status: 404 })]) {
         await assert.rejects(preparePublishedMintmarks({ sync: async () => { throw error; }, refresh }));
     }
-    assert.equal(fetched, 2);
+    assert.equal(fetched, 3);
 });
 
 test('weekly changes retain one previous generation through later hourly syncs without retaining every revision', async t => {

@@ -1,16 +1,7 @@
 import { pathToFileURL } from 'node:url';
 import { refreshMintmarkFiles } from './fetch-mintmarks.mjs';
-import { LOCAL_MINTMARKS, readMintmarkFiles, syncPublishedMintmarks } from './mintmark-files.mjs';
+import { latestMintmarkRefresh, LOCAL_MINTMARKS, readMintmarkFiles, syncPublishedMintmarks } from './mintmark-files.mjs';
 
-const TAIWAN_OFFSET = 8 * 60 * 60 * 1000, WEEK = 7 * 24 * 60 * 60 * 1000;
-export function latestMintmarkRefresh(now = new Date()) {
-    const local = new Date(now.getTime() + TAIWAN_OFFSET);
-    local.setUTCDate(local.getUTCDate() - (local.getUTCDay() + 2) % 7);
-    local.setUTCHours(18, 0, 0, 0);
-    let boundary = local.getTime() - TAIWAN_OFFSET;
-    if (boundary > now.getTime()) boundary -= WEEK;
-    return new Date(boundary);
-}
 const taiwanDate = date => new Intl.DateTimeFormat('zh-TW', {
     timeZone: 'Asia/Taipei', dateStyle: 'short', timeStyle: 'short', hour12: false,
 }).format(date);

@@ -8,6 +8,16 @@ export const LOCAL_MINTMARKS = new URL('../tmp/mintmarks/', import.meta.url);
 export const PUBLISHED_MINTMARKS = 'https://seerinfo.app/data/mintmarks/';
 export const sha256 = body => createHash('sha256').update(body).digest('hex');
 const STATS = ['atk', 'sp_atk', 'def', 'sp_def', 'spd', 'hp', 'total'];
+const TAIWAN_OFFSET = 8 * 60 * 60 * 1000, WEEK = 7 * 24 * 60 * 60 * 1000;
+
+export function latestMintmarkRefresh(now = new Date()) {
+    const local = new Date(now.getTime() + TAIWAN_OFFSET);
+    local.setUTCDate(local.getUTCDate() - (local.getUTCDay() + 2) % 7);
+    local.setUTCHours(18, 0, 0, 0);
+    let boundary = local.getTime() - TAIWAN_OFFSET;
+    if (boundary > now.getTime()) boundary -= WEEK;
+    return new Date(boundary);
+}
 
 function generations(manifest) {
     validateMintmarkManifest(manifest);
